@@ -55,6 +55,36 @@
 
       <p class="text-xs text-gray-500">Track prices from different stores to find the best deal</p>
 
+      <!-- Action buttons -->
+      <div class="flex gap-2">
+        <button
+          type="button"
+          @click="addPriceSource"
+          class="flex-1 py-2 px-4 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-accent-300 hover:text-accent-600 transition-colors flex items-center justify-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Manually
+        </button>
+        <button
+          type="button"
+          :disabled="!form.title.trim() || productSearch.loading.value"
+          @click="handleProductSearch"
+          class="flex-1 py-2 px-4 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+        >
+          <svg v-if="!productSearch.loading.value" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <svg v-else class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          Search Prices
+        </button>
+      </div>
+
+      <!-- Existing price sources -->
       <div class="space-y-3">
         <div
           v-for="(source, index) in form.priceSources"
@@ -62,16 +92,45 @@
           class="p-4 bg-gray-50 rounded-xl space-y-3"
         >
           <div class="flex items-start justify-between">
-            <span class="text-xs font-medium text-gray-500">Source #{{ index + 1 }}</span>
-            <button
-              type="button"
-              @click="removePriceSource(index)"
-              class="p-1 text-red-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div class="flex items-center gap-2">
+              <!-- Thumbnail -->
+              <img
+                v-if="source.imageUrl"
+                :src="source.imageUrl"
+                :alt="source.storeName"
+                class="w-8 h-8 rounded-lg object-contain bg-white border border-gray-100 flex-shrink-0"
+                @error="($event.target as HTMLImageElement).style.display = 'none'"
+              />
+              <div>
+                <span class="text-xs font-medium text-gray-500">Source #{{ index + 1 }}</span>
+                <p v-if="source.searchedAt" class="text-[10px] text-gray-400">
+                  Searched {{ formatSearchDate(source.searchedAt) }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <!-- Use as wish image button -->
+              <button
+                v-if="source.imageUrl"
+                type="button"
+                @click="form.imageUrl = source.imageUrl"
+                class="p-1 text-accent-400 hover:text-accent-600 hover:bg-accent-100 rounded-lg transition-colors"
+                title="Use as wish image"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                @click="removePriceSource(index)"
+                class="p-1 text-red-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -107,19 +166,25 @@
             placeholder="Product URL (optional)"
             class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-200 focus:outline-none"
           />
+          <input
+            v-model="source.description"
+            type="text"
+            placeholder="Description (optional)"
+            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-200 focus:outline-none"
+          />
         </div>
       </div>
 
-      <button
-        type="button"
-        @click="addPriceSource"
-        class="w-full py-2 px-4 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-accent-300 hover:text-accent-600 transition-colors flex items-center justify-center gap-2"
-      >
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Add Price Source
-      </button>
+      <!-- Product Search Results -->
+      <WishesProductSearchResults
+        v-if="showSearchResults"
+        :results="productSearch.results.value"
+        :loading="productSearch.loading.value"
+        :error="productSearch.error.value"
+        :searched="hasSearched"
+        @select="applyProductResult"
+        @close="closeSearchResults"
+      />
     </div>
 
     <!-- Priority -->
@@ -232,15 +297,17 @@
 </template>
 
 <script setup lang="ts">
-import type { Wish, WishForm, Priority, ShoppingLink, PriceSourceForm, PriceSource } from '~/types'
-import { CURRENCIES, WISH_STATUSES } from '~/types'
+import type { Wish, WishForm, Priority, ShoppingLink, PriceSourceForm, PriceSource, ProductSearchResult } from '~/types'
+import { CURRENCIES, WISH_STATUSES, getRegionCurrency } from '~/types'
 
 interface Props {
   initialData?: Wish
-  defaultCurrency?: string
 }
 
 const props = defineProps<Props>()
+
+const { user } = useAuth()
+const userRegion = computed(() => user.value?.defaultRegion || 'US')
 
 const emit = defineEmits<{
   submit: [data: WishForm]
@@ -257,13 +324,17 @@ const form = reactive<WishForm>({
   expectedPrice: '',
   targetPrice: '',
   priceSources: [],
-  currency: props.defaultCurrency || 'USD',
+  currency: getRegionCurrency(userRegion.value),
   priority: 3,
   status: 'wanted',
   trackingUrl: '',
   estimatedDelivery: '',
   forPerson: '',
 })
+
+const productSearch = useProductSearch()
+const showSearchResults = ref(false)
+const hasSearched = ref(false)
 
 const errors = reactive({
   title: '',
@@ -284,6 +355,11 @@ onMounted(() => {
       price: source.price.toString(),
       currency: source.currency,
       url: source.url || '',
+      description: source.description || '',
+      imageUrl: source.imageUrl || '',
+      searchedAt: source.searchedAt
+        ? (source.searchedAt instanceof Date ? source.searchedAt : (source.searchedAt as any).toDate ? (source.searchedAt as any).toDate() : new Date(source.searchedAt)).toISOString()
+        : '',
     }))
     form.currency = props.initialData.currency || 'USD'
     form.priority = props.initialData.priority || 3
@@ -313,11 +389,51 @@ function addPriceSource() {
     price: '',
     currency: form.currency,
     url: '',
+    description: '',
+    imageUrl: '',
+    searchedAt: '',
   })
 }
 
 function removePriceSource(index: number) {
   form.priceSources.splice(index, 1)
+}
+
+async function handleProductSearch() {
+  if (!form.title.trim()) return
+  const query = form.description.trim()
+    ? `${form.title.trim()} ${form.description.trim()}`
+    : form.title.trim()
+  showSearchResults.value = true
+  hasSearched.value = true
+  await productSearch.search(query, userRegion.value)
+}
+
+function applyProductResult(product: ProductSearchResult) {
+  // Add as price source with image and search date
+  if (product.storeName && product.price != null) {
+    form.priceSources.push({
+      storeName: product.storeName,
+      price: product.price.toString(),
+      currency: product.currency || form.currency,
+      url: product.link || '',
+      description: '',
+      imageUrl: product.imageUrl || '',
+      searchedAt: new Date().toISOString(),
+    })
+  }
+}
+
+function formatSearchDate(isoDate: string): string {
+  if (!isoDate) return ''
+  const date = new Date(isoDate)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function closeSearchResults() {
+  showSearchResults.value = false
+  productSearch.clear()
+  hasSearched.value = false
 }
 
 function validate(): boolean {
@@ -352,6 +468,9 @@ async function handleSubmit() {
       price: source.price,
       currency: source.currency,
       url: source.url?.trim() || '',
+      description: source.description?.trim() || '',
+      imageUrl: source.imageUrl || '',
+      searchedAt: source.searchedAt || '',
     }))
 
   emit('submit', {

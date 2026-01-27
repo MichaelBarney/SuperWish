@@ -16,6 +16,8 @@ SuperWish helps users organize their wishlists with features like price tracking
 | **Firebase Auth** | Google Sign-In authentication |
 | **Firestore** | NoSQL database for data storage |
 | **Firebase Hosting** | Static site deployment |
+| **Firebase Cloud Functions** | Serverless backend for product search |
+| **SerpAPI** | Google Shopping product search API |
 | **pnpm** | Package manager |
 
 ## Features
@@ -41,6 +43,13 @@ SuperWish helps users organize their wishlists with features like price tracking
 - Status workflow: Wanted → Purchased → Shipping → Delivered → Gifted
 - "For Person" field to track gift recipients
 - Shipping tracking with URL and estimated delivery date
+
+### Product Search
+- **Automatic Product Search**: Search for products by name via SerpAPI (Google Shopping)
+- **Firebase Cloud Function**: Secure server-side search that keeps API keys safe
+- **Search Results**: Shows up to 6 products with image, price, store, and description
+- **Auto-fill**: Selecting a product fills in image, description, price source, and shopping link
+- **SerpAPI Management**: API searches can be managed at https://serpapi.com/searches
 
 ### Price Comparison
 - **Target Price**: Set the price you want to pay
@@ -68,10 +77,16 @@ superwish/
 ├── tailwind.config.ts         # Tailwind CSS configuration
 ├── package.json               # Dependencies and scripts
 ├── tsconfig.json              # TypeScript configuration
-├── firebase.json              # Firebase Hosting configuration
+├── firebase.json              # Firebase Hosting + Functions configuration
 ├── .firebaserc                # Firebase project settings
 ├── .env                       # Environment variables (not in git)
 ├── .env.example               # Environment template
+│
+├── functions/                 # Firebase Cloud Functions
+│   ├── package.json           # Functions dependencies
+│   ├── tsconfig.json          # Functions TypeScript config
+│   └── src/
+│       └── index.ts           # searchProducts Cloud Function (SerpAPI)
 │
 ├── pages/
 │   ├── index.vue              # Landing/login page
@@ -88,9 +103,10 @@ superwish/
 │   │   └── ListGrid.vue       # Grid of list cards
 │   ├── wishes/
 │   │   ├── WishCard.vue       # Wish card with price comparison
-│   │   ├── WishForm.vue       # Create/edit wish form
+│   │   ├── WishForm.vue       # Create/edit wish form with product search
 │   │   ├── WishStatusBadge.vue # Status indicator badge
-│   │   └── WishMoveModal.vue  # Move wish between lists
+│   │   ├── WishMoveModal.vue  # Move wish between lists
+│   │   └── ProductSearchResults.vue # Product search results panel
 │   └── ui/
 │       ├── Button.vue         # Reusable button component
 │       ├── Input.vue          # Form input component
@@ -101,7 +117,8 @@ superwish/
 ├── composables/
 │   ├── useAuth.ts             # Authentication state & methods
 │   ├── useLists.ts            # Wishlist CRUD operations
-│   └── useWishes.ts           # Wish CRUD operations
+│   ├── useWishes.ts           # Wish CRUD operations
+│   └── useProductSearch.ts    # Product search via Cloud Function
 │
 ├── plugins/
 │   └── firebase.client.ts     # Firebase initialization (client-only)
@@ -270,6 +287,14 @@ NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NUXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
+### SerpAPI (Product Search)
+
+The product search feature uses [SerpAPI](https://serpapi.com/) to query Google Shopping. The API key is stored as a Firebase secret (not in `.env`).
+
+- **Dashboard**: https://serpapi.com/searches
+- **Setup**: `firebase functions:secrets:set SERPAPI_KEY`
+- **Free tier**: 100 searches/month
+
 ## Getting Started
 
 ### Prerequisites
@@ -302,14 +327,36 @@ pnpm generate
 5. Set up security rules (see above)
 6. Create required indexes
 
+### Cloud Functions Setup
+
+```bash
+# Install functions dependencies
+cd functions && npm install
+
+# Set SerpAPI secret
+firebase functions:secrets:set SERPAPI_KEY
+
+# Deploy functions
+firebase deploy --only functions
+
+# Test locally with emulator
+cd functions && npm run serve
+```
+
 ### Deployment
 
 ```bash
 # Generate static site
 pnpm generate
 
-# Deploy to Firebase Hosting
+# Deploy everything (hosting + functions)
+firebase deploy
+
+# Deploy only hosting
 firebase deploy --only hosting
+
+# Deploy only functions
+firebase deploy --only functions
 ```
 
 The app will be available at: `https://your-project.web.app`

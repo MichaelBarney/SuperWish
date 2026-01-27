@@ -10,15 +10,15 @@
     <div class="bg-white rounded-2xl shadow-soft p-6 max-w-xl">
       <h2 class="text-lg font-semibold text-gray-900 mb-4">Preferences</h2>
 
-      <!-- Default Currency -->
+      <!-- Default Region -->
       <div class="space-y-4">
         <UiSelect
-          v-model="selectedCurrency"
-          label="Default Currency"
-          hint="This currency will be pre-selected when creating new wishes"
+          v-model="selectedRegion"
+          label="Default Region"
+          hint="Sets your currency and product search region"
         >
-          <option v-for="curr in CURRENCIES" :key="curr.code" :value="curr.code">
-            {{ curr.code }} ({{ curr.symbol }}) - {{ curr.name }}
+          <option v-for="region in REGIONS" :key="region.code" :value="region.code">
+            {{ region.name }} ({{ region.currency.symbol }} {{ region.currency.code }})
           </option>
         </UiSelect>
 
@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { CURRENCIES } from '~/types'
+import { REGIONS } from '~/types'
 
 definePageMeta({
   layout: 'app',
@@ -46,18 +46,18 @@ definePageMeta({
 
 const { user, updateUserPreferences } = useAuth()
 
-const selectedCurrency = ref(user.value?.defaultCurrency || 'USD')
+const selectedRegion = ref(user.value?.defaultRegion || 'US')
 const saving = ref(false)
 
 const hasChanges = computed(() => {
-  return selectedCurrency.value !== (user.value?.defaultCurrency || 'USD')
+  return selectedRegion.value !== (user.value?.defaultRegion || 'US')
 })
 
 async function savePreferences() {
   saving.value = true
 
   const result = await updateUserPreferences({
-    defaultCurrency: selectedCurrency.value,
+    defaultRegion: selectedRegion.value,
   })
 
   if (!result.success) {
@@ -67,9 +67,9 @@ async function savePreferences() {
   saving.value = false
 }
 
-watch(() => user.value?.defaultCurrency, (newCurrency) => {
-  if (newCurrency) {
-    selectedCurrency.value = newCurrency
+watch(() => user.value?.defaultRegion, (newRegion) => {
+  if (newRegion) {
+    selectedRegion.value = newRegion
   }
 })
 </script>

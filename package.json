@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "lsof -ti:5001 | xargs kill -9 2>/dev/null; cd functions && npm run build && cd .. && firebase emulators:start --only functions & nuxt dev",
+    "dev:nuxt": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"

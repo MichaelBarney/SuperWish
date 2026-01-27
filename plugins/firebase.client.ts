@@ -2,6 +2,7 @@ import { initializeApp, getApps } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
 
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
@@ -20,6 +21,12 @@ export default defineNuxtPlugin(() => {
   const auth = getAuth(app)
   const db = getFirestore(app)
   const storage = getStorage(app)
+  const functions = getFunctions(app)
+
+  // Connect to local emulator in development
+  if (process.dev) {
+    connectFunctionsEmulator(functions, 'localhost', 5001)
+  }
 
   return {
     provide: {
@@ -27,6 +34,7 @@ export default defineNuxtPlugin(() => {
       auth,
       db,
       storage,
+      functions,
     }
   }
 })

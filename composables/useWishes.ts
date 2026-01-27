@@ -37,14 +37,9 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
     gifted: 3,
   }
 
-  // Helper to get the effective price for sorting (lowest available price)
+  // Helper to get the effective price for sorting (uses target price)
   const getEffectivePrice = (wish: Wish): number => {
-    // If there are price sources, use the lowest price
-    if (wish.priceSources && wish.priceSources.length > 0) {
-      return Math.min(...wish.priceSources.map(s => s.price))
-    }
-    // Fall back to expectedPrice, or Infinity if no price
-    return wish.expectedPrice ?? Infinity
+    return wish.targetPrice ?? Infinity
   }
 
   // Sort wishes by status -> priority (desc) -> price (asc)
@@ -150,7 +145,9 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
           storeName: s.storeName,
           price: parseFloat(s.price),
           currency: s.currency,
-          url: s.url || undefined,
+          url: s.url || null,
+          imageUrl: s.imageUrl || null,
+          searchedAt: s.searchedAt ? new Date(s.searchedAt) : null,
         }))
 
       const docRef = await addDoc(wishesRef, {
@@ -209,7 +206,9 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
             storeName: s.storeName,
             price: parseFloat(s.price),
             currency: s.currency,
-            url: s.url || undefined,
+            url: s.url || null,
+            imageUrl: s.imageUrl || null,
+            searchedAt: s.searchedAt ? new Date(s.searchedAt) : null,
           }))
       }
       if (data.currency !== undefined) updateData.currency = data.currency

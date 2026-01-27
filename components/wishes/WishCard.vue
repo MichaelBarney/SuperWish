@@ -95,6 +95,13 @@
         <div v-if="bestPrice" class="flex items-center justify-between">
           <span class="text-xs text-gray-500">Best:</span>
           <div class="flex items-center gap-2">
+            <img
+              v-if="bestPrice.imageUrl"
+              :src="bestPrice.imageUrl"
+              :alt="bestPrice.storeName"
+              class="w-6 h-6 rounded object-cover flex-shrink-0"
+              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+            />
             <span :class="[
               'text-lg font-semibold',
               isGoodDeal ? 'text-green-600' : 'text-accent-600'

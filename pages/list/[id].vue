@@ -134,7 +134,7 @@
       size="lg"
     >
       <WishesWishForm
-        :default-currency="user?.defaultCurrency"
+
         @submit="handleCreateWish"
         @cancel="showCreateWishModal = false"
       />

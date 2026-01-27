@@ -59,13 +59,14 @@ export function useAuth() {
           })
         }
 
+        const userData = userDoc.exists() ? userDoc.data() : null
         user.value = {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
           photoURL: firebaseUser.photoURL,
-          createdAt: userDoc.exists() ? userDoc.data()?.createdAt : null,
-          defaultCurrency: userDoc.exists() ? userDoc.data()?.defaultCurrency : undefined,
+          createdAt: userData?.createdAt ?? null,
+          defaultRegion: userData?.defaultRegion,
         }
       } else {
         user.value = null
@@ -109,7 +110,7 @@ export function useAuth() {
     }
   }
 
-  const updateUserPreferences = async (preferences: { defaultCurrency?: string }) => {
+  const updateUserPreferences = async (preferences: { defaultRegion?: string }) => {
     const auth = getAuth()
     const db = getDb()
 
@@ -121,8 +122,8 @@ export function useAuth() {
       const userRef = doc(db, 'users', auth.currentUser.uid)
       await updateDoc(userRef, { ...preferences })
 
-      if (user.value && preferences.defaultCurrency) {
-        user.value = { ...user.value, defaultCurrency: preferences.defaultCurrency }
+      if (user.value && preferences.defaultRegion) {
+        user.value = { ...user.value, defaultRegion: preferences.defaultRegion }
       }
 
       return { success: true }
