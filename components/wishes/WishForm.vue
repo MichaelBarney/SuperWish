@@ -17,23 +17,12 @@
       :rows="2"
     />
 
-    <!-- Image URL -->
-    <div>
-      <UiInput
-        v-model="form.imageUrl"
-        type="url"
-        label="Image URL"
-        placeholder="https://example.com/image.jpg"
-      />
-      <div v-if="form.imageUrl && isValidUrl(form.imageUrl)" class="mt-2">
-        <img
-          :src="form.imageUrl"
-          alt="Preview"
-          class="w-20 h-20 object-cover rounded-lg border border-gray-200"
-          @error="handleImageError"
-        />
-      </div>
-    </div>
+    <!-- Image -->
+    <UiImageUpload
+      v-model="form.imageUrl"
+      label="Image"
+      storage-path="wishes"
+    />
 
     <!-- Target Price -->
     <div class="grid grid-cols-3 gap-4">
@@ -281,8 +270,6 @@ const errors = reactive({
 })
 
 const submitting = ref(false)
-const imageError = ref(false)
-
 // Initialize form with existing data
 onMounted(() => {
   if (props.initialData) {
@@ -311,19 +298,6 @@ onMounted(() => {
     }
   }
 })
-
-function isValidUrl(url: string): boolean {
-  try {
-    new URL(url)
-    return true
-  } catch {
-    return false
-  }
-}
-
-function handleImageError() {
-  imageError.value = true
-}
 
 function addLink() {
   form.shoppingLinks.push({ url: '', label: '' })

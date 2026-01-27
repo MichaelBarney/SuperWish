@@ -16,30 +16,12 @@
     />
 
     <!-- Cover Image -->
-    <div>
-      <UiInput
-        v-model="form.coverUrl"
-        label="Cover Image URL"
-        placeholder="https://example.com/image.jpg"
-        :error="errors.coverUrl"
-      />
-      <!-- Cover Preview -->
-      <div v-if="form.coverUrl && isValidImageUrl" class="mt-3">
-        <div class="relative h-24 rounded-xl overflow-hidden">
-          <img
-            :src="form.coverUrl"
-            alt="Cover preview"
-            class="absolute inset-0 w-full h-full object-cover"
-            @error="imageError = true"
-            @load="imageError = false"
-          />
-          <div class="absolute inset-0 bg-gradient-to-br from-accent-400/80 to-accent-600/80" />
-          <div class="relative p-4 z-10">
-            <span class="text-white font-semibold text-sm">Preview</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <UiImageUpload
+      v-model="form.coverUrl"
+      label="Cover Image"
+      storage-path="lists"
+      preview-class="w-full h-24 object-cover rounded-xl border border-gray-200"
+    />
 
     <div class="grid grid-cols-2 gap-4">
       <UiInput
@@ -100,25 +82,12 @@ const form = reactive<WishListForm>({
 
 const errors = reactive({
   name: '',
-  coverUrl: '',
 })
 
 const submitting = ref(false)
-const imageError = ref(false)
 
 const minDate = computed(() => {
   return new Date().toISOString().split('T')[0]
-})
-
-const isValidImageUrl = computed(() => {
-  if (!form.coverUrl) return false
-  if (imageError.value) return false
-  try {
-    new URL(form.coverUrl)
-    return true
-  } catch {
-    return false
-  }
 })
 
 // Initialize form with existing data
@@ -137,22 +106,11 @@ onMounted(() => {
   }
 })
 
-// Reset image error when URL changes
-watch(() => form.coverUrl, () => {
-  imageError.value = false
-})
-
 function validate(): boolean {
   errors.name = ''
-  errors.coverUrl = ''
 
   if (!form.name.trim()) {
     errors.name = 'List name is required'
-    return false
-  }
-
-  if (form.coverUrl && !isValidImageUrl.value) {
-    errors.coverUrl = 'Please enter a valid image URL'
     return false
   }
 
