@@ -3,15 +3,15 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">My Wishlists</h1>
-        <p class="text-gray-500 mt-1">{{ lists.length }} {{ lists.length === 1 ? 'list' : 'lists' }}</p>
+        <h1 class="text-2xl font-bold text-gray-900">{{ $t('dashboard.myLists') }}</h1>
+        <p class="text-gray-500 mt-1">{{ $t('dashboard.listCount', lists.length) }}</p>
       </div>
 
       <UiButton @click="showCreateModal = true">
         <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        New List
+        {{ $t('dashboard.newList') }}
       </UiButton>
     </div>
 
@@ -26,9 +26,9 @@
     <div class="mt-12">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h2 class="text-xl font-bold text-gray-900">Quick Wishes</h2>
+          <h2 class="text-xl font-bold text-gray-900">{{ $t('dashboard.quickWishes') }}</h2>
           <p class="text-gray-500 mt-1">
-            {{ unassignedWishes.length }} {{ unassignedWishes.length === 1 ? 'wish' : 'wishes' }} not in any list
+            {{ $t('dashboard.wishCount', unassignedWishes.length) }}
           </p>
         </div>
 
@@ -36,7 +36,7 @@
           <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Add Wish
+          {{ $t('dashboard.addWish') }}
         </UiButton>
       </div>
 
@@ -62,13 +62,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">No quick wishes yet</h3>
-        <p class="text-gray-500 mb-4">Add wishes here without assigning them to a list</p>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $t('wishes.empty.quickTitle') }}</h3>
+        <p class="text-gray-500 mb-4">{{ $t('wishes.empty.quickDescription') }}</p>
         <UiButton variant="secondary" @click="showCreateWishModal = true">
           <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Add Your First Wish
+          {{ $t('wishes.empty.addFirst') }}
         </UiButton>
       </div>
 
@@ -88,7 +88,7 @@
     <!-- Create List Modal -->
     <UiModal
       v-model="showCreateModal"
-      title="Create New Wishlist"
+      :title="$t('dashboard.createNewWishlist')"
     >
       <ListsListForm
         @submit="handleCreateList"
@@ -99,7 +99,7 @@
     <!-- Create Wish Modal -->
     <UiModal
       v-model="showCreateWishModal"
-      title="Add New Wish"
+      :title="$t('dashboard.addNewWish')"
       size="lg"
     >
       <WishesWishForm
@@ -112,7 +112,7 @@
     <!-- Edit Wish Modal -->
     <UiModal
       v-model="showEditWishModal"
-      title="Edit Wish"
+      :title="$t('dashboard.editWish')"
       size="lg"
     >
       <WishesWishForm
@@ -125,18 +125,18 @@
     <!-- Delete Wish Confirmation -->
     <UiModal
       v-model="showDeleteWishModal"
-      title="Delete Wish"
+      :title="$t('dashboard.deleteWish')"
       size="sm"
     >
       <p class="text-gray-600">
-        Are you sure you want to delete "<span class="font-medium">{{ selectedWish?.title }}</span>"? This action cannot be undone.
+        {{ $t('dashboard.deleteWishConfirm', { title: selectedWish?.title }) }}
       </p>
       <template #footer>
         <UiButton variant="secondary" @click="showDeleteWishModal = false">
-          Cancel
+          {{ $t('common.cancel') }}
         </UiButton>
         <UiButton variant="danger" :loading="deleting" @click="handleDeleteWish">
-          Delete
+          {{ $t('common.delete') }}
         </UiButton>
       </template>
     </UiModal>

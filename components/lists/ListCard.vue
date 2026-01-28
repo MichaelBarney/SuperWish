@@ -34,7 +34,7 @@
       <p v-if="list.description" class="text-gray-500 text-sm line-clamp-2 mb-4">
         {{ list.description }}
       </p>
-      <p v-else class="text-gray-400 text-sm italic mb-4">No description</p>
+      <p v-else class="text-gray-400 text-sm italic mb-4">{{ $t('common.noDescription') }}</p>
 
       <!-- Meta Info -->
       <div class="flex items-center gap-4 text-sm">
@@ -60,7 +60,7 @@
     <!-- Card Footer -->
     <div class="px-5 py-3 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between">
       <span class="text-xs text-gray-400">
-        Updated {{ formatRelativeTime(list.updatedAt?.toDate()) }}
+        {{ $t('common.updated', { time: formatRelativeTime(list.updatedAt?.toDate()) }) }}
       </span>
       <svg class="w-5 h-5 text-gray-300 group-hover:text-accent-500 group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -77,6 +77,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t, locale } = useI18n()
 
 const isOverdue = computed(() => {
   if (!props.list.deadline) return false
@@ -91,11 +92,12 @@ const formattedDeadline = computed(() => {
   const deadline = props.list.deadline instanceof Date
     ? props.list.deadline
     : new Date(props.list.deadline)
-  return deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+  return deadline.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
 })
 
 function formatRelativeTime(date?: Date): string {
-  if (!date) return 'recently'
+  if (!date) return t('common.recently')
 
   const now = new Date()
   const diff = now.getTime() - date.getTime()
@@ -105,15 +107,16 @@ function formatRelativeTime(date?: Date): string {
   const days = Math.floor(hours / 24)
 
   if (days > 7) {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+    return date.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
   } else if (days > 0) {
-    return `${days}d ago`
+    return t('common.daysAgo', { days })
   } else if (hours > 0) {
-    return `${hours}h ago`
+    return t('common.hoursAgo', { hours })
   } else if (minutes > 0) {
-    return `${minutes}m ago`
+    return t('common.minutesAgo', { minutes })
   } else {
-    return 'just now'
+    return t('common.justNow')
   }
 }
 </script>

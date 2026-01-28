@@ -17,6 +17,11 @@ declare module '#app' {
 
 export type WishStatus = 'wanted' | 'purchased' | 'shipping' | 'delivered' | 'gifted'
 
+export interface WishQuestion {
+  questionKey: string  // i18n key for the question
+  answer: string
+}
+
 export type Priority = 1 | 2 | 3 | 4 | 5
 
 export interface User {
@@ -82,6 +87,7 @@ export interface Wish {
   trackingUrl?: string
   estimatedDelivery?: Date | null
   forPerson?: string
+  questions?: WishQuestion[]
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -109,6 +115,7 @@ export interface WishForm {
   trackingUrl: string
   estimatedDelivery: string // ISO date string for form input
   forPerson: string
+  questions: WishQuestion[]
 }
 
 export interface Region {

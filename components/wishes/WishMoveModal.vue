@@ -1,12 +1,12 @@
 <template>
   <UiModal
     :model-value="modelValue"
-    :title="currentListId ? 'Move Wish' : 'Add Wish to List'"
+    :title="currentListId ? $t('wishes.move.title') : $t('wishes.move.addToList')"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <div class="space-y-4">
       <p class="text-sm text-gray-500">
-        {{ currentListId ? 'Choose where to move' : 'Select a list to add' }} "<span class="font-medium text-gray-700">{{ wish?.title }}</span>"{{ currentListId ? '' : ' to' }}:
+        {{ currentListId ? $t('wishes.move.chooseDestination') : $t('wishes.move.selectList') }} "<span class="font-medium text-gray-700">{{ wish?.title }}</span>"{{ currentListId ? '' : ':' }}
       </p>
 
       <!-- Remove from list option (only when currently in a list) -->
@@ -28,8 +28,8 @@
               </svg>
             </div>
             <div>
-              <h4 class="font-medium text-gray-900">Remove from list</h4>
-              <p class="text-sm text-gray-500">Move to Quick Wishes</p>
+              <h4 class="font-medium text-gray-900">{{ $t('wishes.move.removeFromList') }}</h4>
+              <p class="text-sm text-gray-500">{{ $t('wishes.move.moveToQuickWishes') }}</p>
             </div>
           </div>
           <svg
@@ -49,7 +49,7 @@
           <div class="w-full border-t border-gray-200"></div>
         </div>
         <div class="relative flex justify-center text-xs">
-          <span class="px-2 bg-white text-gray-500">or move to</span>
+          <span class="px-2 bg-white text-gray-500">{{ $t('wishes.move.orMoveTo') }}</span>
         </div>
       </div>
 
@@ -90,13 +90,13 @@
         <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
-        <p class="text-gray-500">No lists available</p>
+        <p class="text-gray-500">{{ $t('wishes.move.noLists') }}</p>
       </div>
     </div>
 
     <template #footer>
       <UiButton variant="secondary" @click="$emit('update:modelValue', false)">
-        Cancel
+        {{ $t('common.cancel') }}
       </UiButton>
       <UiButton
         :disabled="!hasSelection"
@@ -120,6 +120,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
@@ -148,9 +149,9 @@ const hasSelection = computed(() => {
 
 // Dynamic button text
 const buttonText = computed(() => {
-  if (removeFromList.value) return 'Remove from List'
-  if (!props.currentListId) return 'Add to List'
-  return 'Move Wish'
+  if (removeFromList.value) return t('wishes.move.removeButton')
+  if (!props.currentListId) return t('wishes.move.addButton')
+  return t('wishes.move.moveButton')
 })
 
 // Reset selection when modal opens

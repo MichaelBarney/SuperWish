@@ -13,7 +13,7 @@ import {
   writeBatch,
   type Firestore,
 } from 'firebase/firestore'
-import type { Wish, WishForm, WishStatus, Priority, PriceSource } from '~/types'
+import type { Wish, WishForm, WishStatus, Priority, PriceSource, WishQuestion } from '~/types'
 
 export function useWishes(listId?: Ref<string | null | undefined>) {
   const nuxtApp = useNuxtApp()
@@ -108,6 +108,7 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
               ? (data.estimatedDelivery as Timestamp).toDate()
               : null,
             forPerson: data.forPerson || '',
+            questions: data.questions || [],
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
           } as Wish
@@ -150,6 +151,11 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
           searchedAt: s.searchedAt ? new Date(s.searchedAt) : null,
         }))
 
+      // Filter out empty answers from questions
+      const questions: WishQuestion[] = (data.questions || [])
+        .filter(q => q.answer.trim())
+        .map(q => ({ questionKey: q.questionKey, answer: q.answer.trim() }))
+
       const docRef = await addDoc(wishesRef, {
         listId: targetListId,
         userId: user.value.uid,
@@ -168,6 +174,7 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
           ? Timestamp.fromDate(new Date(data.estimatedDelivery))
           : null,
         forPerson: data.forPerson || '',
+        questions: questions,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
@@ -221,6 +228,11 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
           : null
       }
       if (data.forPerson !== undefined) updateData.forPerson = data.forPerson
+      if (data.questions !== undefined) {
+        updateData.questions = (data.questions || [])
+          .filter(q => q.answer.trim())
+          .map(q => ({ questionKey: q.questionKey, answer: q.answer.trim() }))
+      }
 
       await updateDoc(wishRef, updateData)
       return { success: true }

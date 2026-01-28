@@ -2,23 +2,23 @@
   <form @submit.prevent="handleSubmit" class="space-y-5">
     <UiInput
       v-model="form.name"
-      label="List Name"
-      placeholder="e.g., Birthday Wishlist"
+      :label="$t('lists.form.name')"
+      :placeholder="$t('lists.form.namePlaceholder')"
       required
       :error="errors.name"
     />
 
     <UiTextarea
       v-model="form.description"
-      label="Description"
-      placeholder="What's this list for?"
+      :label="$t('lists.form.description')"
+      :placeholder="$t('lists.form.descriptionPlaceholder')"
       :rows="3"
     />
 
     <!-- Cover Image -->
     <UiImageUpload
       v-model="form.coverUrl"
-      label="Cover Image"
+      :label="$t('lists.form.coverImage')"
       storage-path="lists"
       preview-class="w-full h-24 object-cover rounded-xl border border-gray-200"
     />
@@ -27,14 +27,14 @@
       <UiInput
         v-model="form.deadline"
         type="date"
-        label="Deadline"
+        :label="$t('lists.form.deadline')"
         :min="minDate"
       />
 
       <UiInput
         v-model="form.location"
-        label="Location"
-        placeholder="e.g., Amazon, Store"
+        :label="$t('lists.form.location')"
+        :placeholder="$t('lists.form.locationPlaceholder')"
       />
     </div>
 
@@ -44,13 +44,13 @@
         variant="secondary"
         @click="$emit('cancel')"
       >
-        Cancel
+        {{ $t('common.cancel') }}
       </UiButton>
       <UiButton
         type="submit"
         :loading="submitting"
       >
-        {{ editMode ? 'Save Changes' : 'Create List' }}
+        {{ editMode ? $t('common.save') : $t('lists.form.createList') }}
       </UiButton>
     </div>
   </form>
@@ -64,6 +64,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   submit: [data: WishListForm]
@@ -110,7 +111,7 @@ function validate(): boolean {
   errors.name = ''
 
   if (!form.name.trim()) {
-    errors.name = 'List name is required'
+    errors.name = t('lists.form.nameRequired')
     return false
   }
 

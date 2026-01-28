@@ -6,7 +6,7 @@
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
       </svg>
-      <span class="ml-2 text-sm text-gray-500">Searching products...</span>
+      <span class="ml-2 text-sm text-gray-500">{{ $t('wishes.search.searching') }}</span>
     </div>
 
     <!-- Error -->
@@ -16,21 +16,21 @@
 
     <!-- No results -->
     <div v-else-if="results.length === 0 && searched" class="p-4 bg-gray-50 rounded-xl text-sm text-gray-500 text-center">
-      No products found. Try a different search term.
+      {{ $t('wishes.search.noResults') }}
     </div>
 
     <!-- Results -->
     <div v-else-if="results.length > 0" class="space-y-2">
       <div class="flex items-center justify-between">
         <span class="text-xs font-medium text-gray-500">
-          Showing {{ visibleResults.length }} of {{ results.length }} product{{ results.length === 1 ? '' : 's' }}
+          {{ $t('wishes.search.showing', { visible: visibleResults.length, total: results.length }, results.length) }}
         </span>
         <button
           type="button"
           @click="$emit('close')"
           class="text-xs text-gray-400 hover:text-gray-600"
         >
-          Close
+          {{ $t('common.close') }}
         </button>
       </div>
 
@@ -86,7 +86,7 @@
         @click="showMore"
         class="w-full py-2 text-xs text-accent-600 hover:text-accent-700 font-medium"
       >
-        Show {{ Math.min(PAGE_SIZE, results.length - visibleCount) }} more ({{ results.length - visibleCount }} remaining)
+        {{ $t('wishes.search.showMore', { count: Math.min(PAGE_SIZE, results.length - visibleCount), remaining: results.length - visibleCount }) }}
       </button>
     </div>
   </div>

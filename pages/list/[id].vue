@@ -13,10 +13,10 @@
       <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <h2 class="text-xl font-semibold text-gray-900 mb-2">List not found</h2>
-      <p class="text-gray-500 mb-6">This wishlist doesn't exist or you don't have access to it.</p>
+      <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ $t('lists.notFound.title') }}</h2>
+      <p class="text-gray-500 mb-6">{{ $t('lists.notFound.description') }}</p>
       <UiButton to="/dashboard">
-        Back to Dashboard
+        {{ $t('lists.notFound.backButton') }}
       </UiButton>
     </div>
 
@@ -27,7 +27,7 @@
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
           <NuxtLink to="/dashboard" class="hover:text-accent-600 transition-colors">
-            My Wishlists
+            {{ $t('lists.breadcrumb') }}
           </NuxtLink>
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -55,7 +55,7 @@
                 </svg>
                 <span>{{ list.location }}</span>
               </div>
-              <span class="text-gray-400">{{ wishes.length }} {{ wishes.length === 1 ? 'wish' : 'wishes' }}</span>
+              <span class="text-gray-400">{{ $t('dashboard.wishCount', wishes.length) }}</span>
             </div>
           </div>
 
@@ -64,19 +64,19 @@
               <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              Edit
+              {{ $t('common.edit') }}
             </UiButton>
             <UiButton variant="danger" @click="showDeleteListModal = true">
               <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              Delete
+              {{ $t('common.delete') }}
             </UiButton>
             <UiButton @click="showCreateWishModal = true">
               <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
-              Add Wish
+              {{ $t('dashboard.addWish') }}
             </UiButton>
           </div>
         </div>
@@ -104,13 +104,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">No wishes yet</h3>
-        <p class="text-gray-500 mb-6">Start adding wishes to this list</p>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $t('wishes.empty.title') }}</h3>
+        <p class="text-gray-500 mb-6">{{ $t('wishes.empty.description') }}</p>
         <UiButton @click="showCreateWishModal = true">
           <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Add Your First Wish
+          {{ $t('wishes.empty.addFirst') }}
         </UiButton>
       </div>
 
@@ -130,7 +130,7 @@
     <!-- Create Wish Modal -->
     <UiModal
       v-model="showCreateWishModal"
-      title="Add New Wish"
+      :title="$t('dashboard.addNewWish')"
       size="lg"
     >
       <WishesWishForm
@@ -143,7 +143,7 @@
     <!-- Edit Wish Modal -->
     <UiModal
       v-model="showEditWishModal"
-      title="Edit Wish"
+      :title="$t('dashboard.editWish')"
       size="lg"
     >
       <WishesWishForm
@@ -156,18 +156,18 @@
     <!-- Delete Wish Confirmation -->
     <UiModal
       v-model="showDeleteWishModal"
-      title="Delete Wish"
+      :title="$t('dashboard.deleteWish')"
       size="sm"
     >
       <p class="text-gray-600">
-        Are you sure you want to delete "<span class="font-medium">{{ selectedWish?.title }}</span>"? This action cannot be undone.
+        {{ $t('dashboard.deleteWishConfirm', { title: selectedWish?.title }) }}
       </p>
       <template #footer>
         <UiButton variant="secondary" @click="showDeleteWishModal = false">
-          Cancel
+          {{ $t('common.cancel') }}
         </UiButton>
         <UiButton variant="danger" :loading="deleting" @click="handleDeleteWish">
-          Delete
+          {{ $t('common.delete') }}
         </UiButton>
       </template>
     </UiModal>
@@ -183,7 +183,7 @@
     <!-- Edit List Modal -->
     <UiModal
       v-model="showEditListModal"
-      title="Edit List"
+      :title="$t('lists.editList')"
     >
       <ListsListForm
         :initial-data="list || undefined"
@@ -195,18 +195,18 @@
     <!-- Delete List Confirmation -->
     <UiModal
       v-model="showDeleteListModal"
-      title="Delete List"
+      :title="$t('lists.deleteList')"
       size="sm"
     >
       <p class="text-gray-600">
-        Are you sure you want to delete "<span class="font-medium">{{ list?.name }}</span>" and all its wishes? This action cannot be undone.
+        {{ $t('lists.deleteListConfirm', { name: list?.name }) }}
       </p>
       <template #footer>
         <UiButton variant="secondary" @click="showDeleteListModal = false">
-          Cancel
+          {{ $t('common.cancel') }}
         </UiButton>
         <UiButton variant="danger" :loading="deletingList" @click="handleDeleteList">
-          Delete List
+          {{ $t('lists.deleteList') }}
         </UiButton>
       </template>
     </UiModal>
@@ -222,6 +222,7 @@ definePageMeta({
 })
 
 const route = useRoute()
+const { locale } = useI18n()
 const listId = computed(() => route.params.id as string)
 
 // User
@@ -263,7 +264,8 @@ const formattedDeadline = computed(() => {
   const deadline = list.value.deadline instanceof Date
     ? list.value.deadline
     : new Date(list.value.deadline)
-  return deadline.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+  return deadline.toLocaleDateString(dateLocale, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
 })
 
 // Wish Handlers

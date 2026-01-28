@@ -1,0 +1,203 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save Changes",
+    "edit": "Edit",
+    "close": "Close",
+    "add": "Add",
+    "remove": "Remove",
+    "loading": "Loading...",
+    "noDescription": "No description",
+    "for": "For {person}",
+    "more": "+{count} more",
+    "recently": "recently",
+    "justNow": "just now",
+    "daysAgo": "{days}d ago",
+    "hoursAgo": "{hours}h ago",
+    "minutesAgo": "{minutes}m ago",
+    "updated": "Updated {time}"
+  },
+  "nav": {
+    "appName": "SuperWish",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "auth": {
+    "signingIn": "Signing in...",
+    "continueGoogle": "Continue with Google",
+    "checkingAuth": "Checking authentication...",
+    "failedSignIn": "Failed to sign in",
+    "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy"
+  },
+  "landing": {
+    "tagline": "Organize your wishes beautifully",
+    "welcomeBack": "Welcome back",
+    "organizeLists": "Organize Lists",
+    "trackWishes": "Track Wishes",
+    "setDeadlines": "Set Deadlines",
+    "footer": "Made with care for gift-givers everywhere"
+  },
+  "dashboard": {
+    "myLists": "My Wishlists",
+    "listCount": "{count} list | {count} lists",
+    "newList": "New List",
+    "quickWishes": "Quick Wishes",
+    "wishCount": "{count} wish not in any list | {count} wishes not in any list",
+    "addWish": "Add Wish",
+    "createNewWishlist": "Create New Wishlist",
+    "addNewWish": "Add New Wish",
+    "editWish": "Edit Wish",
+    "deleteWish": "Delete Wish",
+    "deleteWishConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone."
+  },
+  "lists": {
+    "form": {
+      "name": "List Name",
+      "namePlaceholder": "e.g., Birthday Wishlist",
+      "nameRequired": "List name is required",
+      "description": "Description",
+      "descriptionPlaceholder": "What's this list for?",
+      "coverImage": "Cover Image",
+      "deadline": "Deadline",
+      "location": "Location",
+      "locationPlaceholder": "e.g., Amazon, Store",
+      "createList": "Create List"
+    },
+    "empty": {
+      "title": "No wishlists yet",
+      "description": "Create your first wishlist to get started",
+      "createButton": "Create Wishlist"
+    },
+    "notFound": {
+      "title": "List not found",
+      "description": "This wishlist doesn't exist or you don't have access to it.",
+      "backButton": "Back to Dashboard"
+    },
+    "breadcrumb": "My Wishlists",
+    "editList": "Edit List",
+    "deleteList": "Delete List",
+    "deleteListConfirm": "Are you sure you want to delete \"{name}\" and all its wishes? This action cannot be undone."
+  },
+  "wishes": {
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "What do you wish for?",
+      "titleRequired": "Title is required",
+      "description": "Description",
+      "descriptionPlaceholder": "Add more details about this wish...",
+      "image": "Image",
+      "targetPrice": "Target Price",
+      "targetPricePlaceholder": "Price you want to pay",
+      "targetPriceHint": "The price you're hoping to find",
+      "currency": "Currency",
+      "priceSources": "Price Sources",
+      "priceSourcesHint": "Track prices from different stores to find the best deal",
+      "addManually": "Add Manually",
+      "searchPrices": "Search Prices",
+      "sourceNumber": "Source #{number}",
+      "searched": "Searched {date}",
+      "storePlaceholder": "Store name (e.g., Amazon)",
+      "pricePlaceholder": "Price",
+      "urlPlaceholder": "Product URL (optional)",
+      "sourceDescriptionPlaceholder": "Description (optional)",
+      "useAsWishImage": "Use as wish image",
+      "priority": "Priority",
+      "status": "Status",
+      "forPerson": "For Person",
+      "forPersonPlaceholder": "Who is this wish for? (optional)",
+      "referenceLinks": "Reference Links",
+      "labelPlaceholder": "Label",
+      "addLink": "Add Link",
+      "trackingInfo": "Tracking Information",
+      "trackingUrl": "Tracking URL",
+      "trackingUrlPlaceholder": "https://tracking.example.com/...",
+      "estimatedDelivery": "Estimated Delivery",
+      "addWish": "Add Wish"
+    },
+    "card": {
+      "goodDeal": "Good Deal!",
+      "target": "Target:",
+      "best": "Best:",
+      "sourcesTracked": "{count} sources tracked",
+      "arriving": "Arriving {date}",
+      "trackPackage": "Track Package"
+    },
+    "search": {
+      "searching": "Searching products...",
+      "noResults": "No products found. Try a different search term.",
+      "showing": "Showing {visible} of {total} product | Showing {visible} of {total} products",
+      "showMore": "Show {count} more ({remaining} remaining)"
+    },
+    "move": {
+      "title": "Move Wish",
+      "addToList": "Add Wish to List",
+      "chooseDestination": "Choose where to move",
+      "selectList": "Select a list to add",
+      "removeFromList": "Remove from list",
+      "moveToQuickWishes": "Move to Quick Wishes",
+      "orMoveTo": "or move to",
+      "noLists": "No lists available",
+      "removeButton": "Remove from List",
+      "addButton": "Add to List",
+      "moveButton": "Move Wish"
+    },
+    "empty": {
+      "title": "No wishes yet",
+      "description": "Start adding wishes to this list",
+      "addFirst": "Add Your First Wish",
+      "quickTitle": "No quick wishes yet",
+      "quickDescription": "Add wishes here without assigning them to a list"
+    },
+    "questions": {
+      "sectionTitle": "Preferences",
+      "sectionHint": "Optional details to improve search results",
+      "brand": "Do you have a brand preference?",
+      "color": "Do you have a color preference?"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account preferences",
+    "preferences": "Preferences",
+    "defaultRegion": "Default Region",
+    "regionHint": "Sets your currency and product search region",
+    "language": "Language",
+    "languageHint": "Choose your preferred language"
+  },
+  "statuses": {
+    "wanted": "Wanted",
+    "purchased": "Purchased",
+    "shipping": "Shipping",
+    "delivered": "Delivered",
+    "gifted": "Gifted"
+  },
+  "time": {
+    "sinceToday": "since Today",
+    "sinceYesterday": "since Yesterday",
+    "forDays": "for {count} Day | for {count} Days",
+    "forWeeks": "for {count} Week | for {count} Weeks",
+    "forMonths": "for {count} Month | for {count} Months",
+    "forYears": "for {count} Year | for {count} Years"
+  },
+  "imageUpload": {
+    "upload": "Upload",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com/image.jpg",
+    "uploading": "Uploading...",
+    "chooseImage": "Choose image"
+  },
+  "regions": {
+    "US": "United States",
+    "BR": "Brasil",
+    "GB": "United Kingdom",
+    "EU": "Europe (Euro)",
+    "JP": "Japan",
+    "CA": "Canada",
+    "AU": "Australia"
+  },
+  "languages": {
+    "en": "English",
+    "pt-BR": "Portugues (Brasil)"
+  }
+}

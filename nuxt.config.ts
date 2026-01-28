@@ -3,12 +3,33 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
 
+  // Development server configuration
+  devServer: {
+    port: 3005
+  },
+
   // SPA mode for Firebase Hosting
   ssr: false,
 
   modules: [
     '@nuxtjs/tailwindcss',
+    '@nuxtjs/i18n',
   ],
+
+  i18n: {
+    locales: [
+      { code: 'en', file: 'en.json', name: 'English' },
+      { code: 'pt-BR', file: 'pt-BR.json', name: 'Portugues (Brasil)' },
+    ],
+    defaultLocale: 'en',
+    langDir: 'locales',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      fallbackLocale: 'en',
+    },
+  },
 
   app: {
     head: {

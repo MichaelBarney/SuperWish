@@ -1,0 +1,203 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "save": "Salvar Alteracoes",
+    "edit": "Editar",
+    "close": "Fechar",
+    "add": "Adicionar",
+    "remove": "Remover",
+    "loading": "Carregando...",
+    "noDescription": "Sem descricao",
+    "for": "Para {person}",
+    "more": "+{count} mais",
+    "recently": "recentemente",
+    "justNow": "agora mesmo",
+    "daysAgo": "{days}d atras",
+    "hoursAgo": "{hours}h atras",
+    "minutesAgo": "{minutes}m atras",
+    "updated": "Atualizado {time}"
+  },
+  "nav": {
+    "appName": "SuperWish",
+    "settings": "Configuracoes",
+    "signOut": "Sair"
+  },
+  "auth": {
+    "signingIn": "Entrando...",
+    "continueGoogle": "Continuar com Google",
+    "checkingAuth": "Verificando autenticacao...",
+    "failedSignIn": "Falha ao entrar",
+    "termsNotice": "Ao continuar, voce concorda com nossos Termos de Servico e Politica de Privacidade"
+  },
+  "landing": {
+    "tagline": "Organize seus desejos com estilo",
+    "welcomeBack": "Bem-vindo de volta",
+    "organizeLists": "Organize Listas",
+    "trackWishes": "Acompanhe Desejos",
+    "setDeadlines": "Defina Prazos",
+    "footer": "Feito com carinho para quem ama presentear"
+  },
+  "dashboard": {
+    "myLists": "Minhas Listas de Desejos",
+    "listCount": "{count} lista | {count} listas",
+    "newList": "Nova Lista",
+    "quickWishes": "Desejos Rapidos",
+    "wishCount": "{count} desejo sem lista | {count} desejos sem lista",
+    "addWish": "Adicionar Desejo",
+    "createNewWishlist": "Criar Nova Lista de Desejos",
+    "addNewWish": "Adicionar Novo Desejo",
+    "editWish": "Editar Desejo",
+    "deleteWish": "Excluir Desejo",
+    "deleteWishConfirm": "Tem certeza que deseja excluir \"{title}\"? Esta acao nao pode ser desfeita."
+  },
+  "lists": {
+    "form": {
+      "name": "Nome da Lista",
+      "namePlaceholder": "ex., Lista de Aniversario",
+      "nameRequired": "Nome da lista e obrigatorio",
+      "description": "Descricao",
+      "descriptionPlaceholder": "Para que e esta lista?",
+      "coverImage": "Imagem de Capa",
+      "deadline": "Prazo",
+      "location": "Local",
+      "locationPlaceholder": "ex., Amazon, Loja",
+      "createList": "Criar Lista"
+    },
+    "empty": {
+      "title": "Nenhuma lista ainda",
+      "description": "Crie sua primeira lista de desejos para comecar",
+      "createButton": "Criar Lista de Desejos"
+    },
+    "notFound": {
+      "title": "Lista nao encontrada",
+      "description": "Esta lista de desejos nao existe ou voce nao tem acesso a ela.",
+      "backButton": "Voltar ao Painel"
+    },
+    "breadcrumb": "Minhas Listas de Desejos",
+    "editList": "Editar Lista",
+    "deleteList": "Excluir Lista",
+    "deleteListConfirm": "Tem certeza que deseja excluir \"{name}\" e todos os seus desejos? Esta acao nao pode ser desfeita."
+  },
+  "wishes": {
+    "form": {
+      "title": "Titulo",
+      "titlePlaceholder": "O que voce deseja?",
+      "titleRequired": "Titulo e obrigatorio",
+      "description": "Descricao",
+      "descriptionPlaceholder": "Adicione mais detalhes sobre este desejo...",
+      "image": "Imagem",
+      "targetPrice": "Preco Alvo",
+      "targetPricePlaceholder": "Preco que voce quer pagar",
+      "targetPriceHint": "O preco que voce espera encontrar",
+      "currency": "Moeda",
+      "priceSources": "Fontes de Preco",
+      "priceSourcesHint": "Acompanhe precos de diferentes lojas para encontrar a melhor oferta",
+      "addManually": "Adicionar Manualmente",
+      "searchPrices": "Buscar Precos",
+      "sourceNumber": "Fonte #{number}",
+      "searched": "Buscado em {date}",
+      "storePlaceholder": "Nome da loja (ex., Amazon)",
+      "pricePlaceholder": "Preco",
+      "urlPlaceholder": "URL do produto (opcional)",
+      "sourceDescriptionPlaceholder": "Descricao (opcional)",
+      "useAsWishImage": "Usar como imagem do desejo",
+      "priority": "Prioridade",
+      "status": "Status",
+      "forPerson": "Para Quem",
+      "forPersonPlaceholder": "Para quem e este desejo? (opcional)",
+      "referenceLinks": "Links de Referencia",
+      "labelPlaceholder": "Rotulo",
+      "addLink": "Adicionar Link",
+      "trackingInfo": "Informacoes de Rastreamento",
+      "trackingUrl": "URL de Rastreamento",
+      "trackingUrlPlaceholder": "https://rastreamento.exemplo.com/...",
+      "estimatedDelivery": "Entrega Estimada",
+      "addWish": "Adicionar Desejo"
+    },
+    "card": {
+      "goodDeal": "Boa Oferta!",
+      "target": "Alvo:",
+      "best": "Melhor:",
+      "sourcesTracked": "{count} fontes rastreadas",
+      "arriving": "Chegando {date}",
+      "trackPackage": "Rastrear Pacote"
+    },
+    "search": {
+      "searching": "Buscando produtos...",
+      "noResults": "Nenhum produto encontrado. Tente um termo diferente.",
+      "showing": "Mostrando {visible} de {total} produto | Mostrando {visible} de {total} produtos",
+      "showMore": "Mostrar mais {count} ({remaining} restantes)"
+    },
+    "move": {
+      "title": "Mover Desejo",
+      "addToList": "Adicionar Desejo a Lista",
+      "chooseDestination": "Escolha para onde mover",
+      "selectList": "Selecione uma lista para adicionar",
+      "removeFromList": "Remover da lista",
+      "moveToQuickWishes": "Mover para Desejos Rapidos",
+      "orMoveTo": "ou mover para",
+      "noLists": "Nenhuma lista disponivel",
+      "removeButton": "Remover da Lista",
+      "addButton": "Adicionar a Lista",
+      "moveButton": "Mover Desejo"
+    },
+    "empty": {
+      "title": "Nenhum desejo ainda",
+      "description": "Comece a adicionar desejos a esta lista",
+      "addFirst": "Adicione Seu Primeiro Desejo",
+      "quickTitle": "Nenhum desejo rapido ainda",
+      "quickDescription": "Adicione desejos aqui sem atribuir a uma lista"
+    },
+    "questions": {
+      "sectionTitle": "Preferências",
+      "sectionHint": "Detalhes opcionais para melhorar os resultados da busca",
+      "brand": "Tem preferência por alguma marca?",
+      "color": "Tem preferência por alguma cor?"
+    }
+  },
+  "settings": {
+    "title": "Configuracoes",
+    "subtitle": "Gerencie suas preferencias de conta",
+    "preferences": "Preferencias",
+    "defaultRegion": "Regiao Padrao",
+    "regionHint": "Define sua moeda e regiao de busca de produtos",
+    "language": "Idioma",
+    "languageHint": "Escolha seu idioma preferido"
+  },
+  "statuses": {
+    "wanted": "Desejado",
+    "purchased": "Comprado",
+    "shipping": "Em Transito",
+    "delivered": "Entregue",
+    "gifted": "Presenteado"
+  },
+  "time": {
+    "sinceToday": "desde Hoje",
+    "sinceYesterday": "desde Ontem",
+    "forDays": "ha {count} Dia | ha {count} Dias",
+    "forWeeks": "ha {count} Semana | ha {count} Semanas",
+    "forMonths": "ha {count} Mes | ha {count} Meses",
+    "forYears": "ha {count} Ano | ha {count} Anos"
+  },
+  "imageUpload": {
+    "upload": "Enviar",
+    "url": "URL",
+    "urlPlaceholder": "https://exemplo.com/imagem.jpg",
+    "uploading": "Enviando...",
+    "chooseImage": "Escolher imagem"
+  },
+  "regions": {
+    "US": "Estados Unidos",
+    "BR": "Brasil",
+    "GB": "Reino Unido",
+    "EU": "Europa (Euro)",
+    "JP": "Japao",
+    "CA": "Canada",
+    "AU": "Australia"
+  },
+  "languages": {
+    "en": "English",
+    "pt-BR": "Portugues (Brasil)"
+  }
+}

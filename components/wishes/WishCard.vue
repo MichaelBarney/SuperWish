@@ -40,7 +40,7 @@
           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
           </svg>
-          Good Deal!
+          {{ $t('wishes.card.goodDeal') }}
         </span>
       </div>
 
@@ -85,7 +85,7 @@
       <div v-if="hasAnyPriceInfo" class="space-y-2 mb-3">
         <!-- Target Price -->
         <div v-if="wish.targetPrice" class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">Target:</span>
+          <span class="text-xs text-gray-500">{{ $t('wishes.card.target') }}</span>
           <span class="text-sm font-medium text-gray-700">
             {{ getCurrencySymbol(wish.currency) }}{{ formatPrice(wish.targetPrice) }}
           </span>
@@ -93,7 +93,7 @@
 
         <!-- Best Price -->
         <div v-if="bestPrice" class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">Best:</span>
+          <span class="text-xs text-gray-500">{{ $t('wishes.card.best') }}</span>
           <div class="flex items-center gap-2">
             <img
               v-if="bestPrice.imageUrl"
@@ -129,7 +129,7 @@
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
-          {{ wish.priceSources.length }} sources tracked
+          {{ $t('wishes.card.sourcesTracked', { count: wish.priceSources.length }) }}
         </div>
       </div>
 
@@ -143,7 +143,7 @@
       <!-- For Person Badge -->
       <div v-if="wish.forPerson" class="mb-3">
         <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-          For {{ wish.forPerson }}
+          {{ $t('common.for', { person: wish.forPerson }) }}
         </span>
       </div>
 
@@ -164,7 +164,7 @@
           {{ link.label || getLinkDomain(link.url) }}
         </a>
         <span v-if="wish.shoppingLinks.length > 2" class="text-xs text-gray-400">
-          +{{ wish.shoppingLinks.length - 2 }} more
+          {{ $t('common.more', { count: wish.shoppingLinks.length - 2 }) }}
         </span>
       </div>
 
@@ -175,7 +175,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span v-if="wish.estimatedDelivery">
-            Arriving {{ formatDate(wish.estimatedDelivery) }}
+            {{ $t('wishes.card.arriving', { date: formatDate(wish.estimatedDelivery) }) }}
           </span>
           <a
             v-if="wish.trackingUrl"
@@ -185,7 +185,7 @@
             class="text-accent-600 hover:underline"
             @click.stop
           >
-            Track Package
+            {{ $t('wishes.card.trackPackage') }}
           </a>
         </div>
       </div>
@@ -203,6 +203,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t, locale } = useI18n()
 
 // Compute time since added for "wanted" status (returns "since X" format)
 const sinceText = computed(() => {
@@ -216,19 +217,19 @@ const sinceText = computed(() => {
   const diffMs = now.getTime() - createdDate.getTime()
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-  if (diffDays === 0) return 'since Today'
-  if (diffDays === 1) return 'since Yesterday'
-  if (diffDays < 7) return `for ${diffDays} Days`
+  if (diffDays === 0) return t('time.sinceToday')
+  if (diffDays === 1) return t('time.sinceYesterday')
+  if (diffDays < 7) return t('time.forDays', diffDays)
   if (diffDays < 30) {
     const weeks = Math.floor(diffDays / 7)
-    return `for ${weeks} ${weeks === 1 ? 'Week' : 'Weeks'}`
+    return t('time.forWeeks', weeks)
   }
   if (diffDays < 365) {
     const months = Math.floor(diffDays / 30)
-    return `for ${months} ${months === 1 ? 'Month' : 'Months'}`
+    return t('time.forMonths', months)
   }
   const years = Math.floor(diffDays / 365)
-  return `for ${years} ${years === 1 ? 'Year' : 'Years'}`
+  return t('time.forYears', years)
 })
 
 defineEmits<{
@@ -257,7 +258,7 @@ function handleImageError(e: Event) {
 }
 
 function formatPrice(price: number): string {
-  return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return price.toLocaleString(locale.value === 'pt-BR' ? 'pt-BR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function getLinkDomain(url: string): string {
@@ -272,6 +273,7 @@ function getLinkDomain(url: string): string {
 function formatDate(date: Date | null | undefined): string {
   if (!date) return ''
   const d = date instanceof Date ? date : new Date(date)
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+  return d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
 }
 </script>

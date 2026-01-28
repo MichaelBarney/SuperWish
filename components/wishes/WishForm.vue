@@ -3,8 +3,8 @@
     <!-- Title -->
     <UiInput
       v-model="form.title"
-      label="Title"
-      placeholder="What do you wish for?"
+      :label="$t('wishes.form.title')"
+      :placeholder="$t('wishes.form.titlePlaceholder')"
       required
       :error="errors.title"
     />
@@ -12,15 +12,30 @@
     <!-- Description -->
     <UiTextarea
       v-model="form.description"
-      label="Description"
-      placeholder="Add more details about this wish..."
+      :label="$t('wishes.form.description')"
+      :placeholder="$t('wishes.form.descriptionPlaceholder')"
       :rows="2"
     />
+
+    <!-- Preferences (optional) -->
+    <div class="space-y-3">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">{{ $t('wishes.questions.sectionTitle') }}</label>
+        <p class="text-xs text-gray-500">{{ $t('wishes.questions.sectionHint') }}</p>
+      </div>
+      <div v-for="(q, index) in form.questions" :key="q.questionKey" class="space-y-1">
+        <UiInput
+          v-model="q.answer"
+          :label="$t(q.questionKey)"
+          :placeholder="''"
+        />
+      </div>
+    </div>
 
     <!-- Image -->
     <UiImageUpload
       v-model="form.imageUrl"
-      label="Image"
+      :label="$t('wishes.form.image')"
       storage-path="wishes"
     />
 
@@ -30,14 +45,14 @@
         <UiInput
           v-model="form.targetPrice"
           type="number"
-          label="Target Price"
-          placeholder="Price you want to pay"
+          :label="$t('wishes.form.targetPrice')"
+          :placeholder="$t('wishes.form.targetPricePlaceholder')"
           step="0.01"
           min="0"
-          hint="The price you're hoping to find"
+          :hint="$t('wishes.form.targetPriceHint')"
         />
       </div>
-      <UiSelect v-model="form.currency" label="Currency">
+      <UiSelect v-model="form.currency" :label="$t('wishes.form.currency')">
         <option v-for="curr in CURRENCIES" :key="curr.code" :value="curr.code">
           {{ curr.code }} ({{ curr.symbol }})
         </option>
@@ -47,13 +62,13 @@
     <!-- Price Sources -->
     <div class="space-y-3">
       <div class="flex items-center justify-between">
-        <label class="block text-sm font-medium text-gray-700">Price Sources</label>
+        <label class="block text-sm font-medium text-gray-700">{{ $t('wishes.form.priceSources') }}</label>
         <span v-if="form.priceSources.length > 0" class="text-xs text-gray-400">
           {{ form.priceSources.length }} source{{ form.priceSources.length === 1 ? '' : 's' }}
         </span>
       </div>
 
-      <p class="text-xs text-gray-500">Track prices from different stores to find the best deal</p>
+      <p class="text-xs text-gray-500">{{ $t('wishes.form.priceSourcesHint') }}</p>
 
       <!-- Action buttons -->
       <div class="flex gap-2">
@@ -65,7 +80,7 @@
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Add Manually
+          {{ $t('wishes.form.addManually') }}
         </button>
         <button
           type="button"
@@ -80,7 +95,7 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
-          Search Prices
+          {{ $t('wishes.form.searchPrices') }}
         </button>
       </div>
 
@@ -102,9 +117,9 @@
                 @error="($event.target as HTMLImageElement).style.display = 'none'"
               />
               <div>
-                <span class="text-xs font-medium text-gray-500">Source #{{ index + 1 }}</span>
+                <span class="text-xs font-medium text-gray-500">{{ $t('wishes.form.sourceNumber', { number: index + 1 }) }}</span>
                 <p v-if="source.searchedAt" class="text-[10px] text-gray-400">
-                  Searched {{ formatSearchDate(source.searchedAt) }}
+                  {{ $t('wishes.form.searched', { date: formatSearchDate(source.searchedAt) }) }}
                 </p>
               </div>
             </div>
@@ -115,7 +130,7 @@
                 type="button"
                 @click="form.imageUrl = source.imageUrl"
                 class="p-1 text-accent-400 hover:text-accent-600 hover:bg-accent-100 rounded-lg transition-colors"
-                title="Use as wish image"
+                :title="$t('wishes.form.useAsWishImage')"
               >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -137,14 +152,14 @@
             <input
               v-model="source.storeName"
               type="text"
-              placeholder="Store name (e.g., Amazon)"
+              :placeholder="$t('wishes.form.storePlaceholder')"
               class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-200 focus:outline-none"
             />
             <div class="flex gap-2">
               <input
                 v-model="source.price"
                 type="number"
-                placeholder="Price"
+                :placeholder="$t('wishes.form.pricePlaceholder')"
                 step="0.01"
                 min="0"
                 class="flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-200 focus:outline-none"
@@ -163,13 +178,13 @@
           <input
             v-model="source.url"
             type="url"
-            placeholder="Product URL (optional)"
+            :placeholder="$t('wishes.form.urlPlaceholder')"
             class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-200 focus:outline-none"
           />
           <input
             v-model="source.description"
             type="text"
-            placeholder="Description (optional)"
+            :placeholder="$t('wishes.form.sourceDescriptionPlaceholder')"
             class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-200 focus:outline-none"
           />
         </div>
@@ -189,7 +204,7 @@
 
     <!-- Priority -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+      <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('wishes.form.priority') }}</label>
       <div class="flex gap-1">
         <button
           v-for="i in 5"
@@ -211,8 +226,8 @@
     </div>
 
     <!-- Status -->
-    <UiSelect v-model="form.status" label="Status">
-      <option v-for="status in WISH_STATUSES" :key="status.value" :value="status.value">
+    <UiSelect v-model="form.status" :label="$t('wishes.form.status')">
+      <option v-for="status in translatedStatuses" :key="status.value" :value="status.value">
         {{ status.label }}
       </option>
     </UiSelect>
@@ -220,13 +235,13 @@
     <!-- For Person -->
     <UiInput
       v-model="form.forPerson"
-      label="For Person"
-      placeholder="Who is this wish for? (optional)"
+      :label="$t('wishes.form.forPerson')"
+      :placeholder="$t('wishes.form.forPersonPlaceholder')"
     />
 
     <!-- Shopping Links -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Reference Links</label>
+      <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('wishes.form.referenceLinks') }}</label>
       <div class="space-y-2">
         <div
           v-for="(link, index) in form.shoppingLinks"
@@ -242,7 +257,7 @@
           <input
             v-model="link.label"
             type="text"
-            placeholder="Label"
+            :placeholder="$t('wishes.form.labelPlaceholder')"
             class="w-24 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-200 focus:outline-none"
           />
           <button
@@ -264,40 +279,40 @@
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Add Link
+        {{ $t('wishes.form.addLink') }}
       </button>
     </div>
 
     <!-- Tracking Info (visible for purchased/shipping status) -->
     <div v-if="form.status === 'purchased' || form.status === 'shipping'" class="p-4 bg-gray-50 rounded-xl space-y-4">
-      <h4 class="text-sm font-medium text-gray-700">Tracking Information</h4>
+      <h4 class="text-sm font-medium text-gray-700">{{ $t('wishes.form.trackingInfo') }}</h4>
       <UiInput
         v-model="form.trackingUrl"
         type="url"
-        label="Tracking URL"
-        placeholder="https://tracking.example.com/..."
+        :label="$t('wishes.form.trackingUrl')"
+        :placeholder="$t('wishes.form.trackingUrlPlaceholder')"
       />
       <UiInput
         v-model="form.estimatedDelivery"
         type="date"
-        label="Estimated Delivery"
+        :label="$t('wishes.form.estimatedDelivery')"
       />
     </div>
 
     <!-- Form Actions -->
     <div class="flex justify-end gap-3 pt-4">
       <UiButton type="button" variant="secondary" @click="$emit('cancel')">
-        Cancel
+        {{ $t('common.cancel') }}
       </UiButton>
       <UiButton type="submit" :loading="submitting">
-        {{ editMode ? 'Save Changes' : 'Add Wish' }}
+        {{ editMode ? $t('common.save') : $t('wishes.form.addWish') }}
       </UiButton>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import type { Wish, WishForm, Priority, ShoppingLink, PriceSourceForm, PriceSource, ProductSearchResult } from '~/types'
+import type { Wish, WishForm, Priority, ShoppingLink, PriceSourceForm, PriceSource, ProductSearchResult, WishStatus, WishQuestion } from '~/types'
 import { CURRENCIES, WISH_STATUSES, getRegionCurrency } from '~/types'
 
 interface Props {
@@ -305,6 +320,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t, locale } = useI18n()
 
 const { user } = useAuth()
 const userRegion = computed(() => user.value?.defaultRegion || 'US')
@@ -315,6 +331,15 @@ const emit = defineEmits<{
 }>()
 
 const editMode = computed(() => !!props.initialData)
+
+// Translated statuses
+const translatedStatuses = computed(() => {
+  return WISH_STATUSES.map(status => ({
+    value: status.value,
+    label: t(`statuses.${status.value}`),
+    color: status.color
+  }))
+})
 
 const form = reactive<WishForm>({
   title: '',
@@ -330,6 +355,10 @@ const form = reactive<WishForm>({
   trackingUrl: '',
   estimatedDelivery: '',
   forPerson: '',
+  questions: [
+    { questionKey: 'wishes.questions.brand', answer: '' },
+    { questionKey: 'wishes.questions.color', answer: '' },
+  ],
 })
 
 const productSearch = useProductSearch()
@@ -372,6 +401,15 @@ onMounted(() => {
         : new Date(props.initialData.estimatedDelivery)
       form.estimatedDelivery = date.toISOString().split('T')[0]
     }
+    // Merge saved answers into default questions
+    if (props.initialData.questions) {
+      for (const savedQ of props.initialData.questions) {
+        const formQ = form.questions.find(q => q.questionKey === savedQ.questionKey)
+        if (formQ) {
+          formQ.answer = savedQ.answer
+        }
+      }
+    }
   }
 })
 
@@ -401,9 +439,13 @@ function removePriceSource(index: number) {
 
 async function handleProductSearch() {
   if (!form.title.trim()) return
-  const query = form.description.trim()
-    ? `${form.title.trim()} ${form.description.trim()}`
-    : form.title.trim()
+  const answers = form.questions
+    .map(q => q.answer.trim())
+    .filter(a => a)
+    .join(' ')
+  const query = [form.title.trim(), form.description.trim(), answers]
+    .filter(Boolean)
+    .join(' ')
   showSearchResults.value = true
   hasSearched.value = true
   await productSearch.search(query, userRegion.value)
@@ -427,7 +469,8 @@ function applyProductResult(product: ProductSearchResult) {
 function formatSearchDate(isoDate: string): string {
   if (!isoDate) return ''
   const date = new Date(isoDate)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+  return date.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 function closeSearchResults() {
@@ -440,7 +483,7 @@ function validate(): boolean {
   errors.title = ''
 
   if (!form.title.trim()) {
-    errors.title = 'Title is required'
+    errors.title = t('wishes.form.titleRequired')
     return false
   }
 
@@ -487,6 +530,7 @@ async function handleSubmit() {
     trackingUrl: form.trackingUrl.trim(),
     estimatedDelivery: form.estimatedDelivery,
     forPerson: form.forPerson.trim(),
+    questions: form.questions,
   })
 
   submitting.value = false
