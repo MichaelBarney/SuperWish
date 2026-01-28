@@ -116,7 +116,6 @@
       "addWish": "Add Wish"
     },
     "card": {
-      "goodDeal": "Good Deal!",
       "target": "Target:",
       "best": "Best:",
       "sourcesTracked": "{count} sources tracked",
@@ -170,7 +169,11 @@
     "purchased": "Purchased",
     "shipping": "Shipping",
     "delivered": "Delivered",
-    "gifted": "Gifted"
+    "gifted": "Gifted",
+    "arrivingToday": "Arriving Today",
+    "arrivingTomorrow": "Arriving Tomorrow",
+    "arrivingInDays": "Arriving in {days} days",
+    "late": "Late"
   },
   "time": {
     "sinceToday": "since Today",

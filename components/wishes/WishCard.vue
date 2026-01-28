@@ -31,17 +31,7 @@
 
       <!-- Status Badge -->
       <div class="absolute top-3 right-3">
-        <WishesWishStatusBadge :status="wish.status" :since-text="sinceText" />
-      </div>
-
-      <!-- Good Deal Badge -->
-      <div v-if="isGoodDeal" class="absolute bottom-3 left-3">
-        <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-full shadow-sm">
-          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-          </svg>
-          {{ $t('wishes.card.goodDeal') }}
-        </span>
+        <WishesWishStatusBadge :status="wish.status" :since-text="sinceText" :estimated-delivery="wish.estimatedDelivery" />
       </div>
 
       <!-- Action Buttons (on hover) -->
@@ -102,10 +92,7 @@
               class="w-6 h-6 rounded object-cover flex-shrink-0"
               @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             />
-            <span :class="[
-              'text-lg font-semibold',
-              isGoodDeal ? 'text-green-600' : 'text-accent-600'
-            ]">
+            <span class="text-lg font-semibold text-accent-600">
               {{ getCurrencySymbol(bestPrice.currency) }}{{ formatPrice(bestPrice.price) }}
             </span>
             <a
@@ -245,11 +232,6 @@ const bestPrice = computed((): PriceSource | null => {
 
 const hasAnyPriceInfo = computed(() => {
   return props.wish.targetPrice || (props.wish.priceSources && props.wish.priceSources.length > 0)
-})
-
-const isGoodDeal = computed(() => {
-  if (!props.wish.targetPrice || !bestPrice.value) return false
-  return bestPrice.value.price <= props.wish.targetPrice
 })
 
 function handleImageError(e: Event) {

@@ -13,19 +13,65 @@
 <script setup lang="ts">
 import type { WishStatus } from '~/types'
 import { getStatusConfig } from '~/types'
+import type { Timestamp } from 'firebase/firestore'
 
 interface Props {
   status: WishStatus
   sinceText?: string
+  estimatedDelivery?: Date | Timestamp | null
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
+
+const daysUntilDelivery = computed(() => {
+  if (!props.estimatedDelivery) return null
+
+  let delivery: Date
+
+  if (props.estimatedDelivery instanceof Date) {
+    delivery = props.estimatedDelivery
+  } else if (typeof (props.estimatedDelivery as Timestamp).toDate === 'function') {
+    delivery = (props.estimatedDelivery as Timestamp).toDate()
+  } else if ((props.estimatedDelivery as any).seconds !== undefined) {
+    // Handle serialized Firestore Timestamp
+    delivery = new Date((props.estimatedDelivery as any).seconds * 1000)
+  } else {
+    delivery = new Date(props.estimatedDelivery as unknown as string)
+  }
+
+  if (isNaN(delivery.getTime())) return null
+
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  const deliveryDay = new Date(delivery)
+  deliveryDay.setHours(0, 0, 0, 0)
+
+  const diffMs = deliveryDay.getTime() - now.getTime()
+  return Math.round(diffMs / (1000 * 60 * 60 * 24))
+})
 
 const displayLabel = computed(() => {
-  const label = statusConfig.value.label
+  const label = t(`statuses.${props.status}`)
+
   if (props.status === 'wanted' && props.sinceText) {
     return `${label} ${props.sinceText}`
   }
+
+  if (props.status === 'shipping' && daysUntilDelivery.value !== null) {
+    const days = daysUntilDelivery.value
+    if (days < 0) {
+      return t('statuses.late')
+    }
+    if (days === 0) {
+      return t('statuses.arrivingToday')
+    }
+    if (days === 1) {
+      return t('statuses.arrivingTomorrow')
+    }
+    return t('statuses.arrivingInDays', { days })
+  }
+
   return label
 })
 

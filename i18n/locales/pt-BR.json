@@ -116,7 +116,6 @@
       "addWish": "Adicionar Desejo"
     },
     "card": {
-      "goodDeal": "Boa Oferta!",
       "target": "Alvo:",
       "best": "Melhor:",
       "sourcesTracked": "{count} fontes rastreadas",
@@ -170,7 +169,11 @@
     "purchased": "Comprado",
     "shipping": "Em Transito",
     "delivered": "Entregue",
-    "gifted": "Presenteado"
+    "gifted": "Presenteado",
+    "arrivingToday": "Chega Hoje",
+    "arrivingTomorrow": "Chega Amanha",
+    "arrivingInDays": "Chega em {days} dias",
+    "late": "Atrasado"
   },
   "time": {
     "sinceToday": "desde Hoje",
