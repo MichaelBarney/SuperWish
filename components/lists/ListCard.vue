@@ -1,10 +1,10 @@
 <template>
   <NuxtLink
     :to="`/list/${list.id}`"
-    class="group block bg-white rounded-2xl shadow-soft hover:shadow-soft-lg transition-all duration-300 overflow-hidden"
+    class="group block bg-white rounded-xl shadow-soft hover:shadow-soft-lg transition-all duration-300 overflow-hidden flex-shrink-0 w-48"
   >
     <!-- Card Header with gradient -->
-    <div class="h-24 relative overflow-hidden">
+    <div class="h-16 relative overflow-hidden">
       <!-- Cover Image -->
       <img
         v-if="list.coverUrl"
@@ -22,49 +22,39 @@
       <!-- Hover Overlay -->
       <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
       <!-- Content -->
-      <div class="relative p-5 z-10">
-        <h3 class="text-white font-semibold text-lg truncate">
+      <div class="relative p-3 z-10 h-full flex items-end">
+        <h3 class="text-white font-semibold text-sm truncate w-full">
           {{ list.name }}
         </h3>
       </div>
     </div>
 
     <!-- Card Body -->
-    <div class="p-5">
-      <p v-if="list.description" class="text-gray-500 text-sm line-clamp-2 mb-4">
-        {{ list.description }}
-      </p>
-      <p v-else class="text-gray-400 text-sm italic mb-4">{{ $t('common.noDescription') }}</p>
-
+    <div class="p-3">
       <!-- Meta Info -->
-      <div class="flex items-center gap-4 text-sm">
+      <div class="flex items-center gap-2 text-xs">
         <!-- Deadline -->
-        <div v-if="list.deadline" class="flex items-center gap-1.5 text-gray-500">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div v-if="list.deadline" class="flex items-center gap-1 text-gray-500">
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <span :class="isOverdue ? 'text-red-500' : ''">{{ formattedDeadline }}</span>
         </div>
 
         <!-- Location -->
-        <div v-if="list.location" class="flex items-center gap-1.5 text-gray-500">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div v-else-if="list.location" class="flex items-center gap-1 text-gray-500">
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span class="truncate max-w-[100px]">{{ list.location }}</span>
+          <span class="truncate max-w-[60px]">{{ list.location }}</span>
         </div>
-      </div>
-    </div>
 
-    <!-- Card Footer -->
-    <div class="px-5 py-3 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between">
-      <span class="text-xs text-gray-400">
-        {{ $t('common.updated', { time: formatRelativeTime(list.updatedAt?.toDate()) }) }}
-      </span>
-      <svg class="w-5 h-5 text-gray-300 group-hover:text-accent-500 group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
+        <!-- No meta - show updated -->
+        <span v-else class="text-gray-400 truncate">
+          {{ formatRelativeTime(list.updatedAt?.toDate()) }}
+        </span>
+      </div>
     </div>
   </NuxtLink>
 </template>
