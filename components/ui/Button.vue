@@ -43,6 +43,9 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
 })
 
+// Get app context for theme-aware styling
+const { isSuperTravel } = useAppContext()
+
 const sizeClasses = computed(() => {
   switch (props.size) {
     case 'sm': return 'px-3 py-1.5 text-sm'
@@ -60,7 +63,10 @@ const variantClasses = computed(() => {
     case 'danger':
       return 'bg-red-50 text-red-600 hover:bg-red-100 focus:ring-red-300'
     default:
-      return 'bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-300 shadow-sm hover:shadow-md'
+      // Use purple for SuperTravel, teal for SuperWish
+      return isSuperTravel.value
+        ? 'bg-purple-500 text-white hover:bg-purple-600 focus:ring-purple-300 shadow-sm hover:shadow-md'
+        : 'bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-300 shadow-sm hover:shadow-md'
   }
 })
 </script>

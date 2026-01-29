@@ -14,6 +14,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxtjs/i18n',
+    '@vueuse/nuxt',
   ],
 
   i18n: {

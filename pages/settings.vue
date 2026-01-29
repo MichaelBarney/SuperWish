@@ -51,7 +51,7 @@
 import { REGIONS } from '~/types'
 
 definePageMeta({
-  layout: 'app',
+  layout: 'app-with-sidebar',
   middleware: 'auth',
 })
 

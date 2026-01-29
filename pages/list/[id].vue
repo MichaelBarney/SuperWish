@@ -217,7 +217,7 @@
 import type { Wish, WishForm, WishListForm } from '~/types'
 
 definePageMeta({
-  layout: 'app',
+  layout: 'app-with-sidebar',
   middleware: 'auth',
 })
 
@@ -227,6 +227,12 @@ const listId = computed(() => route.params.id as string)
 
 // User
 const { user } = useAuth()
+
+// Set app context to SuperWish
+const { setApp } = useAppContext()
+onMounted(() => {
+  setApp('superwish')
+})
 
 // Lists
 const { lists, loading: listsLoading, getListById, updateList, deleteList } = useLists()

@@ -16,10 +16,15 @@
     "daysAgo": "{days}d ago",
     "hoursAgo": "{hours}h ago",
     "minutesAgo": "{minutes}m ago",
-    "updated": "Updated {time}"
+    "updated": "Updated {time}",
+    "view": "View",
+    "uploading": "Uploading..."
   },
   "nav": {
     "appName": "SuperWish",
+    "superWish": "SuperWish",
+    "superTravel": "SuperTravel",
+    "dashboard": "Dashboard",
     "settings": "Settings",
     "signOut": "Sign out"
   },
@@ -202,5 +207,237 @@
   "languages": {
     "en": "English",
     "pt-BR": "Portugues (Brasil)"
+  },
+  "travel": {
+    "nav": {
+      "trips": "My Trips",
+      "currentTrip": "Current Trip",
+      "overview": "Overview",
+      "destinations": "Destinations",
+      "transportation": "Transportation",
+      "accommodations": "Accommodations",
+      "experiences": "Experiences",
+      "budget": "Budget",
+      "calendar": "Calendar"
+    },
+    "trips": {
+      "title": "My Trips",
+      "newTrip": "New Trip",
+      "tripCount": "{count} trip | {count} trips",
+      "empty": {
+        "title": "No trips yet",
+        "description": "Start planning your next adventure",
+        "createButton": "Create Trip"
+      },
+      "form": {
+        "name": "Trip Name",
+        "namePlaceholder": "e.g., Eurotrip 2026",
+        "nameRequired": "Trip name is required",
+        "description": "Description",
+        "descriptionPlaceholder": "What's this trip about?",
+        "origin": "Origin",
+        "originCity": "Origin City",
+        "originCityPlaceholder": "e.g., Recife",
+        "originCountry": "Origin Country",
+        "originCountryPlaceholder": "e.g., Brazil",
+        "coverImage": "Cover Image",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "baseCurrency": "Base Currency",
+        "baseCurrencyHint": "All expenses will be converted to this currency",
+        "totalBudget": "Total Budget",
+        "totalBudgetPlaceholder": "Your budget for this trip",
+        "createTrip": "Create Trip"
+      },
+      "status": {
+        "planning": "Planning",
+        "upcoming": "Upcoming",
+        "active": "Active",
+        "completed": "Completed"
+      }
+    },
+    "destinations": {
+      "title": "Destinations",
+      "addDestination": "Add Destination",
+      "empty": {
+        "title": "No destinations yet",
+        "description": "Add the places you'll visit on this trip"
+      },
+      "form": {
+        "name": "City Name",
+        "namePlaceholder": "e.g., Paris",
+        "country": "Country",
+        "countryPlaceholder": "e.g., France",
+        "arrivalDate": "Arrival Date",
+        "departureDate": "Departure Date",
+        "notes": "Notes",
+        "notesPlaceholder": "Any notes about this destination...",
+        "noCitiesFound": "No cities found. Try a different name.",
+        "countryAutoFilled": "Auto-filled from city selection"
+      }
+    },
+    "transportation": {
+      "title": "Transportation",
+      "addTransport": "Add Transportation",
+      "empty": {
+        "title": "No transportation added",
+        "description": "Add your flights, trains, or other travel tickets"
+      },
+      "types": {
+        "flight": "Flight",
+        "train": "Train",
+        "bus": "Bus",
+        "car": "Car",
+        "ferry": "Ferry",
+        "other": "Other"
+      },
+      "form": {
+        "type": "Transport Type",
+        "carrier": "Carrier",
+        "carrierPlaceholder": "e.g., Air France, Eurostar",
+        "flightNumber": "Flight/Train Number",
+        "flightNumberPlaceholder": "e.g., AF1234",
+        "fromLocation": "From",
+        "fromLocationPlaceholder": "e.g., Paris CDG",
+        "toLocation": "To",
+        "toLocationPlaceholder": "e.g., London Heathrow",
+        "departure": "Departure",
+        "arrival": "Arrival",
+        "departureDateTime": "Departure",
+        "arrivalDateTime": "Arrival",
+        "bookingStatus": "Booking Status",
+        "bookingReference": "Booking Reference",
+        "bookingReferencePlaceholder": "e.g., ABC123",
+        "bookingUrl": "Booking URL",
+        "price": "Price",
+        "pricePlaceholder": "0.00",
+        "currency": "Currency",
+        "seatInfo": "Seat Info",
+        "seatInfoPlaceholder": "e.g., 12A, Window",
+        "links": "Links",
+        "linkLabel": "Label",
+        "linkUrl": "URL",
+        "noLinks": "No links added",
+        "documents": "Documents",
+        "uploadDocument": "Upload Document (PDF, Image)",
+        "notes": "Notes",
+        "notesPlaceholder": "Any notes about this transportation..."
+      },
+      "status": {
+        "planned": "Planned",
+        "booked": "Booked",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled"
+      },
+      "bookingStatus": {
+        "planned": "Planned",
+        "booked": "Booked",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled"
+      }
+    },
+    "accommodations": {
+      "title": "Accommodations",
+      "addAccommodation": "Add Accommodation",
+      "empty": {
+        "title": "No accommodations added",
+        "description": "Add your hotels, hostels, or other stays"
+      },
+      "types": {
+        "hotel": "Hotel",
+        "hostel": "Hostel",
+        "airbnb": "Airbnb",
+        "apartment": "Apartment",
+        "resort": "Resort",
+        "other": "Other"
+      },
+      "form": {
+        "type": "Accommodation Type",
+        "name": "Name",
+        "namePlaceholder": "e.g., Hotel Le Marais",
+        "address": "Address",
+        "destination": "Destination",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "pricePerNight": "Price per Night",
+        "totalPrice": "Total Price",
+        "roomType": "Room Type",
+        "roomTypePlaceholder": "e.g., Double Room with Balcony"
+      },
+      "nights": "{count} night | {count} nights"
+    },
+    "experiences": {
+      "title": "Experiences",
+      "addExperience": "Add Experience",
+      "empty": {
+        "title": "No experiences added",
+        "description": "Add restaurants, attractions, and activities"
+      },
+      "categories": {
+        "restaurant": "Restaurant",
+        "attraction": "Attraction",
+        "museum": "Museum",
+        "outdoor": "Outdoor",
+        "activity": "Activity",
+        "nightlife": "Nightlife",
+        "shopping": "Shopping",
+        "other": "Other"
+      },
+      "status": {
+        "wishlist": "Wishlist",
+        "booked": "Booked",
+        "completed": "Completed",
+        "skipped": "Skipped"
+      },
+      "form": {
+        "category": "Category",
+        "name": "Name",
+        "namePlaceholder": "e.g., Eiffel Tower",
+        "description": "Description",
+        "address": "Address",
+        "destination": "Destination",
+        "scheduledDate": "Scheduled Date",
+        "scheduledTime": "Scheduled Time",
+        "duration": "Duration (minutes)",
+        "estimatedCost": "Estimated Cost",
+        "actualCost": "Actual Cost",
+        "externalUrl": "Website/Link"
+      }
+    },
+    "budget": {
+      "title": "Budget",
+      "overview": "Budget Overview",
+      "totalBudget": "Total Budget",
+      "spent": "Spent",
+      "planned": "Planned",
+      "remaining": "Remaining",
+      "categories": {
+        "transportation": "Transportation",
+        "accommodation": "Accommodation",
+        "food": "Food & Dining",
+        "activities": "Activities",
+        "shopping": "Shopping",
+        "other": "Other"
+      },
+      "breakdown": "Spending Breakdown",
+      "plannedVsActual": "Planned vs Actual"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "viewTimeline": "Timeline",
+      "viewCalendar": "Calendar",
+      "noEvents": "No events scheduled",
+      "today": "Today"
+    },
+    "calendar": {
+      "title": "Calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month"
+    },
+    "itinerary": {
+      "title": "Itinerary",
+      "originNotSet": "Origin not set",
+      "setOrigin": "Set Origin"
+    }
   }
 }

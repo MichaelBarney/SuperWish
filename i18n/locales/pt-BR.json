@@ -16,10 +16,15 @@
     "daysAgo": "{days}d atras",
     "hoursAgo": "{hours}h atras",
     "minutesAgo": "{minutes}m atras",
-    "updated": "Atualizado {time}"
+    "updated": "Atualizado {time}",
+    "view": "Ver",
+    "uploading": "Enviando..."
   },
   "nav": {
     "appName": "SuperWish",
+    "superWish": "SuperWish",
+    "superTravel": "SuperTravel",
+    "dashboard": "Painel",
     "settings": "Configuracoes",
     "signOut": "Sair"
   },
@@ -202,5 +207,237 @@
   "languages": {
     "en": "English",
     "pt-BR": "Portugues (Brasil)"
+  },
+  "travel": {
+    "nav": {
+      "trips": "Minhas Viagens",
+      "currentTrip": "Viagem Atual",
+      "overview": "Visao Geral",
+      "destinations": "Destinos",
+      "transportation": "Transporte",
+      "accommodations": "Hospedagem",
+      "experiences": "Experiencias",
+      "budget": "Orcamento",
+      "calendar": "Calendario"
+    },
+    "trips": {
+      "title": "Minhas Viagens",
+      "newTrip": "Nova Viagem",
+      "tripCount": "{count} viagem | {count} viagens",
+      "empty": {
+        "title": "Nenhuma viagem ainda",
+        "description": "Comece a planejar sua proxima aventura",
+        "createButton": "Criar Viagem"
+      },
+      "form": {
+        "name": "Nome da Viagem",
+        "namePlaceholder": "ex., Eurotrip 2026",
+        "nameRequired": "Nome da viagem e obrigatorio",
+        "description": "Descricao",
+        "descriptionPlaceholder": "Sobre o que e esta viagem?",
+        "origin": "Origem",
+        "originCity": "Cidade de Origem",
+        "originCityPlaceholder": "ex., Recife",
+        "originCountry": "Pais de Origem",
+        "originCountryPlaceholder": "ex., Brasil",
+        "coverImage": "Imagem de Capa",
+        "startDate": "Data de Inicio",
+        "endDate": "Data de Termino",
+        "baseCurrency": "Moeda Base",
+        "baseCurrencyHint": "Todos os gastos serao convertidos para esta moeda",
+        "totalBudget": "Orcamento Total",
+        "totalBudgetPlaceholder": "Seu orcamento para esta viagem",
+        "createTrip": "Criar Viagem"
+      },
+      "status": {
+        "planning": "Planejando",
+        "upcoming": "Em Breve",
+        "active": "Ativa",
+        "completed": "Concluida"
+      }
+    },
+    "destinations": {
+      "title": "Destinos",
+      "addDestination": "Adicionar Destino",
+      "empty": {
+        "title": "Nenhum destino ainda",
+        "description": "Adicione os lugares que voce vai visitar"
+      },
+      "form": {
+        "name": "Nome da Cidade",
+        "namePlaceholder": "ex., Paris",
+        "country": "Pais",
+        "countryPlaceholder": "ex., Franca",
+        "arrivalDate": "Data de Chegada",
+        "departureDate": "Data de Partida",
+        "notes": "Notas",
+        "notesPlaceholder": "Alguma nota sobre este destino...",
+        "noCitiesFound": "Nenhuma cidade encontrada. Tente outro nome.",
+        "countryAutoFilled": "Preenchido automaticamente pela cidade"
+      }
+    },
+    "transportation": {
+      "title": "Transporte",
+      "addTransport": "Adicionar Transporte",
+      "empty": {
+        "title": "Nenhum transporte adicionado",
+        "description": "Adicione seus voos, trens ou outras passagens"
+      },
+      "types": {
+        "flight": "Voo",
+        "train": "Trem",
+        "bus": "Onibus",
+        "car": "Carro",
+        "ferry": "Balsa",
+        "other": "Outro"
+      },
+      "form": {
+        "type": "Tipo de Transporte",
+        "carrier": "Companhia",
+        "carrierPlaceholder": "ex., Air France, Eurostar",
+        "flightNumber": "Numero do Voo/Trem",
+        "flightNumberPlaceholder": "ex., AF1234",
+        "fromLocation": "De",
+        "fromLocationPlaceholder": "ex., Paris CDG",
+        "toLocation": "Para",
+        "toLocationPlaceholder": "ex., Londres Heathrow",
+        "departure": "Partida",
+        "arrival": "Chegada",
+        "departureDateTime": "Partida",
+        "arrivalDateTime": "Chegada",
+        "bookingStatus": "Status da Reserva",
+        "bookingReference": "Codigo da Reserva",
+        "bookingReferencePlaceholder": "ex., ABC123",
+        "bookingUrl": "URL da Reserva",
+        "price": "Preco",
+        "pricePlaceholder": "0.00",
+        "currency": "Moeda",
+        "seatInfo": "Informacao do Assento",
+        "seatInfoPlaceholder": "ex., 12A, Janela",
+        "links": "Links",
+        "linkLabel": "Rotulo",
+        "linkUrl": "URL",
+        "noLinks": "Nenhum link adicionado",
+        "documents": "Documentos",
+        "uploadDocument": "Enviar Documento (PDF, Imagem)",
+        "notes": "Notas",
+        "notesPlaceholder": "Alguma nota sobre este transporte..."
+      },
+      "status": {
+        "planned": "Planejado",
+        "booked": "Reservado",
+        "confirmed": "Confirmado",
+        "cancelled": "Cancelado"
+      },
+      "bookingStatus": {
+        "planned": "Planejado",
+        "booked": "Reservado",
+        "confirmed": "Confirmado",
+        "cancelled": "Cancelado"
+      }
+    },
+    "accommodations": {
+      "title": "Hospedagem",
+      "addAccommodation": "Adicionar Hospedagem",
+      "empty": {
+        "title": "Nenhuma hospedagem adicionada",
+        "description": "Adicione seus hoteis, hostels ou outras estadias"
+      },
+      "types": {
+        "hotel": "Hotel",
+        "hostel": "Hostel",
+        "airbnb": "Airbnb",
+        "apartment": "Apartamento",
+        "resort": "Resort",
+        "other": "Outro"
+      },
+      "form": {
+        "type": "Tipo de Hospedagem",
+        "name": "Nome",
+        "namePlaceholder": "ex., Hotel Le Marais",
+        "address": "Endereco",
+        "destination": "Destino",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "pricePerNight": "Preco por Noite",
+        "totalPrice": "Preco Total",
+        "roomType": "Tipo de Quarto",
+        "roomTypePlaceholder": "ex., Quarto Duplo com Varanda"
+      },
+      "nights": "{count} noite | {count} noites"
+    },
+    "experiences": {
+      "title": "Experiencias",
+      "addExperience": "Adicionar Experiencia",
+      "empty": {
+        "title": "Nenhuma experiencia adicionada",
+        "description": "Adicione restaurantes, atracoes e atividades"
+      },
+      "categories": {
+        "restaurant": "Restaurante",
+        "attraction": "Atracao",
+        "museum": "Museu",
+        "outdoor": "Ar Livre",
+        "activity": "Atividade",
+        "nightlife": "Vida Noturna",
+        "shopping": "Compras",
+        "other": "Outro"
+      },
+      "status": {
+        "wishlist": "Lista de Desejos",
+        "booked": "Reservado",
+        "completed": "Concluido",
+        "skipped": "Pulado"
+      },
+      "form": {
+        "category": "Categoria",
+        "name": "Nome",
+        "namePlaceholder": "ex., Torre Eiffel",
+        "description": "Descricao",
+        "address": "Endereco",
+        "destination": "Destino",
+        "scheduledDate": "Data Agendada",
+        "scheduledTime": "Horario Agendado",
+        "duration": "Duracao (minutos)",
+        "estimatedCost": "Custo Estimado",
+        "actualCost": "Custo Real",
+        "externalUrl": "Website/Link"
+      }
+    },
+    "budget": {
+      "title": "Orcamento",
+      "overview": "Visao Geral do Orcamento",
+      "totalBudget": "Orcamento Total",
+      "spent": "Gasto",
+      "planned": "Planejado",
+      "remaining": "Restante",
+      "categories": {
+        "transportation": "Transporte",
+        "accommodation": "Hospedagem",
+        "food": "Alimentacao",
+        "activities": "Atividades",
+        "shopping": "Compras",
+        "other": "Outros"
+      },
+      "breakdown": "Detalhamento de Gastos",
+      "plannedVsActual": "Planejado vs Real"
+    },
+    "timeline": {
+      "title": "Linha do Tempo",
+      "viewTimeline": "Linha do Tempo",
+      "viewCalendar": "Calendario",
+      "noEvents": "Nenhum evento agendado",
+      "today": "Hoje"
+    },
+    "calendar": {
+      "title": "Calendario",
+      "previousMonth": "Mes anterior",
+      "nextMonth": "Proximo mes"
+    },
+    "itinerary": {
+      "title": "Itinerario",
+      "originNotSet": "Origem nao definida",
+      "setOrigin": "Definir Origem"
+    }
   }
 }
