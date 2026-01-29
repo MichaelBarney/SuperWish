@@ -195,20 +195,16 @@
               @click="openTransportationModal(null, localDestinations[0]?.id)"
             />
 
-            <!-- Add Destination at beginning (before first destination) -->
-            <button
-              @click="openAddDestinationAt(0)"
-              class="flex items-center gap-1.5 ml-8 py-2 text-sm text-gray-400 hover:text-purple-600 transition-colors group"
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              <span class="opacity-0 group-hover:opacity-100 transition-opacity">
-                {{ $t('travel.destinations.addDestination') }}
-              </span>
-            </button>
+            <!-- Add Menu at beginning (before first destination) -->
+            <TravelItineraryAddMenu
+              :from-id="null"
+              :to-id="localDestinations[0]?.id || null"
+              :insert-position="0"
+              @add-destination="openAddDestinationAt"
+              @add-transport="openTransportationModal"
+            />
 
-            <!-- Draggable destinations -->
+            <!-- Draggable destinations (base array para drag-and-drop) -->
             <VueDraggable
               v-model="localDestinations"
               :animation="200"
@@ -216,55 +212,176 @@
               ghost-class="dragging-ghost"
               @end="onDragEnd"
             >
-              <div v-for="(destination, index) in localDestinations" :key="destination.id">
-                <!-- Destination Point -->
-                <TravelItineraryPoint
-                  :label="destination.name"
-                  :sublabel="destination.country"
-                  :arrival-date="getDestinationDateInfo(destination, index).arrivalDate"
-                  :departure-date="getDestinationDateInfo(destination, index).departureDate"
-                  :duration-days="getDestinationDateInfo(destination, index).durationDays"
-                  :order="index + 1"
-                  :draggable="true"
-                  @click="editDestination(destination)"
-                />
+              <!-- Renderizar por grupos de país -->
+              <template v-for="(group, groupIndex) in destinationGroups" :key="`group-${groupIndex}`">
+                <!-- Grupo com múltiplas cidades: layout lado-a-lado -->
+                <template v-if="group.destinations.length > 1">
+                  <TravelItineraryCountryGroup
+                    :country="group.country"
+                    :country-code="group.countryCode"
+                    :destinations="group.destinations"
+                    :start-index="group.startIndex"
+                    :date-infos="getGroupDateInfos(group)"
+                    :transports="getGroupTransports(group)"
+                    @edit-destination="editDestination"
+                    @edit-transport="openTransportationModal"
+                  />
+                </template>
 
-                <!-- Transportation to next destination (if not last) -->
-                <TravelTransportationCard
-                  v-if="index < localDestinations.length - 1"
-                  :transportation="getTransportationBetween(destination.id, localDestinations[index + 1]?.id)"
-                  :from-label="destination.name"
-                  :to-label="localDestinations[index + 1]?.name || ''"
-                  @click="openTransportationModal(destination.id, localDestinations[index + 1]?.id)"
-                />
+                <!-- Grupo com única cidade: layout vertical padrão -->
+                <template v-else>
+                  <div v-for="(destination, i) in group.destinations" :key="destination.id">
+                    <TravelItineraryPoint
+                      :label="destination.name"
+                      :sublabel="destination.country"
+                      :country-code="destination.countryCode"
+                      :arrival-date="getDestinationDateInfo(destination, group.startIndex + i).arrivalDate"
+                      :departure-date="getDestinationDateInfo(destination, group.startIndex + i).departureDate"
+                      :duration-days="getDestinationDateInfo(destination, group.startIndex + i).durationDays"
+                      :order="group.startIndex + i + 1"
+                      :draggable="true"
+                      @click="editDestination(destination)"
+                    />
+                  </div>
+                </template>
 
-                <!-- Add Destination between button (not after the last one) -->
-                <button
-                  v-if="index < localDestinations.length - 1"
-                  @click="openAddDestinationAt(index + 1)"
-                  class="flex items-center gap-1.5 ml-8 py-2 text-sm text-gray-400 hover:text-purple-600 transition-colors group"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span class="opacity-0 group-hover:opacity-100 transition-opacity">
-                    {{ $t('travel.destinations.addDestination') }}
-                  </span>
-                </button>
-              </div>
+                <!-- Transporte para o próximo grupo (se não for o último) -->
+                <template v-if="groupIndex < destinationGroups.length - 1">
+                  <TravelTransportationCard
+                    :transportation="getTransportationBetween(
+                      group.destinations[group.destinations.length - 1].id,
+                      destinationGroups[groupIndex + 1].destinations[0]?.id
+                    )"
+                    :from-label="group.destinations[group.destinations.length - 1].name"
+                    :to-label="destinationGroups[groupIndex + 1].destinations[0]?.name || ''"
+                    @click="openTransportationModal(
+                      group.destinations[group.destinations.length - 1].id,
+                      destinationGroups[groupIndex + 1].destinations[0]?.id
+                    )"
+                  />
+
+                  <!-- Add Menu entre grupos -->
+                  <TravelItineraryAddMenu
+                    :from-id="group.destinations[group.destinations.length - 1].id"
+                    :to-id="destinationGroups[groupIndex + 1].destinations[0]?.id || null"
+                    :insert-position="group.startIndex + group.destinations.length"
+                    @add-destination="openAddDestinationAt"
+                    @add-transport="openTransportationModal"
+                  />
+                </template>
+              </template>
             </VueDraggable>
 
-            <!-- Add destination after last -->
-            <button
-              @click="showAddDestinationModal = true"
-              class="flex items-center gap-1.5 ml-8 py-2 text-sm text-gray-400 hover:text-purple-600 transition-colors group mt-2"
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              <span>{{ $t('travel.destinations.addDestination') }}</span>
-            </button>
+            <!-- Transportation: Last Destination → Origin (return trip) -->
+            <TravelTransportationCard
+              :transportation="getTransportationBetween(localDestinations[localDestinations.length - 1]?.id, null)"
+              :from-label="localDestinations[localDestinations.length - 1]?.name || ''"
+              :to-label="originLabel || 'Origin'"
+              @click="openTransportationModal(localDestinations[localDestinations.length - 1]?.id, null)"
+            />
+
+            <!-- Add Menu after last destination -->
+            <TravelItineraryAddMenu
+              :from-id="localDestinations[localDestinations.length - 1]?.id || null"
+              :to-id="null"
+              :insert-position="localDestinations.length"
+              @add-destination="openAddDestinationAt"
+              @add-transport="openTransportationModal"
+            />
           </template>
+        </div>
+      </div>
+
+      <!-- Orphan Transportations Section -->
+      <div v-if="orphanTransportations.length > 0" class="mb-8">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 class="text-lg font-semibold text-amber-800">
+              Transportes com destino inválido
+            </h3>
+          </div>
+          <p class="text-amber-700 text-sm mb-4">
+            Os transportes abaixo apontam para destinos que não existem mais. Corrija ou delete-os.
+          </p>
+
+          <div class="space-y-4">
+            <div
+              v-for="transport in orphanTransportations"
+              :key="transport.id"
+              class="bg-white rounded-lg border border-amber-200 p-4"
+            >
+              <!-- Transport Info -->
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-900 capitalize">{{ transport.type }}</span>
+                  <span v-if="transport.carrier" class="text-gray-500 text-sm ml-2">{{ transport.carrier }}</span>
+                </div>
+              </div>
+
+              <!-- From/To Fields -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- From -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    De
+                    <span v-if="!isValidDestinationId(transport.fromDestinationId)" class="text-red-500 text-xs ml-1">(inválido)</span>
+                  </label>
+                  <select
+                    v-model="orphanFixFromId[transport.id]"
+                    class="w-full px-3 py-2 border rounded-lg text-sm"
+                    :class="isValidDestinationId(transport.fromDestinationId) ? 'border-gray-300' : 'border-red-300 bg-red-50'"
+                  >
+                    <option :value="null">Origem ({{ originLabel || 'não definida' }})</option>
+                    <option v-for="dest in destinations" :key="dest.id" :value="dest.id">
+                      {{ dest.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- To -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Para
+                    <span v-if="!isValidDestinationId(transport.toDestinationId)" class="text-red-500 text-xs ml-1">(inválido)</span>
+                  </label>
+                  <select
+                    v-model="orphanFixToId[transport.id]"
+                    class="w-full px-3 py-2 border rounded-lg text-sm"
+                    :class="isValidDestinationId(transport.toDestinationId) ? 'border-gray-300' : 'border-red-300 bg-red-50'"
+                  >
+                    <option :value="null">Origem ({{ originLabel || 'não definida' }})</option>
+                    <option v-for="dest in destinations" :key="dest.id" :value="dest.id">
+                      {{ dest.name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex gap-2">
+                <UiButton variant="primary" size="sm" @click="fixOrphanTransport(transport.id)">
+                  <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Salvar
+                </UiButton>
+                <UiButton variant="danger" size="sm" @click="deleteOrphanTransport(transport.id)">
+                  <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Deletar
+                </UiButton>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
@@ -381,6 +498,7 @@ const {
   updateTransportation,
   deleteTransportation,
   getTransportationBetween,
+  getOrphanTransportations,
 } = useTransportation(tripId)
 
 // Modals
@@ -405,6 +523,104 @@ const insertAtPosition = ref<number | null>(null)
 watch(destinations, (newDestinations) => {
   localDestinations.value = [...newDestinations]
 }, { immediate: true })
+
+// Orphan transportations (pointing to non-existent destinations)
+const orphanTransportations = computed(() => {
+  const validIds = destinations.value.map(d => d.id)
+  return getOrphanTransportations(validIds)
+})
+
+// State for fixing orphan transports
+const orphanFixFromId = ref<Record<string, string | null>>({})
+const orphanFixToId = ref<Record<string, string | null>>({})
+
+// Initialize orphan fix state when orphans change
+watch(orphanTransportations, (orphans) => {
+  orphans.forEach(t => {
+    if (!(t.id in orphanFixFromId.value)) {
+      orphanFixFromId.value[t.id] = t.fromDestinationId || null
+    }
+    if (!(t.id in orphanFixToId.value)) {
+      orphanFixToId.value[t.id] = t.toDestinationId || null
+    }
+  })
+}, { immediate: true })
+
+// Fix orphan transport
+async function fixOrphanTransport(transportId: string) {
+  const newFromId = orphanFixFromId.value[transportId]
+  const newToId = orphanFixToId.value[transportId]
+  await updateTransportation(transportId, {
+    fromDestinationId: newFromId || '',
+    toDestinationId: newToId || '',
+  })
+}
+
+// Delete orphan transport
+async function deleteOrphanTransport(transportId: string) {
+  await deleteTransportation(transportId)
+}
+
+// Check if a destination ID is valid
+function isValidDestinationId(id: string | null | undefined): boolean {
+  if (!id || id === '') return true // null/empty means origin, which is valid
+  return destinations.value.some(d => d.id === id)
+}
+
+// Get destination name by ID
+function getDestinationName(id: string | null | undefined): string {
+  if (!id || id === '') return originLabel.value || 'Origem'
+  const dest = destinations.value.find(d => d.id === id)
+  return dest?.name || `ID inválido: ${id.slice(0, 8)}...`
+}
+
+// Interface para agrupamento por país
+interface CountryGroup {
+  country: string
+  countryCode?: string
+  destinations: Destination[]
+  startIndex: number
+}
+
+// Computed para agrupar destinos consecutivos por país
+const destinationGroups = computed((): CountryGroup[] => {
+  const groups: CountryGroup[] = []
+  let currentGroup: CountryGroup | null = null
+
+  localDestinations.value.forEach((dest, index) => {
+    if (!currentGroup || dest.country !== currentGroup.country) {
+      currentGroup = {
+        country: dest.country,
+        countryCode: dest.countryCode,
+        destinations: [dest],
+        startIndex: index
+      }
+      groups.push(currentGroup)
+    } else {
+      currentGroup.destinations.push(dest)
+    }
+  })
+
+  return groups
+})
+
+// Helper para obter dateInfo de múltiplos destinos de um grupo
+const getGroupDateInfos = (group: CountryGroup) => {
+  return group.destinations.map((dest, i) =>
+    getDestinationDateInfo(dest, group.startIndex + i)
+  )
+}
+
+// Helper para obter transportes entre destinos de um grupo
+const getGroupTransports = (group: CountryGroup) => {
+  const transports: (Transportation | null)[] = []
+  for (let i = 0; i < group.destinations.length - 1; i++) {
+    const fromId = group.destinations[i].id
+    const toId = group.destinations[i + 1]?.id
+    transports.push(getTransportationBetween(fromId, toId) || null)
+  }
+  return transports
+}
 
 // Handle drag end
 async function onDragEnd() {

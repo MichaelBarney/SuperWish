@@ -28,7 +28,9 @@
     <!-- Content -->
     <div class="flex-1 min-w-0">
       <h3 class="font-medium text-gray-900">{{ label }}</h3>
-      <p v-if="sublabel" class="text-sm text-gray-500">{{ sublabel }}</p>
+      <p v-if="sublabel && !compact" class="text-sm text-gray-500">
+        <span v-if="countryFlag">{{ countryFlag }} &nbsp;</span>{{ sublabel }}
+      </p>
 
       <!-- Datas com destaque -->
       <div v-if="arrivalDate || departureDate" class="mt-1.5 flex items-center gap-3 text-sm">
@@ -80,6 +82,7 @@
 interface Props {
   label: string
   sublabel?: string
+  countryCode?: string
   arrivalDate?: string
   departureDate?: string
   durationDays?: string
@@ -87,15 +90,27 @@ interface Props {
   isOrigin?: boolean
   showEdit?: boolean
   draggable?: boolean
+  compact?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isOrigin: false,
   showEdit: true,
   draggable: false,
+  compact: false,
 })
 
 defineEmits<{
   click: []
 }>()
+
+// Computed para flag do país
+const countryFlag = computed(() => {
+  if (!props.countryCode) return ''
+  const codePoints = props.countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0))
+  return String.fromCodePoint(...codePoints)
+})
 </script>

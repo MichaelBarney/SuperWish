@@ -261,6 +261,21 @@ export function useTransportation(tripId: Ref<string | null | undefined>) {
     return transportations.value.find(t => t.id === id)
   }
 
+  // Get transportations that reference non-existent destinations
+  const getOrphanTransportations = (validDestinationIds: string[]): Transportation[] => {
+    return transportations.value.filter(t => {
+      // fromDestinationId is invalid if it's not null/empty AND not in validDestinationIds
+      const fromInvalid = t.fromDestinationId &&
+                          t.fromDestinationId !== '' &&
+                          !validDestinationIds.includes(t.fromDestinationId)
+      // toDestinationId is invalid if it's not null/empty AND not in validDestinationIds
+      const toInvalid = t.toDestinationId &&
+                        t.toDestinationId !== '' &&
+                        !validDestinationIds.includes(t.toDestinationId)
+      return fromInvalid || toInvalid
+    })
+  }
+
   // Auto-subscribe when user or tripId changes (only on client)
   if (import.meta.client) {
     watch([user, tripId], ([newUser, newTripId]) => {
@@ -289,6 +304,7 @@ export function useTransportation(tripId: Ref<string | null | undefined>) {
     getTransportationBetween,
     hasTransportation,
     getTransportationById,
+    getOrphanTransportations,
     subscribeToTransportations,
     unsubscribeFromTransportations,
   }
