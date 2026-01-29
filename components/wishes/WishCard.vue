@@ -85,13 +85,6 @@
         <div v-if="bestPrice" class="flex items-center justify-between">
           <span class="text-xs text-gray-500">{{ $t('wishes.card.best') }}</span>
           <div class="flex items-center gap-2">
-            <img
-              v-if="bestPrice.imageUrl"
-              :src="bestPrice.imageUrl"
-              :alt="bestPrice.storeName"
-              class="w-6 h-6 rounded object-cover flex-shrink-0"
-              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-            />
             <span class="text-lg font-semibold text-accent-600">
               {{ getCurrencySymbol(bestPrice.currency) }}{{ formatPrice(bestPrice.price) }}
             </span>
@@ -156,16 +149,12 @@
       </div>
 
       <!-- Tracking Info -->
-      <div v-if="wish.status === 'shipping' && (wish.trackingUrl || wish.estimatedDelivery)" class="mt-3 pt-3 border-t border-gray-100">
+      <div v-if="wish.status === 'shipping' && wish.trackingUrl" class="mt-3 pt-3 border-t border-gray-100">
         <div class="flex items-center gap-2 text-sm text-gray-500">
           <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span v-if="wish.estimatedDelivery">
-            {{ $t('wishes.card.arriving', { date: formatDate(wish.estimatedDelivery) }) }}
-          </span>
           <a
-            v-if="wish.trackingUrl"
             :href="wish.trackingUrl"
             target="_blank"
             rel="noopener noreferrer"

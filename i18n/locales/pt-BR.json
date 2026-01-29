@@ -99,7 +99,7 @@
       "searched": "Buscado em {date}",
       "storePlaceholder": "Nome da loja (ex., Amazon)",
       "pricePlaceholder": "Preco",
-      "urlPlaceholder": "URL do produto (opcional)",
+      "urlPlaceholder": "Cole a URL para preencher automaticamente",
       "sourceDescriptionPlaceholder": "Descricao (opcional)",
       "useAsWishImage": "Usar como imagem do desejo",
       "priority": "Prioridade",

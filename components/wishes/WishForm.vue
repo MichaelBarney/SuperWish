@@ -175,12 +175,26 @@
             </div>
           </div>
 
-          <input
-            v-model="source.url"
-            type="url"
-            :placeholder="$t('wishes.form.urlPlaceholder')"
-            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-200 focus:outline-none"
-          />
+          <div class="relative">
+            <input
+              v-model="source.url"
+              type="url"
+              :placeholder="$t('wishes.form.urlPlaceholder')"
+              :disabled="fetchingUrlIndex === index"
+              class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-200 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
+              @blur="handleUrlChange(index)"
+              @paste="handleUrlPaste($event, index)"
+            />
+            <div
+              v-if="fetchingUrlIndex === index"
+              class="absolute right-3 top-1/2 -translate-y-1/2"
+            >
+              <svg class="w-4 h-4 animate-spin text-accent-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            </div>
+          </div>
           <input
             v-model="source.description"
             type="text"
@@ -314,6 +328,7 @@
 <script setup lang="ts">
 import type { Wish, WishForm, Priority, ShoppingLink, PriceSourceForm, PriceSource, ProductSearchResult, WishStatus, WishQuestion } from '~/types'
 import { CURRENCIES, WISH_STATUSES, getRegionCurrency } from '~/types'
+import type { UrlMetadata } from '~/composables/useUrlMetadata'
 
 interface Props {
   initialData?: Wish
@@ -364,6 +379,9 @@ const form = reactive<WishForm>({
 const productSearch = useProductSearch()
 const showSearchResults = ref(false)
 const hasSearched = ref(false)
+
+const urlMetadata = useUrlMetadata()
+const fetchingUrlIndex = ref<number | null>(null)
 
 const errors = reactive({
   title: '',
@@ -477,6 +495,56 @@ function closeSearchResults() {
   showSearchResults.value = false
   productSearch.clear()
   hasSearched.value = false
+}
+
+async function handleUrlChange(index: number) {
+  const source = form.priceSources[index]
+  if (!source || !source.url.trim()) return
+  if (!urlMetadata.isValidUrl(source.url)) return
+
+  console.log('[WishForm] handleUrlChange triggered for index:', index, 'url:', source.url)
+
+  fetchingUrlIndex.value = index
+  const metadata = await urlMetadata.fetchMetadata(source.url)
+  fetchingUrlIndex.value = null
+
+  console.log('[WishForm] Metadata received:', metadata)
+
+  if (metadata) {
+    console.log('[WishForm] Applying metadata to form fields')
+    if (metadata.siteName) {
+      console.log('[WishForm] Setting storeName:', metadata.siteName)
+      source.storeName = metadata.siteName
+    }
+    if (metadata.imageUrl) {
+      console.log('[WishForm] Setting imageUrl:', metadata.imageUrl)
+      source.imageUrl = metadata.imageUrl
+    }
+    if (metadata.title) {
+      console.log('[WishForm] Setting description:', metadata.title)
+      source.description = metadata.title
+    }
+    if (metadata.price !== null) {
+      console.log('[WishForm] Setting price:', metadata.price)
+      source.price = metadata.price.toString()
+    }
+    if (metadata.currency) {
+      console.log('[WishForm] Setting currency:', metadata.currency)
+      source.currency = metadata.currency
+    }
+    source.searchedAt = new Date().toISOString()
+  } else {
+    console.log('[WishForm] No metadata received')
+  }
+}
+
+function handleUrlPaste(event: ClipboardEvent, index: number) {
+  // Get pasted text and update the input first
+  const pastedText = event.clipboardData?.getData('text') || ''
+  if (pastedText && urlMetadata.isValidUrl(pastedText)) {
+    // Use nextTick to ensure v-model has updated
+    nextTick(() => handleUrlChange(index))
+  }
 }
 
 function validate(): boolean {

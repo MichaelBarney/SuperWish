@@ -99,7 +99,7 @@
       "searched": "Searched {date}",
       "storePlaceholder": "Store name (e.g., Amazon)",
       "pricePlaceholder": "Price",
-      "urlPlaceholder": "Product URL (optional)",
+      "urlPlaceholder": "Paste URL to auto-fill info",
       "sourceDescriptionPlaceholder": "Description (optional)",
       "useAsWishImage": "Use as wish image",
       "priority": "Priority",
