@@ -43,9 +43,13 @@
                 {{ transportation.flightNumber }}
               </span>
             </p>
-            <p class="text-xs text-gray-500">
-              {{ formattedDeparture }} - {{ formattedArrival }}
-            </p>
+            <div class="flex items-center gap-1.5 text-sm text-gray-600 mt-0.5">
+              <span class="font-medium">{{ formattedDepartureDay }}</span>
+              <span class="text-gray-400 text-xs">{{ formattedDepartureTime }}</span>
+              <span class="text-gray-300 mx-1">→</span>
+              <span class="font-medium">{{ formattedArrivalDay }}</span>
+              <span class="text-gray-400 text-xs">{{ formattedArrivalTime }}</span>
+            </div>
           </div>
           <div v-if="transportation.price" class="text-sm font-medium text-gray-700">
             {{ formattedPrice }}
@@ -149,29 +153,51 @@ const statusBadgeClass = computed(() => {
   return colorMap[props.transportation.bookingStatus] || 'bg-gray-100 text-gray-700'
 })
 
-const formattedDeparture = computed(() => {
+const formattedDepartureDay = computed(() => {
   if (!props.transportation?.departureDateTime) return ''
   const date = props.transportation.departureDateTime instanceof Date
     ? props.transportation.departureDateTime
     : new Date(props.transportation.departureDateTime)
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return date.toLocaleString(dateLocale, {
-    month: 'short',
+  return date.toLocaleDateString(dateLocale, {
+    weekday: 'short',
     day: 'numeric',
+    month: 'short',
+  })
+})
+
+const formattedDepartureTime = computed(() => {
+  if (!props.transportation?.departureDateTime) return ''
+  const date = props.transportation.departureDateTime instanceof Date
+    ? props.transportation.departureDateTime
+    : new Date(props.transportation.departureDateTime)
+  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+  return date.toLocaleTimeString(dateLocale, {
     hour: '2-digit',
     minute: '2-digit',
   })
 })
 
-const formattedArrival = computed(() => {
+const formattedArrivalDay = computed(() => {
   if (!props.transportation?.arrivalDateTime) return ''
   const date = props.transportation.arrivalDateTime instanceof Date
     ? props.transportation.arrivalDateTime
     : new Date(props.transportation.arrivalDateTime)
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return date.toLocaleString(dateLocale, {
-    month: 'short',
+  return date.toLocaleDateString(dateLocale, {
+    weekday: 'short',
     day: 'numeric',
+    month: 'short',
+  })
+})
+
+const formattedArrivalTime = computed(() => {
+  if (!props.transportation?.arrivalDateTime) return ''
+  const date = props.transportation.arrivalDateTime instanceof Date
+    ? props.transportation.arrivalDateTime
+    : new Date(props.transportation.arrivalDateTime)
+  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+  return date.toLocaleTimeString(dateLocale, {
     hour: '2-digit',
     minute: '2-digit',
   })

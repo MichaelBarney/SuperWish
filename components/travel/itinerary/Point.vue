@@ -29,7 +29,29 @@
     <div class="flex-1 min-w-0">
       <h3 class="font-medium text-gray-900">{{ label }}</h3>
       <p v-if="sublabel" class="text-sm text-gray-500">{{ sublabel }}</p>
-      <p v-if="dates" class="text-xs text-gray-400 mt-0.5">{{ dates }}</p>
+
+      <!-- Datas com destaque -->
+      <div v-if="arrivalDate || departureDate" class="mt-1.5 flex items-center gap-3 text-sm">
+        <!-- Chegada -->
+        <div v-if="arrivalDate" class="flex items-center gap-1">
+          <span class="text-gray-400 text-xs">{{ $t('travel.itinerary.arrives') }}</span>
+          <span class="font-medium text-gray-700">{{ arrivalDate }}</span>
+        </div>
+
+        <!-- Separador visual -->
+        <span v-if="arrivalDate && departureDate" class="text-gray-300">→</span>
+
+        <!-- Saída -->
+        <div v-if="departureDate" class="flex items-center gap-1">
+          <span class="text-gray-400 text-xs">{{ $t('travel.itinerary.leaves') }}</span>
+          <span class="font-medium text-gray-700">{{ departureDate }}</span>
+        </div>
+
+        <!-- Duração (badge) -->
+        <span v-if="durationDays" class="ml-auto px-2 py-0.5 bg-purple-50 text-purple-600 text-xs font-medium rounded-full">
+          {{ durationDays }}
+        </span>
+      </div>
     </div>
 
     <!-- Edit Button (only for destinations, not origin) -->
@@ -58,7 +80,9 @@
 interface Props {
   label: string
   sublabel?: string
-  dates?: string
+  arrivalDate?: string
+  departureDate?: string
+  durationDays?: string
   order?: number
   isOrigin?: boolean
   showEdit?: boolean

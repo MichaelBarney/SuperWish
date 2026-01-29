@@ -444,7 +444,10 @@
     "itinerary": {
       "title": "Itinerario",
       "originNotSet": "Origem nao definida",
-      "setOrigin": "Definir Origem"
+      "setOrigin": "Definir Origem",
+      "arrives": "Chega",
+      "leaves": "Sai",
+      "days": "{count} dia | {count} dias"
     }
   }
 }

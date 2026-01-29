@@ -221,7 +221,9 @@
                 <TravelItineraryPoint
                   :label="destination.name"
                   :sublabel="destination.country"
-                  :dates="formatDestinationDates(destination, index)"
+                  :arrival-date="getDestinationDateInfo(destination, index).arrivalDate"
+                  :departure-date="getDestinationDateInfo(destination, index).departureDate"
+                  :duration-days="getDestinationDateInfo(destination, index).durationDays"
                   :order="index + 1"
                   :draggable="true"
                   @click="editDestination(destination)"
@@ -460,42 +462,60 @@ const formattedBudget = computed(() => {
   return `${symbol} ${trip.value.totalBudget.toLocaleString()}`
 })
 
-const formatDestinationDates = (destination: Destination, index: number): string => {
+interface DestinationDateInfo {
+  arrivalDate: string
+  departureDate: string
+  durationDays: string
+}
+
+const getDestinationDateInfo = (destination: Destination, index: number): DestinationDateInfo => {
+  const { t } = useI18n()
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+  const formatOptions: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' }
 
   // Determinar data de chegada (fallback: transporte que chega neste destino)
-  let arrivalDate = destination.arrivalDate
-  if (!arrivalDate) {
+  let arrivalDateRaw = destination.arrivalDate
+  if (!arrivalDateRaw) {
     const previousId = index === 0 ? null : localDestinations.value[index - 1]?.id
     const incomingTransport = getTransportationBetween(previousId, destination.id)
     if (incomingTransport?.arrivalDateTime) {
-      arrivalDate = incomingTransport.arrivalDateTime
+      arrivalDateRaw = incomingTransport.arrivalDateTime
     }
   }
 
   // Determinar data de partida (fallback: transporte que sai deste destino)
-  let departureDate = destination.departureDate
-  if (!departureDate) {
+  let departureDateRaw = destination.departureDate
+  if (!departureDateRaw) {
     const nextId = localDestinations.value[index + 1]?.id ?? null
     const outgoingTransport = getTransportationBetween(destination.id, nextId)
     if (outgoingTransport?.departureDateTime) {
-      departureDate = outgoingTransport.departureDateTime
+      departureDateRaw = outgoingTransport.departureDateTime
     }
   }
 
-  if (arrivalDate && departureDate) {
-    const arrival = arrivalDate instanceof Date ? arrivalDate : new Date(arrivalDate)
-    const departure = departureDate instanceof Date ? departureDate : new Date(departureDate)
-    return `${arrival.toLocaleDateString(dateLocale, formatOptions)} - ${departure.toLocaleDateString(dateLocale, formatOptions)}`
+  // Formatar datas
+  let arrivalDate = ''
+  let departureDate = ''
+  let durationDays = ''
+
+  if (arrivalDateRaw) {
+    const arrival = arrivalDateRaw instanceof Date ? arrivalDateRaw : new Date(arrivalDateRaw)
+    arrivalDate = arrival.toLocaleDateString(dateLocale, formatOptions)
+
+    if (departureDateRaw) {
+      const departure = departureDateRaw instanceof Date ? departureDateRaw : new Date(departureDateRaw)
+      departureDate = departure.toLocaleDateString(dateLocale, formatOptions)
+
+      // Calcular número de dias (incluindo dia de chegada e saída)
+      const diffTime = departure.getTime() - arrival.getTime()
+      const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+      if (days > 0) {
+        durationDays = t('travel.itinerary.days', { count: days }, days)
+      }
+    }
   }
 
-  if (arrivalDate) {
-    const arrival = arrivalDate instanceof Date ? arrivalDate : new Date(arrivalDate)
-    return arrival.toLocaleDateString(dateLocale, formatOptions)
-  }
-
-  return ''
+  return { arrivalDate, departureDate, durationDays }
 }
 
 // Handlers

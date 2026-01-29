@@ -444,7 +444,10 @@
     "itinerary": {
       "title": "Itinerary",
       "originNotSet": "Origin not set",
-      "setOrigin": "Set Origin"
+      "setOrigin": "Set Origin",
+      "arrives": "Arrives",
+      "leaves": "Leaves",
+      "days": "{count} day | {count} days"
     }
   }
 }
