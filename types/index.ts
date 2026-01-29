@@ -536,6 +536,8 @@ export const TRANSPORT_TYPES: { value: TransportType; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
+export const ROUND_TRIP_ELIGIBLE_TYPES: TransportType[] = ['flight', 'train', 'bus', 'ferry']
+
 export const BOOKING_STATUSES: { value: BookingStatus; label: string; color: string }[] = [
   { value: 'planned', label: 'Planned', color: 'gray' },
   { value: 'booked', label: 'Booked', color: 'blue' },

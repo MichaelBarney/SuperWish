@@ -18,7 +18,8 @@
     "minutesAgo": "{minutes}m atras",
     "updated": "Atualizado {time}",
     "view": "Ver",
-    "uploading": "Enviando..."
+    "uploading": "Enviando...",
+    "comingSoon": "Em Breve"
   },
   "nav": {
     "appName": "SuperWish",
@@ -183,10 +184,10 @@
   "time": {
     "sinceToday": "desde Hoje",
     "sinceYesterday": "desde Ontem",
-    "forDays": "ha {count} Dia | ha {count} Dias",
-    "forWeeks": "ha {count} Semana | ha {count} Semanas",
-    "forMonths": "ha {count} Mes | ha {count} Meses",
-    "forYears": "ha {count} Ano | ha {count} Anos"
+    "forDays": "há {count} Dia | há {count} Dias",
+    "forWeeks": "há {count} Semana | há {count} Semanas",
+    "forMonths": "há {count} Mes | há {count} Meses",
+    "forYears": "há {count} Ano | há {count} Anos"
   },
   "imageUpload": {
     "upload": "Enviar",
@@ -321,7 +322,13 @@
         "documents": "Documentos",
         "uploadDocument": "Enviar Documento (PDF, Imagem)",
         "notes": "Notas",
-        "notesPlaceholder": "Alguma nota sobre este transporte..."
+        "notesPlaceholder": "Alguma nota sobre este transporte...",
+        "oneWay": "Somente ida",
+        "roundTrip": "Ida e volta",
+        "outbound": "Ida",
+        "return": "Volta",
+        "outboundPrice": "Preco da Ida",
+        "returnPrice": "Preco da Volta"
       },
       "status": {
         "planned": "Planejado",

@@ -11,7 +11,30 @@
         <!-- Filled State -->
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="iconBgClass">
-            <component :is="transportIcon" class="w-4 h-4" :class="iconClass" />
+            <!-- Flight icon -->
+            <svg v-if="transportation.type === 'flight'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+            <!-- Train icon -->
+            <svg v-else-if="transportation.type === 'train'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17l-2 4m10-4l2 4M12 17V3m-4 2h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V7a2 2 0 012-2z" />
+            </svg>
+            <!-- Bus icon -->
+            <svg v-else-if="transportation.type === 'bus'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17h.01M16 17h.01M5 11h14M5 7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7z" />
+            </svg>
+            <!-- Car icon -->
+            <svg v-else-if="transportation.type === 'car'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17h.01M16 17h.01M3 11l2-6h14l2 6M5 11v6a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-6H5z" />
+            </svg>
+            <!-- Ferry icon -->
+            <svg v-else-if="transportation.type === 'ferry'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v6m0 0l-3-2m3 2l3-2M5 19h14l2-4H3l2 4zm0 0l1 2h12l1-2" />
+            </svg>
+            <!-- Default arrow icon -->
+            <svg v-else class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-gray-900 truncate">
@@ -87,19 +110,6 @@ const transportTypeLabel = computed(() => {
   if (!props.transportation) return ''
   const type = TRANSPORT_TYPES.find(t => t.value === props.transportation?.type)
   return type?.label || props.transportation.type
-})
-
-const transportIcon = computed(() => {
-  if (!props.transportation) return 'div'
-  const iconMap: Record<TransportType, string> = {
-    flight: 'IconPlane',
-    train: 'IconTrain',
-    bus: 'IconBus',
-    car: 'IconCar',
-    ferry: 'IconShip',
-    other: 'IconArrowRight',
-  }
-  return iconMap[props.transportation.type] || 'IconArrowRight'
 })
 
 const iconBgClass = computed(() => {
@@ -178,98 +188,4 @@ const hasDocumentsOrLinks = computed(() => {
   return (props.transportation.documents?.length || 0) > 0 ||
          (props.transportation.links?.length || 0) > 0
 })
-</script>
-
-<!-- Inline icon components -->
-<script lang="ts">
-import { h, defineComponent } from 'vue'
-
-const IconPlane = defineComponent({
-  render() {
-    return h('svg', { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8'
-      })
-    ])
-  }
-})
-
-const IconTrain = defineComponent({
-  render() {
-    return h('svg', { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M8 17l-2 4m10-4l2 4M12 17V3m-4 2h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V7a2 2 0 012-2z'
-      })
-    ])
-  }
-})
-
-const IconBus = defineComponent({
-  render() {
-    return h('svg', { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M8 17h.01M16 17h.01M5 11h14M5 7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7z'
-      })
-    ])
-  }
-})
-
-const IconCar = defineComponent({
-  render() {
-    return h('svg', { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M8 17h.01M16 17h.01M3 11l2-6h14l2 6M5 11v6a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-6H5z'
-      })
-    ])
-  }
-})
-
-const IconShip = defineComponent({
-  render() {
-    return h('svg', { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M12 3v6m0 0l-3-2m3 2l3-2M5 19h14l2-4H3l2 4zm0 0l1 2h12l1-2'
-      })
-    ])
-  }
-})
-
-const IconArrowRight = defineComponent({
-  render() {
-    return h('svg', { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M14 5l7 7m0 0l-7 7m7-7H3'
-      })
-    ])
-  }
-})
-
-export default {
-  components: {
-    IconPlane,
-    IconTrain,
-    IconBus,
-    IconCar,
-    IconShip,
-    IconArrowRight,
-  }
-}
 </script>

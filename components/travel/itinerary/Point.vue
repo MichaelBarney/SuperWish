@@ -1,5 +1,15 @@
 <template>
   <div class="flex items-center gap-4 py-3">
+    <!-- Drag Handle (only for destinations, not origin) -->
+    <div
+      v-if="draggable && !isOrigin"
+      class="drag-handle cursor-grab active:cursor-grabbing p-1 -ml-2 text-gray-300 hover:text-gray-500 transition-colors"
+    >
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+      </svg>
+    </div>
+
     <!-- Point Marker -->
     <div
       class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
@@ -52,11 +62,13 @@ interface Props {
   order?: number
   isOrigin?: boolean
   showEdit?: boolean
+  draggable?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
   isOrigin: false,
   showEdit: true,
+  draggable: false,
 })
 
 defineEmits<{

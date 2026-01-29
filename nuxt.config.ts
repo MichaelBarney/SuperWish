@@ -17,6 +17,15 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
   ],
 
+  components: {
+    dirs: [
+      {
+        path: '~/components',
+        pathPrefix: true,
+      },
+    ],
+  },
+
   i18n: {
     locales: [
       { code: 'en', file: 'en.json', name: 'English' },

@@ -114,7 +114,7 @@
           </div>
         </div>
 
-        <NuxtLink :to="`/travel/${tripId}/accommodations`" class="bg-white rounded-xl shadow-soft p-4 hover:shadow-soft-lg transition-shadow">
+        <div class="bg-white rounded-xl shadow-soft p-4 opacity-60 cursor-not-allowed" :title="$t('common.comingSoon')">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
               <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -126,9 +126,9 @@
               <p class="text-sm text-gray-500">{{ $t('travel.nav.accommodations') }}</p>
             </div>
           </div>
-        </NuxtLink>
+        </div>
 
-        <NuxtLink :to="`/travel/${tripId}/experiences`" class="bg-white rounded-xl shadow-soft p-4 hover:shadow-soft-lg transition-shadow">
+        <div class="bg-white rounded-xl shadow-soft p-4 opacity-60 cursor-not-allowed" :title="$t('common.comingSoon')">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
               <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,7 +140,7 @@
               <p class="text-sm text-gray-500">{{ $t('travel.nav.experiences') }}</p>
             </div>
           </div>
-        </NuxtLink>
+        </div>
       </div>
 
       <!-- Itinerary Section -->
@@ -166,7 +166,7 @@
         <!-- Itinerary Flow -->
         <div v-else class="bg-white rounded-xl shadow-soft p-6">
           <!-- Origin Point -->
-          <TravelItineraryItineraryPoint
+          <TravelItineraryPoint
             :label="originLabel || $t('travel.itinerary.originNotSet')"
             :sublabel="originSublabel"
             :is-origin="true"
@@ -175,9 +175,12 @@
           />
 
           <!-- If no destinations yet -->
-          <div v-if="destinations.length === 0" class="ml-8 my-4 p-4 border-2 border-dashed border-gray-200 rounded-lg text-center">
+          <div v-if="localDestinations.length === 0" class="ml-8 my-4 p-4 border-2 border-dashed border-gray-200 rounded-lg text-center">
             <p class="text-gray-500 mb-3">{{ $t('travel.destinations.empty.description') }}</p>
             <UiButton variant="secondary" size="sm" @click="showAddDestinationModal = true">
+              <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
               {{ $t('travel.destinations.addDestination') }}
             </UiButton>
           </div>
@@ -185,33 +188,80 @@
           <!-- Destinations with transportation -->
           <template v-else>
             <!-- Transportation: Origin → First Destination -->
-            <TravelTransportationTransportationCard
-              :transportation="getTransportationBetween(null, destinations[0]?.id)"
+            <TravelTransportationCard
+              :transportation="getTransportationBetween(null, localDestinations[0]?.id)"
               :from-label="originLabel || 'Origin'"
-              :to-label="destinations[0]?.name || ''"
-              @click="openTransportationModal(null, destinations[0]?.id)"
+              :to-label="localDestinations[0]?.name || ''"
+              @click="openTransportationModal(null, localDestinations[0]?.id)"
             />
 
-            <!-- Loop through destinations -->
-            <template v-for="(destination, index) in destinations" :key="destination.id">
-              <!-- Destination Point -->
-              <TravelItineraryItineraryPoint
-                :label="destination.name"
-                :sublabel="destination.country"
-                :dates="formatDestinationDates(destination)"
-                :order="index + 1"
-                @click="editDestination(destination)"
-              />
+            <!-- Add Destination at beginning (before first destination) -->
+            <button
+              @click="openAddDestinationAt(0)"
+              class="flex items-center gap-1.5 ml-8 py-2 text-sm text-gray-400 hover:text-purple-600 transition-colors group"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span class="opacity-0 group-hover:opacity-100 transition-opacity">
+                {{ $t('travel.destinations.addDestination') }}
+              </span>
+            </button>
 
-              <!-- Transportation to next destination (if not last) -->
-              <TravelTransportationTransportationCard
-                v-if="index < destinations.length - 1"
-                :transportation="getTransportationBetween(destination.id, destinations[index + 1]?.id)"
-                :from-label="destination.name"
-                :to-label="destinations[index + 1]?.name || ''"
-                @click="openTransportationModal(destination.id, destinations[index + 1]?.id)"
-              />
-            </template>
+            <!-- Draggable destinations -->
+            <VueDraggable
+              v-model="localDestinations"
+              :animation="200"
+              handle=".drag-handle"
+              ghost-class="dragging-ghost"
+              @end="onDragEnd"
+            >
+              <div v-for="(destination, index) in localDestinations" :key="destination.id">
+                <!-- Destination Point -->
+                <TravelItineraryPoint
+                  :label="destination.name"
+                  :sublabel="destination.country"
+                  :dates="formatDestinationDates(destination, index)"
+                  :order="index + 1"
+                  :draggable="true"
+                  @click="editDestination(destination)"
+                />
+
+                <!-- Transportation to next destination (if not last) -->
+                <TravelTransportationCard
+                  v-if="index < localDestinations.length - 1"
+                  :transportation="getTransportationBetween(destination.id, localDestinations[index + 1]?.id)"
+                  :from-label="destination.name"
+                  :to-label="localDestinations[index + 1]?.name || ''"
+                  @click="openTransportationModal(destination.id, localDestinations[index + 1]?.id)"
+                />
+
+                <!-- Add Destination between button (not after the last one) -->
+                <button
+                  v-if="index < localDestinations.length - 1"
+                  @click="openAddDestinationAt(index + 1)"
+                  class="flex items-center gap-1.5 ml-8 py-2 text-sm text-gray-400 hover:text-purple-600 transition-colors group"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span class="opacity-0 group-hover:opacity-100 transition-opacity">
+                    {{ $t('travel.destinations.addDestination') }}
+                  </span>
+                </button>
+              </div>
+            </VueDraggable>
+
+            <!-- Add destination after last -->
+            <button
+              @click="showAddDestinationModal = true"
+              class="flex items-center gap-1.5 ml-8 py-2 text-sm text-gray-400 hover:text-purple-600 transition-colors group mt-2"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>{{ $t('travel.destinations.addDestination') }}</span>
+            </button>
           </template>
         </div>
       </div>
@@ -268,6 +318,7 @@
         :initial-data="selectedDestination || undefined"
         @submit="handleUpdateDestination"
         @cancel="showEditDestinationModal = false"
+        @delete="handleDeleteDestination"
       />
     </UiModal>
 
@@ -277,7 +328,7 @@
       :title="transportationModalTitle"
       size="lg"
     >
-      <TravelTransportationTransportationForm
+      <TravelTransportationForm
         :initial-data="selectedTransportation"
         :from-destination-id="transportFromId"
         :to-destination-id="transportToId"
@@ -293,6 +344,7 @@
 </template>
 
 <script setup lang="ts">
+import { VueDraggable } from 'vue-draggable-plus'
 import type { TripForm, Destination, DestinationForm, TransportationForm, Transportation } from '~/types'
 import { getCurrencySymbol } from '~/types'
 
@@ -316,13 +368,14 @@ const { trips, loading: tripsLoading, getTripById, updateTrip, deleteTrip } = us
 const trip = computed(() => getTripById(tripId.value))
 
 // Destinations
-const { destinations, loading: destinationsLoading, createDestination, updateDestination } = useDestinations(tripId)
+const { destinations, loading: destinationsLoading, createDestination, updateDestination, deleteDestination, reorderDestinations } = useDestinations(tripId)
 
 // Transportation
 const {
   transportations,
   loading: transportationsLoading,
   createTransportation,
+  createRoundTripTransportation,
   updateTransportation,
   deleteTransportation,
   getTransportationBetween,
@@ -341,6 +394,27 @@ const selectedDestination = ref<Destination | null>(null)
 const selectedTransportation = ref<Transportation | null>(null)
 const transportFromId = ref<string | null>(null)
 const transportToId = ref<string | null>(null)
+
+// Drag and drop state
+const localDestinations = ref<Destination[]>([])
+const insertAtPosition = ref<number | null>(null)
+
+// Sync local destinations with reactive destinations from composable
+watch(destinations, (newDestinations) => {
+  localDestinations.value = [...newDestinations]
+}, { immediate: true })
+
+// Handle drag end
+async function onDragEnd() {
+  const orderedIds = localDestinations.value.map(d => d.id)
+  await reorderDestinations(orderedIds)
+}
+
+// Open add destination modal at specific position
+function openAddDestinationAt(position: number) {
+  insertAtPosition.value = position
+  showAddDestinationModal.value = true
+}
 
 // Computed
 const statusBadgeClass = computed(() => {
@@ -386,18 +460,38 @@ const formattedBudget = computed(() => {
   return `${symbol} ${trip.value.totalBudget.toLocaleString()}`
 })
 
-const formatDestinationDates = (destination: Destination): string => {
+const formatDestinationDates = (destination: Destination, index: number): string => {
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
   const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
 
-  if (destination.arrivalDate && destination.departureDate) {
-    const arrival = destination.arrivalDate instanceof Date ? destination.arrivalDate : new Date(destination.arrivalDate)
-    const departure = destination.departureDate instanceof Date ? destination.departureDate : new Date(destination.departureDate)
+  // Determinar data de chegada (fallback: transporte que chega neste destino)
+  let arrivalDate = destination.arrivalDate
+  if (!arrivalDate) {
+    const previousId = index === 0 ? null : localDestinations.value[index - 1]?.id
+    const incomingTransport = getTransportationBetween(previousId, destination.id)
+    if (incomingTransport?.arrivalDateTime) {
+      arrivalDate = incomingTransport.arrivalDateTime
+    }
+  }
+
+  // Determinar data de partida (fallback: transporte que sai deste destino)
+  let departureDate = destination.departureDate
+  if (!departureDate) {
+    const nextId = localDestinations.value[index + 1]?.id ?? null
+    const outgoingTransport = getTransportationBetween(destination.id, nextId)
+    if (outgoingTransport?.departureDateTime) {
+      departureDate = outgoingTransport.departureDateTime
+    }
+  }
+
+  if (arrivalDate && departureDate) {
+    const arrival = arrivalDate instanceof Date ? arrivalDate : new Date(arrivalDate)
+    const departure = departureDate instanceof Date ? departureDate : new Date(departureDate)
     return `${arrival.toLocaleDateString(dateLocale, formatOptions)} - ${departure.toLocaleDateString(dateLocale, formatOptions)}`
   }
 
-  if (destination.arrivalDate) {
-    const arrival = destination.arrivalDate instanceof Date ? destination.arrivalDate : new Date(destination.arrivalDate)
+  if (arrivalDate) {
+    const arrival = arrivalDate instanceof Date ? arrivalDate : new Date(arrivalDate)
     return arrival.toLocaleDateString(dateLocale, formatOptions)
   }
 
@@ -424,6 +518,22 @@ async function handleDeleteTrip() {
 async function handleCreateDestination(data: DestinationForm) {
   const result = await createDestination(tripId.value, data)
   if (result.success) {
+    // If inserting at a specific position, reorder after creation
+    if (insertAtPosition.value !== null && result.id) {
+      // Wait for destinations to update
+      await nextTick()
+      const newDestinations = [...destinations.value]
+      const newDestIndex = newDestinations.findIndex(d => d.id === result.id)
+      if (newDestIndex !== -1) {
+        // Remove from current position
+        const [newDest] = newDestinations.splice(newDestIndex, 1)
+        // Insert at target position
+        newDestinations.splice(insertAtPosition.value, 0, newDest)
+        // Reorder in database
+        await reorderDestinations(newDestinations.map(d => d.id))
+      }
+    }
+    insertAtPosition.value = null
     showAddDestinationModal.value = false
   }
 }
@@ -436,6 +546,15 @@ function editDestination(destination: Destination) {
 async function handleUpdateDestination(data: DestinationForm) {
   if (!selectedDestination.value) return
   const result = await updateDestination(selectedDestination.value.id, data)
+  if (result.success) {
+    showEditDestinationModal.value = false
+    selectedDestination.value = null
+  }
+}
+
+async function handleDeleteDestination() {
+  if (!selectedDestination.value) return
+  const result = await deleteDestination(selectedDestination.value.id)
   if (result.success) {
     showEditDestinationModal.value = false
     selectedDestination.value = null
@@ -473,18 +592,29 @@ const transportationModalTitle = computed(() => {
   return 'Add Transportation'
 })
 
-async function handleTransportationSubmit(data: TransportationForm) {
-  // Set the from/to destination IDs
+async function handleTransportationSubmit(data: TransportationForm, returnData?: TransportationForm) {
+  // Set the from/to destination IDs for outbound
   data.fromDestinationId = transportFromId.value || ''
   data.toDestinationId = transportToId.value || ''
 
   if (selectedTransportation.value) {
+    // Editing existing - always single record
     const result = await updateTransportation(selectedTransportation.value.id, data)
     if (result.success) {
       showTransportationModal.value = false
       selectedTransportation.value = null
     }
+  } else if (returnData) {
+    // Creating round-trip - two records
+    // Set swapped destination IDs for return
+    returnData.fromDestinationId = transportToId.value || ''
+    returnData.toDestinationId = transportFromId.value || ''
+    const result = await createRoundTripTransportation(tripId.value, data, returnData)
+    if (result.success) {
+      showTransportationModal.value = false
+    }
   } else {
+    // Creating single/one-way
     const result = await createTransportation(tripId.value, data)
     if (result.success) {
       showTransportationModal.value = false
@@ -510,3 +640,11 @@ const originSublabel = computed(() => {
   return trip.value?.origin?.country || ''
 })
 </script>
+
+<style scoped>
+.dragging-ghost {
+  opacity: 0.5;
+  background-color: #f3e8ff;
+  border-radius: 0.5rem;
+}
+</style>

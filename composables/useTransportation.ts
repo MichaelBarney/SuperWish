@@ -146,6 +146,22 @@ export function useTransportation(tripId: Ref<string | null | undefined>) {
     }
   }
 
+  const createRoundTripTransportation = async (
+    targetTripId: string,
+    outboundData: TransportationForm,
+    returnData: TransportationForm
+  ) => {
+    const outboundResult = await createTransportation(targetTripId, outboundData)
+    if (!outboundResult.success) return outboundResult
+
+    const returnResult = await createTransportation(targetTripId, returnData)
+    if (!returnResult.success) {
+      return { ...returnResult, outboundId: outboundResult.id }
+    }
+
+    return { success: true, outboundId: outboundResult.id, returnId: returnResult.id }
+  }
+
   const updateTransportation = async (id: string, data: Partial<TransportationForm>) => {
     const db = getDb()
     if (!user.value) return { success: false, error: 'Not authenticated' }
@@ -267,6 +283,7 @@ export function useTransportation(tripId: Ref<string | null | undefined>) {
     loading: readonly(loading),
     error: readonly(error),
     createTransportation,
+    createRoundTripTransportation,
     updateTransportation,
     deleteTransportation,
     getTransportationBetween,

@@ -49,6 +49,9 @@
       <UiButton type="button" variant="secondary" @click="$emit('cancel')">
         {{ $t('common.cancel') }}
       </UiButton>
+      <UiButton v-if="initialData" type="button" variant="danger" @click="$emit('delete')">
+        {{ $t('common.delete') }}
+      </UiButton>
       <UiButton type="submit" :loading="submitting">
         {{ initialData ? $t('common.save') : $t('common.add') }}
       </UiButton>
@@ -68,6 +71,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   submit: [data: DestinationForm]
   cancel: []
+  delete: []
 }>()
 
 const submitting = ref(false)

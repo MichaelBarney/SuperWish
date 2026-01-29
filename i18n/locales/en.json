@@ -18,7 +18,8 @@
     "minutesAgo": "{minutes}m ago",
     "updated": "Updated {time}",
     "view": "View",
-    "uploading": "Uploading..."
+    "uploading": "Uploading...",
+    "comingSoon": "Coming Soon"
   },
   "nav": {
     "appName": "SuperWish",
@@ -321,7 +322,13 @@
         "documents": "Documents",
         "uploadDocument": "Upload Document (PDF, Image)",
         "notes": "Notes",
-        "notesPlaceholder": "Any notes about this transportation..."
+        "notesPlaceholder": "Any notes about this transportation...",
+        "oneWay": "One-way",
+        "roundTrip": "Round-trip",
+        "outbound": "Outbound",
+        "return": "Return",
+        "outboundPrice": "Outbound Price",
+        "returnPrice": "Return Price"
       },
       "status": {
         "planned": "Planned",

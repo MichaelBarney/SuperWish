@@ -22,6 +22,34 @@
         </option>
       </UiSelect>
 
+      <!-- Trip Direction (only for eligible types and create mode) -->
+      <div v-if="supportsRoundTrip && !initialData" class="flex gap-2">
+        <button
+          type="button"
+          @click="tripDirection = 'one-way'"
+          :class="[
+            'flex-1 py-2.5 px-4 rounded-xl border text-sm font-medium transition-all',
+            tripDirection === 'one-way'
+              ? 'border-purple-500 bg-purple-50 text-purple-700'
+              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+          ]"
+        >
+          {{ $t('travel.transportation.form.oneWay') }}
+        </button>
+        <button
+          type="button"
+          @click="tripDirection = 'round-trip'"
+          :class="[
+            'flex-1 py-2.5 px-4 rounded-xl border text-sm font-medium transition-all',
+            tripDirection === 'round-trip'
+              ? 'border-purple-500 bg-purple-50 text-purple-700'
+              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+          ]"
+        >
+          {{ $t('travel.transportation.form.roundTrip') }}
+        </button>
+      </div>
+
       <!-- Carrier & Flight Number -->
       <div class="grid grid-cols-2 gap-4">
         <UiInput
@@ -36,18 +64,43 @@
         />
       </div>
 
-      <!-- Departure/Arrival DateTime -->
-      <div class="grid grid-cols-2 gap-4">
-        <UiInput
-          v-model="form.departureDateTime"
-          type="datetime-local"
-          :label="$t('travel.transportation.form.departure')"
-        />
-        <UiInput
-          v-model="form.arrivalDateTime"
-          type="datetime-local"
-          :label="$t('travel.transportation.form.arrival')"
-        />
+      <!-- Outbound Departure/Arrival DateTime -->
+      <div class="space-y-2">
+        <p v-if="tripDirection === 'round-trip'" class="text-sm font-medium text-gray-600">
+          {{ $t('travel.transportation.form.outbound') }}
+        </p>
+        <div class="grid grid-cols-2 gap-4">
+          <UiInput
+            v-model="form.departureDateTime"
+            type="datetime-local"
+            :label="$t('travel.transportation.form.departure')"
+          />
+          <UiInput
+            v-model="form.arrivalDateTime"
+            type="datetime-local"
+            :label="$t('travel.transportation.form.arrival')"
+          />
+        </div>
+      </div>
+
+      <!-- Return Departure/Arrival DateTime (only for round-trip) -->
+      <div v-if="tripDirection === 'round-trip'" class="space-y-2">
+        <p class="text-sm font-medium text-gray-600">
+          {{ $t('travel.transportation.form.return') }}
+          <span class="font-normal text-gray-400">({{ toLabel }} → {{ fromLabel }})</span>
+        </p>
+        <div class="grid grid-cols-2 gap-4">
+          <UiInput
+            v-model="returnForm.departureDateTime"
+            type="datetime-local"
+            :label="$t('travel.transportation.form.departure')"
+          />
+          <UiInput
+            v-model="returnForm.arrivalDateTime"
+            type="datetime-local"
+            :label="$t('travel.transportation.form.arrival')"
+          />
+        </div>
       </div>
 
       <!-- Locations -->
@@ -81,8 +134,37 @@
         :placeholder="$t('travel.transportation.form.bookingReferencePlaceholder')"
       />
 
-      <!-- Price -->
-      <div class="grid grid-cols-2 gap-4">
+      <!-- Price (separate for round-trip) -->
+      <div v-if="tripDirection === 'round-trip'" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <UiInput
+            v-model="form.price"
+            type="number"
+            :label="$t('travel.transportation.form.outboundPrice')"
+            :placeholder="$t('travel.transportation.form.pricePlaceholder')"
+            min="0"
+            step="0.01"
+          />
+          <UiInput
+            v-model="returnForm.price"
+            type="number"
+            :label="$t('travel.transportation.form.returnPrice')"
+            :placeholder="$t('travel.transportation.form.pricePlaceholder')"
+            min="0"
+            step="0.01"
+          />
+        </div>
+        <UiSelect
+          v-model="form.currency"
+          :label="$t('travel.transportation.form.currency')"
+        >
+          <option v-for="c in CURRENCIES" :key="c.code" :value="c.code">
+            {{ c.symbol }} {{ c.code }}
+          </option>
+        </UiSelect>
+      </div>
+      <!-- Price (single for one-way) -->
+      <div v-else class="grid grid-cols-2 gap-4">
         <UiInput
           v-model="form.price"
           type="number"
@@ -122,7 +204,7 @@
             + {{ $t('common.add') }}
           </button>
         </div>
-        <TravelTransportationTransportationLinkInput
+        <TravelTransportationLinkInput
           v-for="(link, index) in form.links"
           :key="link.id"
           v-model="form.links[index]"
@@ -138,7 +220,7 @@
         <label class="text-sm font-medium text-gray-700 mb-2 block">
           {{ $t('travel.transportation.form.documents') }}
         </label>
-        <TravelTransportationTransportationDocumentUpload
+        <TravelTransportationDocumentUpload
           v-model="form.documents"
           storage-path="transportations"
         />
@@ -177,7 +259,9 @@ import type {
   TransportationDocument,
   TransportationLink,
 } from '~/types'
-import { TRANSPORT_TYPES, BOOKING_STATUSES, CURRENCIES, createEmptyTransportationLink } from '~/types'
+import { TRANSPORT_TYPES, BOOKING_STATUSES, CURRENCIES, createEmptyTransportationLink, ROUND_TRIP_ELIGIBLE_TYPES } from '~/types'
+
+type TripDirection = 'one-way' | 'round-trip'
 
 interface Props {
   initialData?: Transportation | null
@@ -193,12 +277,19 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  submit: [data: TransportationForm]
+  submit: [data: TransportationForm, returnData?: TransportationForm]
   cancel: []
   delete: []
 }>()
 
 const submitting = ref(false)
+const tripDirection = ref<TripDirection>('one-way')
+
+const returnForm = ref({
+  departureDateTime: '',
+  arrivalDateTime: '',
+  price: '',
+})
 
 function formatDateTimeLocal(date: Date | null | undefined): string {
   if (!date) return ''
@@ -232,6 +323,16 @@ const form = ref<TransportationForm>({
   links: props.initialData?.links || [] as TransportationLink[],
 })
 
+const supportsRoundTrip = computed(() =>
+  ROUND_TRIP_ELIGIBLE_TYPES.includes(form.value.type as TransportType)
+)
+
+watch(() => form.value.type, (newType) => {
+  if (!ROUND_TRIP_ELIGIBLE_TYPES.includes(newType as TransportType)) {
+    tripDirection.value = 'one-way'
+  }
+})
+
 function addLink() {
   form.value.links.push(createEmptyTransportationLink())
 }
@@ -242,7 +343,23 @@ function removeLink(index: number) {
 
 function handleSubmit() {
   submitting.value = true
-  emit('submit', { ...form.value })
+
+  if (tripDirection.value === 'round-trip' && !props.initialData) {
+    const returnFormData: TransportationForm = {
+      ...form.value,
+      fromLocation: form.value.toLocation,
+      toLocation: form.value.fromLocation,
+      fromDestinationId: form.value.toDestinationId,
+      toDestinationId: form.value.fromDestinationId,
+      departureDateTime: returnForm.value.departureDateTime,
+      arrivalDateTime: returnForm.value.arrivalDateTime,
+      price: returnForm.value.price,
+    }
+    emit('submit', { ...form.value }, returnFormData)
+  } else {
+    emit('submit', { ...form.value })
+  }
+
   submitting.value = false
 }
 

@@ -24,10 +24,11 @@
           {{ $t('travel.trips.form.origin') }}
         </h3>
         <div class="grid grid-cols-2 gap-4">
-          <UiInput
+          <TravelDestinationsCityAutocomplete
             v-model="form.originName"
             :label="$t('travel.trips.form.originCity')"
             :placeholder="$t('travel.trips.form.originCityPlaceholder')"
+            @city-selected="handleOriginCitySelected"
           />
           <UiInput
             v-model="form.originCountry"
@@ -104,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TripForm, Trip, TripStatus } from '~/types'
+import type { TripForm, Trip, TripStatus, CitySelection } from '~/types'
 import { CURRENCIES, TRIP_STATUSES } from '~/types'
 
 interface Props {
@@ -143,6 +144,11 @@ const form = ref<TripForm>({
 })
 
 const errors = ref<{ name?: string }>({})
+
+const handleOriginCitySelected = (city: CitySelection) => {
+  form.value.originCountry = city.country
+  form.value.originCountryCode = city.countryCode
+}
 
 const validate = (): boolean => {
   errors.value = {}
