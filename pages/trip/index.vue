@@ -8,15 +8,13 @@
       </div>
 
       <UiButton @click="showCreateModal = true">
-        <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+        <Icon name="lucide:plus" class="w-4 h-4 mr-1.5" />
         {{ $t('travel.trips.newTrip') }}
       </UiButton>
     </div>
 
     <!-- Trips Grid -->
-    <TravelTripsTripGrid
+    <TripTripsTripGrid
       :trips="trips"
       :loading="loading"
       @create="showCreateModal = true"
@@ -27,7 +25,7 @@
       v-model="showCreateModal"
       :title="$t('travel.trips.newTrip')"
     >
-      <TravelTripsTripForm
+      <TripTripsTripForm
         @submit="handleCreateTrip"
         @cancel="showCreateModal = false"
       />
@@ -43,10 +41,10 @@ definePageMeta({
   middleware: 'auth',
 })
 
-// Set app context to SuperTravel
+// Set app context to SuperTrip
 const { setApp } = useAppContext()
 onMounted(() => {
-  setApp('supertravel')
+  setApp('supertrip')
 })
 
 // Trips
@@ -63,7 +61,7 @@ async function handleCreateTrip(data: TripForm) {
     showCreateModal.value = false
     // Navigate to the new trip
     if (result.id) {
-      navigateTo(`/travel/${result.id}`)
+      navigateTo(`/trip/${result.id}`)
     }
   }
 }

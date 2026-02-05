@@ -1,114 +1,171 @@
 <template>
-  <div class="relative cursor-pointer group" @click="$emit('click')">
-    <!-- Connector Line -->
-    <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
+  <div class="relative flex flex-col items-center py-2">
+    <!-- Timeline Line (Top) -->
+    <div class="w-0.5 h-6 bg-gray-300" />
 
-    <!-- Card -->
-    <div
-      class="ml-8 my-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-purple-300 hover:shadow-sm transition-all"
-    >
+    <!-- Connector Badge -->
+    <div class="relative">
       <template v-if="transportation">
-        <!-- Filled State -->
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="iconBgClass">
-            <!-- Flight icon -->
-            <svg v-if="transportation.type === 'flight'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-            <!-- Train icon -->
-            <svg v-else-if="transportation.type === 'train'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17l-2 4m10-4l2 4M12 17V3m-4 2h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V7a2 2 0 012-2z" />
-            </svg>
-            <!-- Bus icon -->
-            <svg v-else-if="transportation.type === 'bus'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17h.01M16 17h.01M5 11h14M5 7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7z" />
-            </svg>
-            <!-- Car icon -->
-            <svg v-else-if="transportation.type === 'car'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17h.01M16 17h.01M3 11l2-6h14l2 6M5 11v6a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-6H5z" />
-            </svg>
-            <!-- Ferry icon -->
-            <svg v-else-if="transportation.type === 'ferry'" class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v6m0 0l-3-2m3 2l3-2M5 19h14l2-4H3l2 4zm0 0l1 2h12l1-2" />
-            </svg>
-            <!-- Default arrow icon -->
-            <svg v-else class="w-4 h-4" :class="iconClass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-900 truncate">
-              {{ transportation.carrier || transportTypeLabel }}
-              <span v-if="transportation.flightNumber" class="text-gray-500">
-                {{ transportation.flightNumber }}
-              </span>
-            </p>
-            <div class="flex items-center gap-1.5 text-sm text-gray-600 mt-0.5">
-              <span class="font-medium">{{ formattedDepartureDay }}</span>
-              <span class="text-gray-400 text-xs">{{ formattedDepartureTime }}</span>
-              <span class="text-gray-300 mx-1">→</span>
-              <span class="font-medium">{{ formattedArrivalDay }}</span>
-              <span class="text-gray-400 text-xs">{{ formattedArrivalTime }}</span>
-            </div>
-          </div>
-          <div v-if="transportation.price" class="text-sm font-medium text-gray-700">
-            {{ formattedPrice }}
-          </div>
-          <span
-            class="px-2 py-0.5 rounded-full text-xs font-medium"
-            :class="statusBadgeClass"
-          >
-            {{ $t(`travel.transportation.status.${transportation.bookingStatus}`) }}
-          </span>
+        <!-- Filled State - clickable to edit -->
+        <div
+          class="w-14 h-14 rounded-full flex items-center justify-center shadow-md transition-transform cursor-pointer group hover:scale-110"
+          :class="badgeBgClass"
+          @click="$emit('click')"
+        >
+          <!-- Transport Icon -->
+          <Icon v-if="transportation.type === 'flight'" name="lucide:plane" class="w-6 h-6 text-white" />
+          <Icon v-else-if="transportation.type === 'train'" name="lucide:train-front" class="w-6 h-6 text-white" />
+          <Icon v-else-if="transportation.type === 'bus'" name="lucide:bus" class="w-6 h-6 text-white" />
+          <Icon v-else-if="transportation.type === 'car'" name="lucide:car" class="w-6 h-6 text-white" />
+          <Icon v-else-if="transportation.type === 'ferry'" name="lucide:ship" class="w-6 h-6 text-white" />
+          <Icon v-else name="lucide:arrow-right" class="w-6 h-6 text-white" />
         </div>
 
-        <!-- Documents indicator -->
-        <div v-if="hasDocumentsOrLinks" class="mt-2 flex items-center gap-2 text-xs text-gray-400">
-          <span v-if="transportation.documents?.length" class="flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            {{ transportation.documents.length }}
-          </span>
-          <span v-if="transportation.links?.length" class="flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-            {{ transportation.links.length }}
-          </span>
+        <!-- Transport Info Card -->
+        <div
+          class="absolute left-1/2 -translate-x-1/2 top-full mt-1 bg-white rounded-lg shadow-soft px-3 py-1.5 min-w-[120px] text-center border border-gray-100 transition-all cursor-pointer hover:shadow-md"
+          @click="$emit('click')"
+        >
+          <!-- Carrier & Flight Number -->
+          <p class="text-xs font-semibold text-gray-800 truncate">
+            {{ transportation.carrier || transportTypeLabel }}
+            <span v-if="transportation.flightNumber" class="font-normal text-gray-600">
+              {{ transportation.flightNumber }}
+            </span>
+          </p>
+
+          <!-- Times -->
+          <p class="text-xs text-gray-500 mt-0.5">
+            {{ formattedDepartureTime }} <span class="text-gray-400">›</span> {{ formattedArrivalTime }}
+          </p>
+
+          <!-- Duration -->
+          <p v-if="duration" class="text-xs text-gray-400 mt-0.5">
+            ({{ duration }})
+          </p>
         </div>
       </template>
 
       <template v-else>
-        <!-- Empty State -->
-        <div class="flex items-center gap-2 text-gray-400 group-hover:text-purple-500 transition-colors">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span class="text-sm">{{ $t('travel.transportation.addTransport') }}</span>
+        <!-- Empty State - shows dropdown menu -->
+        <div
+          ref="buttonRef"
+          class="w-12 h-12 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300 text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-colors cursor-pointer"
+          @click="toggleMenu"
+        >
+          <Icon name="lucide:plus" class="w-5 h-5" />
         </div>
+
+        <!-- Dropdown Menu -->
+        <Transition
+          enter-active-class="transition ease-out duration-100"
+          enter-from-class="transform opacity-0 scale-95"
+          enter-to-class="transform opacity-100 scale-100"
+          leave-active-class="transition ease-in duration-75"
+          leave-from-class="transform opacity-100 scale-100"
+          leave-to-class="transform opacity-0 scale-95"
+        >
+          <div
+            v-if="isMenuOpen"
+            ref="menuRef"
+            class="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2"
+          >
+            <!-- Add Destination Option -->
+            <button
+              @click="handleAddDestination"
+              class="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+            >
+              <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                <Icon name="lucide:map-pin" class="w-4 h-4 text-purple-600" />
+              </div>
+              <span class="font-medium">{{ $t('travel.destinations.addDestination') }}</span>
+            </button>
+
+            <!-- Add Transport Option -->
+            <button
+              @click="handleAddTransport"
+              class="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            >
+              <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <Icon name="lucide:plane" class="w-4 h-4 text-blue-600" />
+              </div>
+              <span class="font-medium">{{ $t('travel.transportation.addTransport') }}</span>
+            </button>
+          </div>
+        </Transition>
       </template>
     </div>
+
+    <!-- Timeline Line (Bottom) -->
+    <div class="w-0.5 flex-1 min-h-[24px] bg-gray-300" :class="transportation ? 'mt-16' : 'mt-2'" />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Transportation, TransportType } from '~/types'
-import { getCurrencySymbol, TRANSPORT_TYPES } from '~/types'
+import { TRANSPORT_TYPES } from '~/types'
 
 interface Props {
   transportation?: Transportation | null
   fromLabel: string
   toLabel: string
+  insertPosition?: number
 }
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   click: []
+  addDestination: [position: number]
 }>()
 
 const { locale } = useI18n()
+
+// Menu state
+const isMenuOpen = ref(false)
+const buttonRef = ref<HTMLElement | null>(null)
+const menuRef = ref<HTMLElement | null>(null)
+
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value
+}
+
+function closeMenu() {
+  isMenuOpen.value = false
+}
+
+function handleAddDestination() {
+  if (props.insertPosition !== undefined) {
+    emit('addDestination', props.insertPosition)
+  }
+  closeMenu()
+}
+
+function handleAddTransport() {
+  emit('click')
+  closeMenu()
+}
+
+// Click outside handler
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as Node
+  if (
+    buttonRef.value &&
+    menuRef.value &&
+    !buttonRef.value.contains(target) &&
+    !menuRef.value.contains(target)
+  ) {
+    closeMenu()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 const transportTypeLabel = computed(() => {
   if (!props.transportation) return ''
@@ -116,102 +173,54 @@ const transportTypeLabel = computed(() => {
   return type?.label || props.transportation.type
 })
 
-const iconBgClass = computed(() => {
-  if (!props.transportation) return 'bg-gray-100'
+// Badge background color based on transport type
+const badgeBgClass = computed(() => {
+  if (!props.transportation) return 'bg-gray-200'
   const colorMap: Record<TransportType, string> = {
-    flight: 'bg-blue-100',
-    train: 'bg-green-100',
-    bus: 'bg-amber-100',
-    car: 'bg-purple-100',
-    ferry: 'bg-cyan-100',
-    other: 'bg-gray-100',
+    flight: 'bg-blue-500',
+    train: 'bg-orange-500',
+    bus: 'bg-amber-500',
+    car: 'bg-purple-500',
+    ferry: 'bg-cyan-500',
+    other: 'bg-gray-500',
   }
-  return colorMap[props.transportation.type] || 'bg-gray-100'
+  return colorMap[props.transportation.type] || 'bg-gray-500'
 })
 
-const iconClass = computed(() => {
-  if (!props.transportation) return 'text-gray-500'
-  const colorMap: Record<TransportType, string> = {
-    flight: 'text-blue-600',
-    train: 'text-green-600',
-    bus: 'text-amber-600',
-    car: 'text-purple-600',
-    ferry: 'text-cyan-600',
-    other: 'text-gray-600',
-  }
-  return colorMap[props.transportation.type] || 'text-gray-600'
-})
+// Format time only (HH:MM)
+const formatTime = (dateTime: Date | string | undefined): string => {
+  if (!dateTime) return '--:--'
+  const date = dateTime instanceof Date ? dateTime : new Date(dateTime)
+  if (isNaN(date.getTime())) return '--:--'
+  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+  return date.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
+}
 
-const statusBadgeClass = computed(() => {
-  if (!props.transportation) return ''
-  const colorMap: Record<string, string> = {
-    planned: 'bg-gray-100 text-gray-700',
-    booked: 'bg-blue-100 text-blue-700',
-    confirmed: 'bg-green-100 text-green-700',
-    cancelled: 'bg-red-100 text-red-700',
-  }
-  return colorMap[props.transportation.bookingStatus] || 'bg-gray-100 text-gray-700'
-})
+const formattedDepartureTime = computed(() => formatTime(props.transportation?.departureDateTime))
+const formattedArrivalTime = computed(() => formatTime(props.transportation?.arrivalDateTime))
 
-const formattedDepartureDay = computed(() => {
-  if (!props.transportation?.departureDateTime) return ''
-  const date = props.transportation.departureDateTime instanceof Date
+// Calculate duration
+const duration = computed(() => {
+  if (!props.transportation?.departureDateTime || !props.transportation?.arrivalDateTime) return null
+  const departure = props.transportation.departureDateTime instanceof Date
     ? props.transportation.departureDateTime
     : new Date(props.transportation.departureDateTime)
-  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return date.toLocaleDateString(dateLocale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  })
-})
-
-const formattedDepartureTime = computed(() => {
-  if (!props.transportation?.departureDateTime) return ''
-  const date = props.transportation.departureDateTime instanceof Date
-    ? props.transportation.departureDateTime
-    : new Date(props.transportation.departureDateTime)
-  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return date.toLocaleTimeString(dateLocale, {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-})
-
-const formattedArrivalDay = computed(() => {
-  if (!props.transportation?.arrivalDateTime) return ''
-  const date = props.transportation.arrivalDateTime instanceof Date
+  const arrival = props.transportation.arrivalDateTime instanceof Date
     ? props.transportation.arrivalDateTime
     : new Date(props.transportation.arrivalDateTime)
-  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return date.toLocaleDateString(dateLocale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  })
-})
 
-const formattedArrivalTime = computed(() => {
-  if (!props.transportation?.arrivalDateTime) return ''
-  const date = props.transportation.arrivalDateTime instanceof Date
-    ? props.transportation.arrivalDateTime
-    : new Date(props.transportation.arrivalDateTime)
-  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return date.toLocaleTimeString(dateLocale, {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-})
+  if (isNaN(departure.getTime()) || isNaN(arrival.getTime())) return null
 
-const formattedPrice = computed(() => {
-  if (!props.transportation?.price) return ''
-  const symbol = getCurrencySymbol(props.transportation.currency)
-  return `${symbol} ${props.transportation.price.toLocaleString()}`
-})
+  const diffMs = arrival.getTime() - departure.getTime()
+  const hours = Math.floor(diffMs / (1000 * 60 * 60))
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
 
-const hasDocumentsOrLinks = computed(() => {
-  if (!props.transportation) return false
-  return (props.transportation.documents?.length || 0) > 0 ||
-         (props.transportation.links?.length || 0) > 0
+  if (hours > 0 && minutes > 0) {
+    return `${hours}h${minutes}min`
+  } else if (hours > 0) {
+    return `${hours}h`
+  } else {
+    return `${minutes}min`
+  }
 })
 </script>

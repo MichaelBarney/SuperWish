@@ -23,23 +23,18 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
-              <svg class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-              </svg>
+              <Icon name="lucide:ban" class="w-4 h-4 text-amber-600" />
             </div>
             <div>
               <h4 class="font-medium text-gray-900">{{ $t('wishes.move.removeFromList') }}</h4>
               <p class="text-sm text-gray-500">{{ $t('wishes.move.moveToQuickWishes') }}</p>
             </div>
           </div>
-          <svg
+          <Icon
             v-if="selectedListId === null && removeFromList"
-            class="w-5 h-5 text-amber-500"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-          </svg>
+            name="lucide:check-circle"
+            class="w-5 h-5 text-amber-500 fill-amber-500"
+          />
         </div>
       </button>
 
@@ -73,23 +68,18 @@
                 {{ list.description }}
               </p>
             </div>
-            <svg
+            <Icon
               v-if="selectedListId === list.id"
-              class="w-5 h-5 text-accent-500"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
+              name="lucide:check-circle"
+              class="w-5 h-5 text-accent-500 fill-accent-500"
+            />
           </div>
         </button>
       </div>
 
       <!-- Empty State -->
       <div v-if="availableLists.length === 0 && !currentListId" class="text-center py-8">
-        <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
+        <Icon name="lucide:archive" class="w-12 h-12 text-gray-300 mx-auto mb-3" />
         <p class="text-gray-500">{{ $t('wishes.move.noLists') }}</p>
       </div>
     </div>

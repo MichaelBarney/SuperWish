@@ -20,16 +20,12 @@
       class="text-center py-12"
     >
       <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
+        <Icon name="lucide:archive" class="w-8 h-8 text-gray-400" />
       </div>
       <h3 class="text-base font-semibold text-gray-900 mb-2">{{ $t('lists.empty.title') }}</h3>
       <p class="text-gray-500 text-sm mb-4">{{ $t('lists.empty.description') }}</p>
       <UiButton size="sm" @click="$emit('create')">
-        <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+        <Icon name="lucide:plus" class="w-4 h-4 mr-1" />
         {{ $t('lists.empty.createButton') }}
       </UiButton>
     </div>
@@ -54,9 +50,7 @@
         class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
         @click="scrollLeft"
       >
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
+        <Icon name="lucide:chevron-left" class="w-5 h-5" />
       </button>
 
       <!-- Right Arrow -->
@@ -65,9 +59,7 @@
         class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
         @click="scrollRight"
       >
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
+        <Icon name="lucide:chevron-right" class="w-5 h-5" />
       </button>
     </div>
   </div>

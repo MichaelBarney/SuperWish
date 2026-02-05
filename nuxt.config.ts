@@ -15,7 +15,14 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxtjs/i18n',
     '@vueuse/nuxt',
+    '@nuxt/icon',
   ],
+
+  icon: {
+    collections: ['lucide', 'svg-spinners', 'simple-icons'],
+    size: '24px',
+    mode: 'svg',
+  },
 
   components: {
     dirs: [

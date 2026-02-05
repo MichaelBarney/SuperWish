@@ -47,9 +47,7 @@
                   @click="close"
                   class="text-gray-400 hover:text-gray-600 transition-colors p-1 -mr-1 rounded-lg hover:bg-gray-100"
                 >
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <Icon name="lucide:x" class="w-5 h-5" />
                 </button>
               </div>
 

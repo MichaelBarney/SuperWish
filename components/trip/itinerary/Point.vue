@@ -1,102 +1,132 @@
 <template>
-  <div class="flex items-center gap-4 py-3">
-    <!-- Drag Handle (only for destinations, not origin) -->
-    <div
-      v-if="draggable && !isOrigin"
-      class="drag-handle cursor-grab active:cursor-grabbing p-1 -ml-2 text-gray-300 hover:text-gray-500 transition-colors"
-    >
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
-      </svg>
+  <!-- Origin Point (simple style) -->
+  <div v-if="isOrigin" class="flex items-center gap-4 py-3">
+    <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-green-100">
+      <Icon name="lucide:home" class="w-4 h-4 text-green-600" />
     </div>
-
-    <!-- Point Marker -->
-    <div
-      class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-      :class="isOrigin ? 'bg-green-100' : 'bg-purple-100'"
-    >
-      <template v-if="isOrigin">
-        <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-      </template>
-      <template v-else>
-        <span class="text-sm font-semibold text-purple-700">{{ order }}</span>
-      </template>
-    </div>
-
-    <!-- Content -->
     <div class="flex-1 min-w-0">
-      <h3 class="font-medium text-gray-900">{{ label }}</h3>
-      <p v-if="sublabel && !compact" class="text-sm text-gray-500">
-        <span v-if="countryFlag">{{ countryFlag }} &nbsp;</span>{{ sublabel }}
+      <h3 class="font-medium text-gray-900">{{ label || $t('travel.itinerary.originNotSet') }}</h3>
+      <p v-if="sublabel" class="text-sm text-gray-500">
+        <span v-if="countryFlag">{{ countryFlag }}</span>&nbsp;{{ sublabel }}
       </p>
-
-      <!-- Datas com destaque -->
-      <div v-if="arrivalDate || departureDate" class="mt-1.5 flex items-center gap-3 text-sm">
-        <!-- Chegada -->
-        <div v-if="arrivalDate" class="flex items-center gap-1">
-          <span class="text-gray-400 text-xs">{{ $t('travel.itinerary.arrives') }}</span>
-          <span class="font-medium text-gray-700">{{ arrivalDate }}</span>
-        </div>
-
-        <!-- Separador visual -->
-        <span v-if="arrivalDate && departureDate" class="text-gray-300">→</span>
-
-        <!-- Saída -->
-        <div v-if="departureDate" class="flex items-center gap-1">
-          <span class="text-gray-400 text-xs">{{ $t('travel.itinerary.leaves') }}</span>
-          <span class="font-medium text-gray-700">{{ departureDate }}</span>
-        </div>
-
-        <!-- Duração (badge) -->
-        <span v-if="durationDays" class="ml-auto px-2 py-0.5 bg-purple-50 text-purple-600 text-xs font-medium rounded-full">
-          {{ durationDays }}
-        </span>
-      </div>
     </div>
-
-    <!-- Edit Button (only for destinations, not origin) -->
     <button
-      v-if="!isOrigin && showEdit"
-      @click="$emit('click')"
-      class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-    >
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-    </button>
-
-    <!-- Add Origin Button (when origin not set) -->
-    <button
-      v-if="isOrigin && !label"
+      v-if="!label"
       @click="$emit('click')"
       class="px-3 py-1.5 text-sm text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
     >
       {{ $t('travel.itinerary.setOrigin') }}
     </button>
   </div>
+
+  <!-- Destination Card (new design) -->
+  <div
+    v-else
+    class="relative overflow-hidden rounded-2xl shadow-lg cursor-pointer group max-w-md mx-auto"
+    :class="compact ? 'min-h-[120px]' : 'min-h-[160px]'"
+    @click="$emit('click')"
+  >
+    <!-- Background Image -->
+    <div
+      class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+      :style="backgroundStyle"
+    />
+
+    <!-- Gradient Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+
+    <!-- Status Badge -->
+    <div
+      v-if="isConfirmed"
+      class="absolute top-3 right-3 px-2.5 py-1 bg-green-500 text-white text-xs font-semibold rounded-full uppercase tracking-wide"
+    >
+      {{ $t('travel.itinerary.status.confirmed') }}
+    </div>
+
+    <!-- Content -->
+    <div class="relative h-full flex flex-col justify-end p-3" :class="compact ? 'p-2.5' : 'p-3'">
+      <!-- Order Badge -->
+      <div
+        v-if="order"
+        class="absolute top-3 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+      >
+        <span class="text-xs font-bold text-white">{{ order }}</span>
+      </div>
+
+      <!-- City Name -->
+      <h3
+        class="font-bold text-white drop-shadow-lg"
+        :class="compact ? 'text-lg' : 'text-xl md:text-2xl'"
+      >
+        {{ label }}
+      </h3>
+
+      <!-- Country -->
+      <p v-if="sublabel && !compact" class="text-sm text-white/80 mt-0.5">
+        <span v-if="countryFlag">{{ countryFlag }}</span> {{ sublabel }}
+      </p>
+
+      <!-- Dates Section -->
+      <div v-if="formattedArrival || formattedDeparture" class="mt-3 flex items-end gap-6">
+        <!-- Arrival Date -->
+        <div v-if="formattedArrival" class="text-white">
+          <div class="flex items-baseline gap-1">
+            <span class="text-xl font-bold">{{ formattedArrival.day }}</span>
+            <span class="text-xs font-semibold uppercase">{{ formattedArrival.month }}</span>
+          </div>
+          <p class="text-xs text-white/70 capitalize">{{ formattedArrival.weekday }}</p>
+        </div>
+
+        <!-- Departure Date -->
+        <div v-if="formattedDeparture" class="text-white">
+          <div class="flex items-baseline gap-1">
+            <span class="text-xl font-bold">{{ formattedDeparture.day }}</span>
+            <span class="text-xs font-semibold uppercase">{{ formattedDeparture.month }}</span>
+          </div>
+          <p class="text-xs text-white/70 capitalize">{{ formattedDeparture.weekday }}</p>
+        </div>
+
+        <!-- Nights Badge -->
+        <div v-if="nightsCount" class="ml-auto">
+          <span class="px-2.5 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full uppercase">
+            {{ $t('travel.itinerary.nights', { count: nightsCount }, nightsCount) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hover Edit Indicator -->
+    <div class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+      <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+        <div class="p-3 bg-white/20 backdrop-blur-sm rounded-full">
+          <Icon name="lucide:pencil" class="w-5 h-5 text-white" />
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { useCityImage, getGradientFallback } from '~/composables/useCityImage'
+
 interface Props {
   label: string
   sublabel?: string
   countryCode?: string
-  arrivalDate?: string
-  departureDate?: string
-  durationDays?: string
+  arrivalDate?: string | Date | null
+  departureDate?: string | Date | null
+  imageUrl?: string
   order?: number
   isOrigin?: boolean
+  isConfirmed?: boolean
   showEdit?: boolean
-  draggable?: boolean
   compact?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isOrigin: false,
+  isConfirmed: false,
   showEdit: true,
-  draggable: false,
   compact: false,
 })
 
@@ -104,7 +134,9 @@ defineEmits<{
   click: []
 }>()
 
-// Computed para flag do país
+const { locale } = useI18n()
+
+// Country flag emoji
 const countryFlag = computed(() => {
   if (!props.countryCode) return ''
   const codePoints = props.countryCode
@@ -112,5 +144,53 @@ const countryFlag = computed(() => {
     .split('')
     .map(char => 127397 + char.charCodeAt(0))
   return String.fromCodePoint(...codePoints)
+})
+
+// City image from Unsplash (only for destinations, not origin)
+const cityNameRef = computed(() => props.isOrigin ? '' : props.label)
+const { imageUrl: unsplashUrl } = useCityImage(cityNameRef)
+
+// Background style with fallback
+const backgroundStyle = computed(() => {
+  // Prefer prop imageUrl, then Unsplash, then gradient fallback
+  const url = props.imageUrl || unsplashUrl.value
+  if (url) {
+    return { backgroundImage: `url(${url})` }
+  }
+  return { background: getGradientFallback(props.order || 0) }
+})
+
+// Date formatting
+interface FormattedDate {
+  day: number
+  month: string
+  weekday: string
+}
+
+const formatDate = (date: string | Date | null | undefined): FormattedDate | null => {
+  if (!date) return null
+  const d = date instanceof Date ? date : new Date(date)
+  if (isNaN(d.getTime())) return null
+
+  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+  return {
+    day: d.getDate(),
+    month: d.toLocaleDateString(dateLocale, { month: 'short' }),
+    weekday: d.toLocaleDateString(dateLocale, { weekday: 'long' })
+  }
+}
+
+const formattedArrival = computed(() => formatDate(props.arrivalDate))
+const formattedDeparture = computed(() => formatDate(props.departureDate))
+
+// Calculate nights
+const nightsCount = computed(() => {
+  if (!props.arrivalDate || !props.departureDate) return null
+  const arrival = props.arrivalDate instanceof Date ? props.arrivalDate : new Date(props.arrivalDate)
+  const departure = props.departureDate instanceof Date ? props.departureDate : new Date(props.departureDate)
+  if (isNaN(arrival.getTime()) || isNaN(departure.getTime())) return null
+  const diffTime = departure.getTime() - arrival.getTime()
+  const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return nights > 0 ? nights : null
 })
 </script>

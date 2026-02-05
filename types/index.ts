@@ -197,7 +197,7 @@ export function createEmptyPriceSource(): PriceSourceForm {
 }
 
 // =============================================
-// TRAVEL TYPES (SuperTravel)
+// TRIP TYPES (SuperTrip)
 // =============================================
 
 export type TripStatus = 'planning' | 'upcoming' | 'active' | 'completed'

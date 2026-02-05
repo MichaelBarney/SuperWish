@@ -21,9 +21,9 @@
           <!-- App name -->
           <span
             class="font-semibold"
-            :class="isSuperTravel ? 'text-purple-600' : 'text-accent-600'"
+            :class="isSuperTrip ? 'text-purple-600' : 'text-accent-600'"
           >
-            {{ isSuperTravel ? $t('nav.superTravel') : $t('nav.superWish') }}
+            {{ isSuperTrip ? $t('nav.superTrip') : $t('nav.superWish') }}
           </span>
 
           <!-- User avatar -->
@@ -37,11 +37,11 @@
             <div
               v-else
               class="w-8 h-8 rounded-full flex items-center justify-center"
-              :class="isSuperTravel ? 'bg-purple-100' : 'bg-accent-100'"
+              :class="isSuperTrip ? 'bg-purple-100' : 'bg-accent-100'"
             >
               <span
                 class="text-sm font-medium"
-                :class="isSuperTravel ? 'text-purple-700' : 'text-accent-700'"
+                :class="isSuperTrip ? 'text-purple-700' : 'text-accent-700'"
               >
                 {{ user.displayName?.charAt(0) || user.email?.charAt(0) || '?' }}
               </span>
@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 const { user } = useAuth()
-const { isSuperTravel } = useAppContext()
+const { isSuperTrip } = useAppContext()
 useDynamicHead()
 
 const mobileMenuOpen = ref(false)

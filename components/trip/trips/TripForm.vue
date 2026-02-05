@@ -24,7 +24,7 @@
           {{ $t('travel.trips.form.origin') }}
         </h3>
         <div class="grid grid-cols-2 gap-4">
-          <TravelDestinationsCityAutocomplete
+          <TripDestinationsCityAutocomplete
             v-model="form.originName"
             :label="$t('travel.trips.form.originCity')"
             :placeholder="$t('travel.trips.form.originCityPlaceholder')"

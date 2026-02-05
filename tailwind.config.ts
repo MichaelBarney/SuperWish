@@ -27,7 +27,7 @@ export default <Config>{
           800: '#115e59',
           900: '#134e4a',
         },
-        // Purple palette for SuperTravel
+        // Purple palette for SuperTrip
         purple: {
           50: '#faf5ff',
           100: '#f3e8ff',

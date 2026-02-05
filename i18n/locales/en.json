@@ -22,9 +22,9 @@
     "comingSoon": "Coming Soon"
   },
   "nav": {
-    "appName": "SuperWish",
+    "appName": "SuperX",
     "superWish": "SuperWish",
-    "superTravel": "SuperTravel",
+    "superTrip": "SuperTrip",
     "dashboard": "Dashboard",
     "settings": "Settings",
     "signOut": "Sign out"
@@ -37,12 +37,17 @@
     "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy"
   },
   "landing": {
-    "tagline": "Organize your wishes beautifully",
+    "tagline": "Your Personal Life Manager",
     "welcomeBack": "Welcome back",
     "organizeLists": "Organize Lists",
     "trackWishes": "Track Wishes",
     "setDeadlines": "Set Deadlines",
-    "footer": "Made with care for gift-givers everywhere"
+    "planTrips": "Plan Trips",
+    "andMore": "And More",
+    "superWishDescription": "Organize wishlists, track prices, and never miss a gift",
+    "superTripDescription": "Plan your adventures with itineraries and budgets",
+    "signedInAs": "Signed in as",
+    "footer": "Made with care for life's special moments"
   },
   "dashboard": {
     "myLists": "My Wishlists",
@@ -271,6 +276,10 @@
         "countryPlaceholder": "e.g., France",
         "arrivalDate": "Arrival Date",
         "departureDate": "Departure Date",
+        "coverImage": "Cover Image",
+        "suggestedImages": "Suggested images",
+        "refreshImages": "Refresh",
+        "noImagesFound": "No images found for this city",
         "notes": "Notes",
         "notesPlaceholder": "Any notes about this destination...",
         "noCitiesFound": "No cities found. Try a different name.",
@@ -447,7 +456,14 @@
       "setOrigin": "Set Origin",
       "arrives": "Arrives",
       "leaves": "Leaves",
-      "days": "{count} day | {count} days"
+      "days": "{count} day | {count} days",
+      "nights": "{count} night | {count} nights",
+      "status": {
+        "confirmed": "Confirmed",
+        "booked": "Booked",
+        "planned": "Planned",
+        "cancelled": "Cancelled"
+      }
     }
   }
 }

@@ -77,9 +77,7 @@
           @click="addPriceSource"
           class="flex-1 py-2 px-4 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-accent-300 hover:text-accent-600 transition-colors flex items-center justify-center gap-2"
         >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
+          <Icon name="lucide:plus" class="w-4 h-4" />
           {{ $t('wishes.form.addManually') }}
         </button>
         <button
@@ -88,13 +86,8 @@
           @click="handleProductSearch"
           class="flex-1 py-2 px-4 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
         >
-          <svg v-if="!productSearch.loading.value" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <svg v-else class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
+          <Icon v-if="!productSearch.loading.value" name="lucide:search" class="w-4 h-4" />
+          <Icon v-else name="svg-spinners:ring-resize" class="w-4 h-4" />
           {{ $t('wishes.form.searchPrices') }}
         </button>
       </div>
@@ -132,18 +125,14 @@
                 class="p-1 text-accent-400 hover:text-accent-600 hover:bg-accent-100 rounded-lg transition-colors"
                 :title="$t('wishes.form.useAsWishImage')"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+                <Icon name="lucide:image" class="w-4 h-4" />
               </button>
               <button
                 type="button"
                 @click="removePriceSource(index)"
                 class="p-1 text-red-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition-colors"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <Icon name="lucide:x" class="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -189,10 +178,7 @@
               v-if="fetchingUrlIndex === index"
               class="absolute right-3 top-1/2 -translate-y-1/2"
             >
-              <svg class="w-4 h-4 animate-spin text-accent-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
+              <Icon name="svg-spinners:ring-resize" class="w-4 h-4 text-accent-500" />
             </div>
           </div>
           <input
@@ -227,14 +213,11 @@
           @click="form.priority = i as Priority"
           class="p-1 focus:outline-none focus:ring-2 focus:ring-accent-300 rounded"
         >
-          <svg
+          <Icon
+            name="lucide:star"
             class="w-7 h-7 transition-colors"
-            :class="i <= form.priority ? 'text-amber-400' : 'text-gray-200 hover:text-amber-200'"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
+            :class="i <= form.priority ? 'text-amber-400 fill-amber-400' : 'text-gray-200 hover:text-amber-200'"
+          />
         </button>
       </div>
     </div>
@@ -279,9 +262,7 @@
             @click="removeLink(index)"
             class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <Icon name="lucide:x" class="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -290,9 +271,7 @@
         @click="addLink"
         class="mt-2 text-sm text-accent-600 hover:text-accent-700 flex items-center gap-1"
       >
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+        <Icon name="lucide:plus" class="w-4 h-4" />
         {{ $t('wishes.form.addLink') }}
       </button>
     </div>

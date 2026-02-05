@@ -2,10 +2,7 @@
   <div class="space-y-3">
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-8">
-      <svg class="animate-spin h-6 w-6 text-accent-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-      </svg>
+      <Icon name="svg-spinners:ring-resize" class="h-6 w-6 text-accent-500" />
       <span class="ml-2 text-sm text-gray-500">{{ $t('wishes.search.searching') }}</span>
     </div>
 
@@ -52,9 +49,7 @@
               @error="($event.target as HTMLImageElement).style.display = 'none'"
             />
             <div v-else class="w-full h-full flex items-center justify-center text-gray-300">
-              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+              <Icon name="lucide:image" class="w-6 h-6" />
             </div>
           </div>
 

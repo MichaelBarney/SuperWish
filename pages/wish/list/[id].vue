@@ -15,7 +15,7 @@
       </svg>
       <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ $t('lists.notFound.title') }}</h2>
       <p class="text-gray-500 mb-6">{{ $t('lists.notFound.description') }}</p>
-      <UiButton to="/dashboard">
+      <UiButton to="/wish">
         {{ $t('lists.notFound.backButton') }}
       </UiButton>
     </div>
@@ -26,7 +26,7 @@
       <div class="mb-8">
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <NuxtLink to="/dashboard" class="hover:text-accent-600 transition-colors">
+          <NuxtLink to="/wish" class="hover:text-accent-600 transition-colors">
             {{ $t('lists.breadcrumb') }}
           </NuxtLink>
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -338,7 +338,7 @@ async function handleDeleteList() {
   const result = await deleteList(listId.value)
 
   if (result.success) {
-    navigateTo('/dashboard')
+    navigateTo('/wish')
   }
 
   deletingList.value = false

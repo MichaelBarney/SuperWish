@@ -8,9 +8,7 @@
       </div>
 
       <UiButton @click="showCreateModal = true">
-        <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+        <Icon name="lucide:plus" class="w-4 h-4 mr-1.5" />
         {{ $t('dashboard.newList') }}
       </UiButton>
     </div>
@@ -33,9 +31,7 @@
         </div>
 
         <UiButton @click="showCreateWishModal = true">
-          <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
+          <Icon name="lucide:plus" class="w-4 h-4 mr-1.5" />
           {{ $t('dashboard.addWish') }}
         </UiButton>
       </div>
@@ -58,16 +54,12 @@
       <!-- Empty State -->
       <div v-else-if="unassignedWishes.length === 0" class="text-center py-12 bg-gray-50 rounded-2xl">
         <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
+          <Icon name="lucide:star" class="w-8 h-8 text-gray-400" />
         </div>
         <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $t('wishes.empty.quickTitle') }}</h3>
         <p class="text-gray-500 mb-4">{{ $t('wishes.empty.quickDescription') }}</p>
         <UiButton variant="secondary" @click="showCreateWishModal = true">
-          <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
+          <Icon name="lucide:plus" class="w-4 h-4 mr-1.5" />
           {{ $t('wishes.empty.addFirst') }}
         </UiButton>
       </div>

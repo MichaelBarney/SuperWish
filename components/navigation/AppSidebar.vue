@@ -21,22 +21,18 @@
     <!-- Header -->
     <div class="flex items-center justify-center h-16 border-b border-gray-150">
       <NuxtLink
-        :to="isSuperTravel ? '/travel' : '/dashboard'"
+        to="/"
         class="flex items-center justify-center"
-        :title="isSuperTravel ? $t('nav.superTravel') : $t('nav.superWish')"
+        title="SuperX"
       >
         <div
           class="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
-          :class="isSuperTravel ? 'bg-gradient-to-br from-purple-400 to-purple-600' : 'bg-gradient-to-br from-accent-400 to-accent-600'"
+          :class="isSuperTrip ? 'bg-gradient-to-br from-purple-400 to-purple-600' : 'bg-gradient-to-br from-accent-400 to-accent-600'"
         >
           <!-- Star icon for SuperWish -->
-          <svg v-if="!isSuperTravel" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
-          <!-- Plane icon for SuperTravel -->
-          <svg v-else class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-          </svg>
+          <Icon v-if="!isSuperTrip" name="lucide:star" class="w-5 h-5 text-white" />
+          <!-- Plane icon for SuperTrip -->
+          <Icon v-else name="lucide:plane" class="w-5 h-5 text-white" />
         </div>
       </NuxtLink>
 
@@ -46,9 +42,7 @@
         @click="closeMobile"
         class="absolute right-3 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
       >
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <Icon name="lucide:x" class="w-5 h-5" />
       </button>
     </div>
 
@@ -60,35 +54,31 @@
     <!-- Navigation -->
     <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
       <!-- SuperWish Navigation -->
-      <template v-if="!isSuperTravel">
+      <template v-if="!isSuperTrip">
         <NavigationAppSidebarItem
-          to="/dashboard"
-          :label="$t('nav.dashboard')"
-          :is-active="route.path === '/dashboard'"
+          to="/wish"
+          :label="$t('dashboard.myLists')"
+          :is-active="route.path === '/wish' || route.path.startsWith('/wish/')"
           :collapsed="!isMobile"
           variant="teal"
         >
           <template #icon>
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
+            <Icon name="lucide:star" class="w-5 h-5" />
           </template>
         </NavigationAppSidebarItem>
       </template>
 
-      <!-- SuperTravel Navigation -->
+      <!-- SuperTrip Navigation -->
       <template v-else>
         <NavigationAppSidebarItem
-          to="/travel"
+          to="/trip"
           :label="$t('travel.nav.trips')"
-          :is-active="route.path === '/travel'"
+          :is-active="route.path === '/trip'"
           :collapsed="!isMobile"
           variant="purple"
         >
           <template #icon>
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-            </svg>
+            <Icon name="lucide:map" class="w-5 h-5" />
           </template>
         </NavigationAppSidebarItem>
 
@@ -104,16 +94,14 @@
           </div>
 
           <NavigationAppSidebarItem
-            :to="`/travel/${currentTripId}`"
+            :to="`/trip/${currentTripId}`"
             :label="$t('travel.nav.overview')"
-            :is-active="route.path === `/travel/${currentTripId}`"
+            :is-active="route.path === `/trip/${currentTripId}`"
             :collapsed="!isMobile"
             variant="purple"
           >
             <template #icon>
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
+              <Icon name="lucide:layout-grid" class="w-5 h-5" />
             </template>
           </NavigationAppSidebarItem>
         </template>
@@ -126,7 +114,7 @@
       <NuxtLink
         to="/settings"
         class="hidden lg:flex items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
-        :class="route.path === '/settings' ? (isSuperTravel ? 'bg-purple-50' : 'bg-accent-50') : ''"
+        :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : 'bg-accent-50') : ''"
         :title="$t('nav.settings')"
       >
         <img
@@ -138,11 +126,11 @@
         <div
           v-else
           class="w-9 h-9 rounded-full flex items-center justify-center"
-          :class="isSuperTravel ? 'bg-purple-100' : 'bg-accent-100'"
+          :class="isSuperTrip ? 'bg-purple-100' : 'bg-accent-100'"
         >
           <span
             class="text-sm font-medium"
-            :class="isSuperTravel ? 'text-purple-700' : 'text-accent-700'"
+            :class="isSuperTrip ? 'text-purple-700' : 'text-accent-700'"
           >
             {{ user.displayName?.charAt(0) || user.email?.charAt(0) || '?' }}
           </span>
@@ -154,7 +142,7 @@
         <NuxtLink
           to="/settings"
           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-gray-100"
-          :class="route.path === '/settings' ? (isSuperTravel ? 'bg-purple-50' : 'bg-accent-50') : ''"
+          :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : 'bg-accent-50') : ''"
         >
           <img
             v-if="user.photoURL"
@@ -165,11 +153,11 @@
           <div
             v-else
             class="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-            :class="isSuperTravel ? 'bg-purple-100' : 'bg-accent-100'"
+            :class="isSuperTrip ? 'bg-purple-100' : 'bg-accent-100'"
           >
             <span
               class="text-sm font-medium"
-              :class="isSuperTravel ? 'text-purple-700' : 'text-accent-700'"
+              :class="isSuperTrip ? 'text-purple-700' : 'text-accent-700'"
             >
               {{ user.displayName?.charAt(0) || user.email?.charAt(0) || '?' }}
             </span>
@@ -188,9 +176,7 @@
           @click="handleSignOut"
           class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
         >
-          <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
+          <Icon name="lucide:log-out" class="w-5 h-5 ml-2" />
           <span class="text-sm font-medium">{{ $t('nav.signOut') }}</span>
         </button>
       </div>
@@ -213,7 +199,7 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const { user, signOut } = useAuth()
-const { isSuperTravel } = useAppContext()
+const { isSuperTrip } = useAppContext()
 
 // Check if we're on mobile
 const isMobile = ref(false)

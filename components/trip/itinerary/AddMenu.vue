@@ -1,14 +1,15 @@
 <template>
-  <div class="relative ml-8 py-2">
-    <!-- Circular + Button -->
+  <div class="relative flex flex-col items-center py-2">
+    <!-- Timeline line above button -->
+    <div class="w-0.5 h-4 bg-gray-300" />
+
+    <!-- Green Circular + Button -->
     <button
       ref="buttonRef"
       @click="toggleMenu"
-      class="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-all"
+      class="w-12 h-12 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
     >
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg>
+      <Icon name="lucide:plus" class="w-6 h-6" />
     </button>
 
     <!-- Dropdown Menu -->
@@ -23,7 +24,7 @@
       <div
         v-if="isOpen"
         ref="menuRef"
-        class="absolute left-10 top-0 z-50 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+        class="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2"
       >
         <!-- Add Destination Option -->
         <button
@@ -31,10 +32,7 @@
           class="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
         >
           <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+            <Icon name="lucide:map-pin" class="w-4 h-4 text-purple-600" />
           </div>
           <span class="font-medium">{{ $t('travel.destinations.addDestination') }}</span>
         </button>
@@ -45,9 +43,7 @@
           class="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
         >
           <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            <Icon name="lucide:plane" class="w-4 h-4 text-blue-600" />
           </div>
           <span class="font-medium">{{ $t('travel.transportation.addTransport') }}</span>
         </button>

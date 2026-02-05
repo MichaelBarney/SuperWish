@@ -204,7 +204,7 @@
             + {{ $t('common.add') }}
           </button>
         </div>
-        <TravelTransportationLinkInput
+        <TripTransportationLinkInput
           v-for="(link, index) in form.links"
           :key="link.id"
           v-model="form.links[index]"
@@ -220,7 +220,7 @@
         <label class="text-sm font-medium text-gray-700 mb-2 block">
           {{ $t('travel.transportation.form.documents') }}
         </label>
-        <TravelTransportationDocumentUpload
+        <TripTransportationDocumentUpload
           v-model="form.documents"
           storage-path="transportations"
         />

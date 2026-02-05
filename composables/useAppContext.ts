@@ -1,4 +1,4 @@
-export type AppType = 'superwish' | 'supertravel'
+export type AppType = 'superwish' | 'supertrip'
 
 const STORAGE_KEY = 'app-context'
 
@@ -12,7 +12,7 @@ export function useAppContext() {
     if (initialized.value) return
     if (import.meta.client) {
       const savedApp = localStorage.getItem(STORAGE_KEY) as AppType | null
-      if (savedApp && (savedApp === 'superwish' || savedApp === 'supertravel')) {
+      if (savedApp && (savedApp === 'superwish' || savedApp === 'supertrip')) {
         currentApp.value = savedApp
       }
       initialized.value = true
@@ -27,15 +27,15 @@ export function useAppContext() {
     }
   }
 
-  // Computed: is SuperTravel active
-  const isSuperTravel = computed(() => currentApp.value === 'supertravel')
+  // Computed: is SuperTrip active
+  const isSuperTrip = computed(() => currentApp.value === 'supertrip')
 
   // Computed: is SuperWish active
   const isSuperWish = computed(() => currentApp.value === 'superwish')
 
   // Computed: accent color class prefix based on current app
   const accentColorClass = computed(() => {
-    return currentApp.value === 'supertravel' ? 'purple' : 'accent'
+    return currentApp.value === 'supertrip' ? 'purple' : 'accent'
   })
 
   // Helper to get the correct color class
@@ -48,7 +48,7 @@ export function useAppContext() {
 
   return {
     currentApp: readonly(currentApp),
-    isSuperTravel,
+    isSuperTrip,
     isSuperWish,
     accentColorClass,
     setApp,

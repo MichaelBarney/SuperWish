@@ -22,9 +22,9 @@
     "comingSoon": "Em Breve"
   },
   "nav": {
-    "appName": "SuperWish",
+    "appName": "SuperX",
     "superWish": "SuperWish",
-    "superTravel": "SuperTravel",
+    "superTrip": "SuperTrip",
     "dashboard": "Painel",
     "settings": "Configuracoes",
     "signOut": "Sair"
@@ -37,12 +37,17 @@
     "termsNotice": "Ao continuar, voce concorda com nossos Termos de Servico e Politica de Privacidade"
   },
   "landing": {
-    "tagline": "Organize seus desejos com estilo",
+    "tagline": "Seu Gerenciador de Vida Pessoal",
     "welcomeBack": "Bem-vindo de volta",
     "organizeLists": "Organize Listas",
     "trackWishes": "Acompanhe Desejos",
     "setDeadlines": "Defina Prazos",
-    "footer": "Feito com carinho para quem ama presentear"
+    "planTrips": "Planeje Viagens",
+    "andMore": "E Mais",
+    "superWishDescription": "Organize listas de desejos, acompanhe precos e nunca perca um presente",
+    "superTripDescription": "Planeje suas aventuras com itinerarios e orcamentos",
+    "signedInAs": "Conectado como",
+    "footer": "Feito com carinho para os momentos especiais da vida"
   },
   "dashboard": {
     "myLists": "Minhas Listas de Desejos",
@@ -271,6 +276,10 @@
         "countryPlaceholder": "ex., Franca",
         "arrivalDate": "Data de Chegada",
         "departureDate": "Data de Partida",
+        "coverImage": "Imagem de Capa",
+        "suggestedImages": "Imagens sugeridas",
+        "refreshImages": "Atualizar",
+        "noImagesFound": "Nenhuma imagem encontrada para esta cidade",
         "notes": "Notas",
         "notesPlaceholder": "Alguma nota sobre este destino...",
         "noCitiesFound": "Nenhuma cidade encontrada. Tente outro nome.",
@@ -447,7 +456,14 @@
       "setOrigin": "Definir Origem",
       "arrives": "Chega",
       "leaves": "Sai",
-      "days": "{count} dia | {count} dias"
+      "days": "{count} dia | {count} dias",
+      "nights": "{count} noite | {count} noites",
+      "status": {
+        "confirmed": "Confirmado",
+        "booked": "Reservado",
+        "planned": "Planejado",
+        "cancelled": "Cancelado"
+      }
     }
   }
 }

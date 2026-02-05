@@ -15,7 +15,7 @@
       </svg>
       <h2 class="text-xl font-semibold text-gray-900 mb-2">Trip not found</h2>
       <p class="text-gray-500 mb-6">This trip doesn't exist or you don't have access to it.</p>
-      <UiButton to="/travel">
+      <UiButton to="/trip">
         Back to Trips
       </UiButton>
     </div>
@@ -26,7 +26,7 @@
       <div class="mb-8">
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <NuxtLink to="/travel" class="hover:text-purple-600 transition-colors">
+          <NuxtLink to="/trip" class="hover:text-purple-600 transition-colors">
             {{ $t('travel.nav.trips') }}
           </NuxtLink>
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -165,129 +165,86 @@
 
         <!-- Itinerary Flow -->
         <div v-else class="bg-white rounded-xl shadow-soft p-6">
-          <!-- Origin Point -->
-          <TravelItineraryPoint
-            :label="originLabel || $t('travel.itinerary.originNotSet')"
-            :sublabel="originSublabel"
-            :is-origin="true"
-            :show-edit="false"
-            @click="showEditModal = true"
-          />
 
           <!-- If no destinations yet -->
-          <div v-if="localDestinations.length === 0" class="ml-8 my-4 p-4 border-2 border-dashed border-gray-200 rounded-lg text-center">
-            <p class="text-gray-500 mb-3">{{ $t('travel.destinations.empty.description') }}</p>
-            <UiButton variant="secondary" size="sm" @click="showAddDestinationModal = true">
-              <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              {{ $t('travel.destinations.addDestination') }}
-            </UiButton>
+          <div v-if="localDestinations.length === 0" class="flex flex-col items-center py-8">
+            <div class="w-0.5 h-8 bg-gray-300 mb-4" />
+            <div class="p-6 border-2 border-dashed border-gray-200 rounded-xl text-center max-w-md">
+              <p class="text-gray-500 mb-4">{{ $t('travel.destinations.empty.description') }}</p>
+              <UiButton variant="secondary" @click="showAddDestinationModal = true">
+                <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                {{ $t('travel.destinations.addDestination') }}
+              </UiButton>
+            </div>
           </div>
 
-          <!-- Destinations with transportation -->
+          <!-- Destinations with transportation (Timeline Layout) -->
           <template v-else>
-            <!-- Transportation: Origin → First Destination -->
-            <TravelTransportationCard
-              :transportation="getTransportationBetween(null, localDestinations[0]?.id)"
-              :from-label="originLabel || 'Origin'"
-              :to-label="localDestinations[0]?.name || ''"
-              @click="openTransportationModal(null, localDestinations[0]?.id)"
-            />
+            <div class="flex flex-col items-center">
 
-            <!-- Add Menu at beginning (before first destination) -->
-            <TravelItineraryAddMenu
-              :from-id="null"
-              :to-id="localDestinations[0]?.id || null"
-              :insert-position="0"
-              @add-destination="openAddDestinationAt"
-              @add-transport="openTransportationModal"
-            />
+              <!-- Destinations -->
+              <TripItineraryPoint
+                  :label="originLabel || $t('travel.itinerary.originNotSet')"
+                  :sublabel="originSublabel"
+                  :country-code="trip?.origin?.countryCode"
+                  :is-origin="true"
+                  :show-edit="false"
+                  @click="showEditModal = true"
+                />
+              <div class="w-full space-y-0">
 
-            <!-- Draggable destinations (base array para drag-and-drop) -->
-            <VueDraggable
-              v-model="localDestinations"
-              :animation="200"
-              handle=".drag-handle"
-              ghost-class="dragging-ghost"
-              @end="onDragEnd"
-            >
-              <!-- Renderizar por grupos de país -->
-              <template v-for="(group, groupIndex) in destinationGroups" :key="`group-${groupIndex}`">
-                <!-- Grupo com múltiplas cidades: layout lado-a-lado -->
-                <template v-if="group.destinations.length > 1">
-                  <TravelItineraryCountryGroup
-                    :country="group.country"
-                    :country-code="group.countryCode"
-                    :destinations="group.destinations"
-                    :start-index="group.startIndex"
-                    :date-infos="getGroupDateInfos(group)"
-                    :transports="getGroupTransports(group)"
-                    @edit-destination="editDestination"
-                    @edit-transport="openTransportationModal"
-                  />
-                </template>
+                <TripTransportationCard
+                  :transportation="getTransportationBetween(null, localDestinations[0]?.id)"
+                  :from-label="originLabel || 'Origin'"
+                  :to-label="localDestinations[0]?.name || ''"
+                  @click="openTransportationModal(null, localDestinations[0]?.id)"
+                />
 
-                <!-- Grupo com única cidade: layout vertical padrão -->
-                <template v-else>
-                  <div v-for="(destination, i) in group.destinations" :key="destination.id">
-                    <TravelItineraryPoint
-                      :label="destination.name"
-                      :sublabel="destination.country"
-                      :country-code="destination.countryCode"
-                      :arrival-date="getDestinationDateInfo(destination, group.startIndex + i).arrivalDate"
-                      :departure-date="getDestinationDateInfo(destination, group.startIndex + i).departureDate"
-                      :duration-days="getDestinationDateInfo(destination, group.startIndex + i).durationDays"
-                      :order="group.startIndex + i + 1"
-                      :draggable="true"
-                      @click="editDestination(destination)"
-                    />
-                  </div>
-                </template>
-
-                <!-- Transporte para o próximo grupo (se não for o último) -->
-                <template v-if="groupIndex < destinationGroups.length - 1">
-                  <TravelTransportationCard
-                    :transportation="getTransportationBetween(
-                      group.destinations[group.destinations.length - 1].id,
-                      destinationGroups[groupIndex + 1].destinations[0]?.id
-                    )"
-                    :from-label="group.destinations[group.destinations.length - 1].name"
-                    :to-label="destinationGroups[groupIndex + 1].destinations[0]?.name || ''"
-                    @click="openTransportationModal(
-                      group.destinations[group.destinations.length - 1].id,
-                      destinationGroups[groupIndex + 1].destinations[0]?.id
-                    )"
+                <template v-for="(destination, index) in localDestinations" :key="destination.id">
+                  <!-- Destination Card -->
+                  <TripItineraryPoint
+                    :label="destination.name"
+                    :sublabel="destination.country"
+                    :country-code="destination.countryCode"
+                    :image-url="destination.imageUrl"
+                    :arrival-date="getDestinationArrivalDate(destination, index)"
+                    :departure-date="getDestinationDepartureDate(destination, index)"
+                    :order="index + 1"
+                    :is-confirmed="isDestinationConfirmed(destination.id, index)"
+                    @click="editDestination(destination)"
                   />
 
-                  <!-- Add Menu entre grupos -->
-                  <TravelItineraryAddMenu
-                    :from-id="group.destinations[group.destinations.length - 1].id"
-                    :to-id="destinationGroups[groupIndex + 1].destinations[0]?.id || null"
-                    :insert-position="group.startIndex + group.destinations.length"
+                  <!-- Transportation to next destination (if not last) -->
+                  <TripTransportationCard
+                    v-if="index < localDestinations.length - 1"
+                    :transportation="getTransportationBetween(destination.id, localDestinations[index + 1]?.id)"
+                    :from-label="destination.name"
+                    :to-label="localDestinations[index + 1]?.name || ''"
+                    :insert-position="index + 1"
+                    @click="openTransportationModal(destination.id, localDestinations[index + 1]?.id)"
                     @add-destination="openAddDestinationAt"
-                    @add-transport="openTransportationModal"
                   />
                 </template>
-              </template>
-            </VueDraggable>
+              </div>
+              <!-- Transportation: Last Destination → Origin (return trip) -->
+              <TripTransportationCard
+                :transportation="getTransportationBetween(localDestinations[localDestinations.length - 1]?.id, null)"
+                :from-label="localDestinations[localDestinations.length - 1]?.name || ''"
+                :to-label="originLabel || 'Origin'"
+                @click="openTransportationModal(localDestinations[localDestinations.length - 1]?.id, null)"
+              />
 
-            <!-- Transportation: Last Destination → Origin (return trip) -->
-            <TravelTransportationCard
-              :transportation="getTransportationBetween(localDestinations[localDestinations.length - 1]?.id, null)"
-              :from-label="localDestinations[localDestinations.length - 1]?.name || ''"
-              :to-label="originLabel || 'Origin'"
-              @click="openTransportationModal(localDestinations[localDestinations.length - 1]?.id, null)"
-            />
-
-            <!-- Add Menu after last destination -->
-            <TravelItineraryAddMenu
-              :from-id="localDestinations[localDestinations.length - 1]?.id || null"
-              :to-id="null"
-              :insert-position="localDestinations.length"
-              @add-destination="openAddDestinationAt"
-              @add-transport="openTransportationModal"
-            />
+              <TripItineraryPoint
+                :label="originLabel || $t('travel.itinerary.originNotSet')"
+                :sublabel="originSublabel"
+                :country-code="trip?.origin?.countryCode"
+                :is-origin="true"
+                :show-edit="false"
+                @click="showEditModal = true"
+              />
+            </div>
           </template>
         </div>
       </div>
@@ -391,7 +348,7 @@
       v-model="showEditModal"
       :title="$t('common.edit')"
     >
-      <TravelTripsTripForm
+      <TripTripsTripForm
         :initial-data="trip || undefined"
         @submit="handleUpdateTrip"
         @cancel="showEditModal = false"
@@ -422,7 +379,7 @@
       v-model="showAddDestinationModal"
       :title="$t('travel.destinations.addDestination')"
     >
-      <TravelDestinationsDestinationForm
+      <TripDestinationsDestinationForm
         @submit="handleCreateDestination"
         @cancel="showAddDestinationModal = false"
       />
@@ -433,7 +390,7 @@
       v-model="showEditDestinationModal"
       :title="$t('common.edit')"
     >
-      <TravelDestinationsDestinationForm
+      <TripDestinationsDestinationForm
         :initial-data="selectedDestination || undefined"
         @submit="handleUpdateDestination"
         @cancel="showEditDestinationModal = false"
@@ -447,7 +404,7 @@
       :title="transportationModalTitle"
       size="lg"
     >
-      <TravelTransportationForm
+      <TripTransportationForm
         :initial-data="selectedTransportation"
         :from-destination-id="transportFromId"
         :to-destination-id="transportToId"
@@ -463,7 +420,6 @@
 </template>
 
 <script setup lang="ts">
-import { VueDraggable } from 'vue-draggable-plus'
 import type { TripForm, Destination, DestinationForm, TransportationForm, Transportation } from '~/types'
 import { getCurrencySymbol } from '~/types'
 
@@ -476,10 +432,10 @@ const route = useRoute()
 const { locale } = useI18n()
 const tripId = computed(() => route.params.tripId as string)
 
-// Set app context to SuperTravel
+// Set app context to SuperTrip
 const { setApp } = useAppContext()
 onMounted(() => {
-  setApp('supertravel')
+  setApp('supertrip')
 })
 
 // Trips
@@ -515,7 +471,7 @@ const selectedTransportation = ref<Transportation | null>(null)
 const transportFromId = ref<string | null>(null)
 const transportToId = ref<string | null>(null)
 
-// Drag and drop state
+// Local destinations state
 const localDestinations = ref<Destination[]>([])
 const insertAtPosition = ref<number | null>(null)
 
@@ -572,60 +528,6 @@ function getDestinationName(id: string | null | undefined): string {
   if (!id || id === '') return originLabel.value || 'Origem'
   const dest = destinations.value.find(d => d.id === id)
   return dest?.name || `ID inválido: ${id.slice(0, 8)}...`
-}
-
-// Interface para agrupamento por país
-interface CountryGroup {
-  country: string
-  countryCode?: string
-  destinations: Destination[]
-  startIndex: number
-}
-
-// Computed para agrupar destinos consecutivos por país
-const destinationGroups = computed((): CountryGroup[] => {
-  const groups: CountryGroup[] = []
-  let currentGroup: CountryGroup | null = null
-
-  localDestinations.value.forEach((dest, index) => {
-    if (!currentGroup || dest.country !== currentGroup.country) {
-      currentGroup = {
-        country: dest.country,
-        countryCode: dest.countryCode,
-        destinations: [dest],
-        startIndex: index
-      }
-      groups.push(currentGroup)
-    } else {
-      currentGroup.destinations.push(dest)
-    }
-  })
-
-  return groups
-})
-
-// Helper para obter dateInfo de múltiplos destinos de um grupo
-const getGroupDateInfos = (group: CountryGroup) => {
-  return group.destinations.map((dest, i) =>
-    getDestinationDateInfo(dest, group.startIndex + i)
-  )
-}
-
-// Helper para obter transportes entre destinos de um grupo
-const getGroupTransports = (group: CountryGroup) => {
-  const transports: (Transportation | null)[] = []
-  for (let i = 0; i < group.destinations.length - 1; i++) {
-    const fromId = group.destinations[i].id
-    const toId = group.destinations[i + 1]?.id
-    transports.push(getTransportationBetween(fromId, toId) || null)
-  }
-  return transports
-}
-
-// Handle drag end
-async function onDragEnd() {
-  const orderedIds = localDestinations.value.map(d => d.id)
-  await reorderDestinations(orderedIds)
 }
 
 // Open add destination modal at specific position
@@ -734,6 +636,33 @@ const getDestinationDateInfo = (destination: Destination, index: number): Destin
   return { arrivalDate, departureDate, durationDays }
 }
 
+// Helper to get arrival date (raw Date/string) for new Point component
+const getDestinationArrivalDate = (destination: Destination, index: number): Date | string | null => {
+  if (destination.arrivalDate) return destination.arrivalDate
+  // Fallback: use incoming transport arrival time
+  const previousId = index === 0 ? null : localDestinations.value[index - 1]?.id
+  const incomingTransport = getTransportationBetween(previousId, destination.id)
+  return incomingTransport?.arrivalDateTime || null
+}
+
+// Helper to get departure date (raw Date/string) for new Point component
+const getDestinationDepartureDate = (destination: Destination, index: number): Date | string | null => {
+  if (destination.departureDate) return destination.departureDate
+  // Fallback: use outgoing transport departure time
+  const nextId = localDestinations.value[index + 1]?.id ?? null
+  const outgoingTransport = getTransportationBetween(destination.id, nextId)
+  return outgoingTransport?.departureDateTime || null
+}
+
+// Helper to check if a destination is confirmed (both incoming and outgoing transport confirmed)
+const isDestinationConfirmed = (destId: string, index: number): boolean => {
+  const prevId = index === 0 ? null : localDestinations.value[index - 1]?.id
+  const nextId = localDestinations.value[index + 1]?.id ?? null
+  const incoming = getTransportationBetween(prevId, destId)
+  const outgoing = getTransportationBetween(destId, nextId)
+  return incoming?.bookingStatus === 'confirmed' && outgoing?.bookingStatus === 'confirmed'
+}
+
 // Handlers
 async function handleUpdateTrip(data: TripForm) {
   const result = await updateTrip(tripId.value, data)
@@ -746,7 +675,7 @@ async function handleDeleteTrip() {
   deleting.value = true
   const result = await deleteTrip(tripId.value)
   if (result.success) {
-    navigateTo('/travel')
+    navigateTo('/trip')
   }
   deleting.value = false
 }
@@ -876,11 +805,3 @@ const originSublabel = computed(() => {
   return trip.value?.origin?.country || ''
 })
 </script>
-
-<style scoped>
-.dragging-ghost {
-  opacity: 0.5;
-  background-color: #f3e8ff;
-  border-radius: 0.5rem;
-}
-</style>
