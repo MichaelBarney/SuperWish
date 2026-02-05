@@ -23,7 +23,7 @@
 
         <!-- Transport Info Card -->
         <div
-          class="absolute left-1/2 -translate-x-1/2 top-full mt-1 bg-white rounded-lg shadow-soft px-3 py-1.5 min-w-[120px] text-center border border-gray-100 transition-all cursor-pointer hover:shadow-md"
+          class="absolute left-full top-1/2 -translate-y-1/2 ml-1 bg-white rounded-lg shadow-soft px-3 py-1.5 min-w-[120px] text-center border border-gray-100 transition-all cursor-pointer hover:shadow-md"
           @click="$emit('click')"
         >
           <!-- Carrier & Flight Number -->
@@ -97,7 +97,7 @@
     </div>
 
     <!-- Timeline Line (Bottom) -->
-    <div class="w-0.5 flex-1 min-h-[24px] bg-gray-300" :class="transportation ? 'mt-16' : 'mt-2'" />
+    <div class="w-0.5 flex-1 min-h-[24px] bg-gray-300 mt-2" />
   </div>
 </template>
 
