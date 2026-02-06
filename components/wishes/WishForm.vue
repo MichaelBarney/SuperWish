@@ -37,6 +37,7 @@
       v-model="form.imageUrl"
       :label="$t('wishes.form.image')"
       storage-path="wishes"
+      :default-search-query="form.title"
     />
 
     <!-- Target Price -->

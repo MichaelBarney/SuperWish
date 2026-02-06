@@ -197,9 +197,14 @@
   "imageUpload": {
     "upload": "Enviar",
     "url": "URL",
+    "unsplash": "Unsplash",
     "urlPlaceholder": "https://exemplo.com/imagem.jpg",
     "uploading": "Enviando...",
-    "chooseImage": "Escolher imagem"
+    "chooseImage": "Escolher imagem",
+    "searchPlaceholder": "Buscar imagens...",
+    "search": "Buscar",
+    "noResults": "Nenhuma imagem encontrada. Tente outro termo.",
+    "poweredByUnsplash": "Fotos por Unsplash"
   },
   "regions": {
     "US": "Estados Unidos",

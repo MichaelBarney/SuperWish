@@ -21,6 +21,7 @@
       :label="$t('lists.form.coverImage')"
       storage-path="lists"
       preview-class="w-full h-24 object-cover rounded-xl border border-gray-200"
+      :default-search-query="form.name"
     />
 
     <div class="grid grid-cols-2 gap-4">
