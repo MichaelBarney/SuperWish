@@ -11,18 +11,21 @@
 </template>
 
 <script setup lang="ts">
-import type { WishStatus } from '~/types'
-import { getStatusConfig } from '~/types'
+import type { WishStatus, AnyWishStatus } from '~/types'
+import { getStatusConfig, normalizeStatus } from '~/types'
 import type { Timestamp } from 'firebase/firestore'
 
 interface Props {
-  status: WishStatus
+  status: AnyWishStatus
   sinceText?: string
   estimatedDelivery?: Date | Timestamp | null
 }
 
 const props = defineProps<Props>()
 const { t } = useI18n()
+
+// Normalize legacy statuses (purchased, delivered -> owned)
+const normalizedStatus = computed(() => normalizeStatus(props.status))
 
 const daysUntilDelivery = computed(() => {
   if (!props.estimatedDelivery) return null
@@ -37,7 +40,15 @@ const daysUntilDelivery = computed(() => {
     // Handle serialized Firestore Timestamp
     delivery = new Date((props.estimatedDelivery as any).seconds * 1000)
   } else {
-    delivery = new Date(props.estimatedDelivery as unknown as string)
+    // Parse as local date, not UTC
+    const dateStr = props.estimatedDelivery as unknown as string
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      // Date-only string: parse as local time
+      const [year, month, day] = dateStr.split('-').map(Number)
+      delivery = new Date(year, month - 1, day)
+    } else {
+      delivery = new Date(dateStr)
+    }
   }
 
   if (isNaN(delivery.getTime())) return null
@@ -52,13 +63,14 @@ const daysUntilDelivery = computed(() => {
 })
 
 const displayLabel = computed(() => {
-  const label = t(`statuses.${props.status}`)
+  const status = normalizedStatus.value
+  const label = t(`statuses.${status}`)
 
-  if (props.status === 'wanted' && props.sinceText) {
+  if (status === 'wanted' && props.sinceText) {
     return `${label} ${props.sinceText}`
   }
 
-  if (props.status === 'shipping' && daysUntilDelivery.value !== null) {
+  if (status === 'shipping' && daysUntilDelivery.value !== null) {
     const days = daysUntilDelivery.value
     if (days < 0) {
       return t('statuses.late')
@@ -75,7 +87,7 @@ const displayLabel = computed(() => {
   return label
 })
 
-const statusConfig = computed(() => getStatusConfig(props.status))
+const statusConfig = computed(() => getStatusConfig(normalizedStatus.value))
 
 const badgeClasses = computed(() => {
   switch (statusConfig.value.color) {

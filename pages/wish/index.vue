@@ -17,8 +17,59 @@
     <ListsListGrid
       :lists="lists"
       :loading="loading"
+      :owned-count="ownedWishes.length"
       @create="showCreateModal = true"
     />
+
+    <!-- In Transit Section -->
+    <div v-if="shippingWishes.length > 0" class="mt-12">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">{{ $t('dashboard.inTransit') }}</h2>
+          <p class="text-gray-500 mt-1">
+            {{ $t('dashboard.inTransitCount', shippingWishes.length) }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Shipping Wishes Carousel -->
+      <div class="relative group/carousel">
+        <div
+          ref="shippingScrollContainer"
+          class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
+        >
+          <WishesWishCard
+            v-for="item in shippingWishesWithListName"
+            :key="item.wish.id"
+            :wish="item.wish"
+            :list-name="item.listName"
+            compact
+            class="flex-shrink-0"
+            @edit="openEditShippingWishModal"
+            @delete="openDeleteShippingWishModal"
+            @move="openMoveShippingWishModal"
+          />
+        </div>
+
+        <!-- Left Arrow -->
+        <button
+          v-if="canScrollShippingLeft"
+          class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+          @click="scrollShippingLeft"
+        >
+          <Icon name="lucide:chevron-left" class="w-5 h-5" />
+        </button>
+
+        <!-- Right Arrow -->
+        <button
+          v-if="canScrollShippingRight"
+          class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+          @click="scrollShippingRight"
+        >
+          <Icon name="lucide:chevron-right" class="w-5 h-5" />
+        </button>
+      </div>
+    </div>
 
     <!-- Quick Wishes Section -->
     <div class="mt-12">
@@ -26,7 +77,7 @@
         <div>
           <h2 class="text-xl font-bold text-gray-900">{{ $t('dashboard.quickWishes') }}</h2>
           <p class="text-gray-500 mt-1">
-            {{ $t('dashboard.wishCount', unassignedWishes.length) }}
+            {{ $t('dashboard.wishCount', filteredQuickWishes.length) }}
           </p>
         </div>
 
@@ -52,7 +103,7 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="unassignedWishes.length === 0" class="text-center py-12 bg-gray-50 rounded-2xl">
+      <div v-else-if="filteredQuickWishes.length === 0" class="text-center py-12 bg-gray-50 rounded-2xl">
         <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
           <Icon name="lucide:star" class="w-8 h-8 text-gray-400" />
         </div>
@@ -67,7 +118,7 @@
       <!-- Wishes Grid -->
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <WishesWishCard
-          v-for="wish in unassignedWishes"
+          v-for="wish in filteredQuickWishes"
           :key="wish.id"
           :wish="wish"
           @edit="openEditWishModal"
@@ -145,6 +196,7 @@
 
 <script setup lang="ts">
 import type { Wish, WishForm, WishListForm } from '~/types'
+import { useOwnedWishes, useShippingWishes } from '~/composables/useWishes'
 
 definePageMeta({
   layout: 'app-with-sidebar',
@@ -173,6 +225,71 @@ const {
   deleteWish,
 } = useWishes(unassignedListId)
 
+// Owned wishes (for the Owned list card count)
+const { ownedWishes } = useOwnedWishes()
+
+// Shipping wishes (for the In Transit section)
+const { shippingWishes } = useShippingWishes()
+const { t } = useI18n()
+
+// Map shipping wishes to include list names and sort by estimated delivery (closest first)
+const shippingWishesWithListName = computed(() => {
+  return shippingWishes.value
+    .map(wish => ({
+      wish,
+      listName: wish.listId
+        ? lists.value.find(l => l.id === wish.listId)?.name || '?'
+        : t('dashboard.quickWishLabel')
+    }))
+    .sort((a, b) => {
+      const dateA = a.wish.estimatedDelivery?.getTime() ?? Infinity
+      const dateB = b.wish.estimatedDelivery?.getTime() ?? Infinity
+      return dateA - dateB
+    })
+})
+
+// Filter quick wishes to exclude shipping status
+const filteredQuickWishes = computed(() => {
+  return unassignedWishes.value.filter(w => w.status !== 'shipping')
+})
+
+// Shipping carousel scroll
+const shippingScrollContainer = ref<HTMLElement | null>(null)
+const canScrollShippingLeft = ref(false)
+const canScrollShippingRight = ref(false)
+
+function updateShippingScrollButtons() {
+  if (!shippingScrollContainer.value) return
+  const { scrollLeft, scrollWidth, clientWidth } = shippingScrollContainer.value
+  canScrollShippingLeft.value = scrollLeft > 0
+  canScrollShippingRight.value = scrollLeft + clientWidth < scrollWidth - 10
+}
+
+function scrollShippingLeft() {
+  if (!shippingScrollContainer.value) return
+  shippingScrollContainer.value.scrollBy({ left: -200, behavior: 'smooth' })
+}
+
+function scrollShippingRight() {
+  if (!shippingScrollContainer.value) return
+  shippingScrollContainer.value.scrollBy({ left: 200, behavior: 'smooth' })
+}
+
+onMounted(() => {
+  nextTick(() => {
+    updateShippingScrollButtons()
+    shippingScrollContainer.value?.addEventListener('scroll', updateShippingScrollButtons)
+  })
+})
+
+onUnmounted(() => {
+  shippingScrollContainer.value?.removeEventListener('scroll', updateShippingScrollButtons)
+})
+
+watch(shippingWishes, () => {
+  nextTick(updateShippingScrollButtons)
+})
+
 // List modals
 const showCreateModal = ref(false)
 
@@ -197,7 +314,7 @@ async function handleCreateList(data: WishListForm) {
   }
 }
 
-// Wish handlers
+// Wish handlers (for quick wishes)
 function openEditWishModal(wish: Wish) {
   selectedWish.value = wish
   showEditWishModal.value = true
@@ -209,6 +326,22 @@ function openDeleteWishModal(wish: Wish) {
 }
 
 function openMoveWishModal(wish: Wish) {
+  selectedWish.value = wish
+  showMoveWishModal.value = true
+}
+
+// Shipping wish handlers (use same modals)
+function openEditShippingWishModal(wish: Wish) {
+  selectedWish.value = wish
+  showEditWishModal.value = true
+}
+
+function openDeleteShippingWishModal(wish: Wish) {
+  selectedWish.value = wish
+  showDeleteWishModal.value = true
+}
+
+function openMoveShippingWishModal(wish: Wish) {
   selectedWish.value = wish
   showMoveWishModal.value = true
 }
@@ -248,3 +381,13 @@ function handleMoveWish() {
   selectedWish.value = null
 }
 </script>
+
+<style scoped>
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+</style>

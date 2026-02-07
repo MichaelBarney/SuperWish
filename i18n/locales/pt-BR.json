@@ -53,7 +53,10 @@
     "myLists": "Minhas Listas de Desejos",
     "listCount": "{count} lista | {count} listas",
     "newList": "Nova Lista",
+    "inTransit": "Em Transito",
+    "inTransitCount": "{count} desejo em transito | {count} desejos em transito",
     "quickWishes": "Desejos Rapidos",
+    "quickWishLabel": "Desejo Rapido",
     "wishCount": "{count} desejo sem lista | {count} desejos sem lista",
     "addWish": "Adicionar Desejo",
     "createNewWishlist": "Criar Nova Lista de Desejos",
@@ -88,7 +91,17 @@
     "breadcrumb": "Minhas Listas de Desejos",
     "editList": "Editar Lista",
     "deleteList": "Excluir Lista",
-    "deleteListConfirm": "Tem certeza que deseja excluir \"{name}\" e todos os seus desejos? Esta acao nao pode ser desfeita."
+    "deleteListConfirm": "Tem certeza que deseja excluir \"{name}\" e todos os seus desejos? Esta acao nao pode ser desfeita.",
+    "owned": {
+      "title": "Adquiridos",
+      "description": "Itens que voce ja possui",
+      "itemCount": "{count} item | {count} itens",
+      "empty": {
+        "title": "Nenhum item possuido ainda",
+        "description": "Marque itens como 'Adquirido' para ve-los aqui",
+        "backButton": "Voltar ao Painel"
+      }
+    }
   },
   "wishes": {
     "form": {
@@ -177,9 +190,10 @@
   },
   "statuses": {
     "wanted": "Desejado",
-    "purchased": "Comprado",
+    "owned": "Adquirido",
+    "purchased": "Adquirido",
     "shipping": "Em Transito",
-    "delivered": "Entregue",
+    "delivered": "Adquirido",
     "gifted": "Presenteado",
     "arrivingToday": "Chega Hoje",
     "arrivingTomorrow": "Chega Amanha",

@@ -53,7 +53,10 @@
     "myLists": "My Wishlists",
     "listCount": "{count} list | {count} lists",
     "newList": "New List",
+    "inTransit": "In Transit",
+    "inTransitCount": "{count} wish in transit | {count} wishes in transit",
     "quickWishes": "Quick Wishes",
+    "quickWishLabel": "Quick Wish",
     "wishCount": "{count} wish not in any list | {count} wishes not in any list",
     "addWish": "Add Wish",
     "createNewWishlist": "Create New Wishlist",
@@ -88,7 +91,17 @@
     "breadcrumb": "My Wishlists",
     "editList": "Edit List",
     "deleteList": "Delete List",
-    "deleteListConfirm": "Are you sure you want to delete \"{name}\" and all its wishes? This action cannot be undone."
+    "deleteListConfirm": "Are you sure you want to delete \"{name}\" and all its wishes? This action cannot be undone.",
+    "owned": {
+      "title": "Owned",
+      "description": "Items you already own",
+      "itemCount": "{count} item | {count} items",
+      "empty": {
+        "title": "No owned items yet",
+        "description": "Mark items as 'Owned' to see them here",
+        "backButton": "Back to Dashboard"
+      }
+    }
   },
   "wishes": {
     "form": {
@@ -177,9 +190,10 @@
   },
   "statuses": {
     "wanted": "Wanted",
-    "purchased": "Purchased",
+    "owned": "Owned",
+    "purchased": "Owned",
     "shipping": "Shipping",
-    "delivered": "Delivered",
+    "delivered": "Owned",
     "gifted": "Gifted",
     "arrivingToday": "Arriving Today",
     "arrivingTomorrow": "Arriving Tomorrow",

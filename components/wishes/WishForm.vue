@@ -277,8 +277,8 @@
       </button>
     </div>
 
-    <!-- Tracking Info (visible for purchased/shipping status) -->
-    <div v-if="form.status === 'purchased' || form.status === 'shipping'" class="p-4 bg-gray-50 rounded-xl space-y-4">
+    <!-- Tracking Info (visible for shipping status) -->
+    <div v-if="form.status === 'shipping'" class="p-4 bg-gray-50 rounded-xl space-y-4">
       <h4 class="text-sm font-medium text-gray-700">{{ $t('wishes.form.trackingInfo') }}</h4>
       <UiInput
         v-model="form.trackingUrl"
@@ -307,7 +307,7 @@
 
 <script setup lang="ts">
 import type { Wish, WishForm, Priority, ShoppingLink, PriceSourceForm, PriceSource, ProductSearchResult, WishStatus, WishQuestion } from '~/types'
-import { CURRENCIES, WISH_STATUSES, getRegionCurrency } from '~/types'
+import { CURRENCIES, WISH_STATUSES, getRegionCurrency, normalizeStatus } from '~/types'
 import type { UrlMetadata } from '~/composables/useUrlMetadata'
 
 interface Props {
@@ -390,7 +390,7 @@ onMounted(() => {
     }))
     form.currency = props.initialData.currency || 'USD'
     form.priority = props.initialData.priority || 3
-    form.status = props.initialData.status || 'wanted'
+    form.status = normalizeStatus(props.initialData.status || 'wanted')
     form.trackingUrl = props.initialData.trackingUrl || ''
     form.forPerson = props.initialData.forPerson || ''
     if (props.initialData.estimatedDelivery) {

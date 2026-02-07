@@ -14,6 +14,16 @@ import {
   type Firestore,
 } from 'firebase/firestore'
 import type { Wish, WishForm, WishStatus, Priority, PriceSource, WishQuestion } from '~/types'
+import { isOwnedStatus, normalizeStatus } from '~/types'
+
+// Parse date string as local time (not UTC)
+function parseLocalDate(dateStr: string): Date {
+  if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const [year, month, day] = dateStr.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+  return new Date(dateStr)
+}
 
 export function useWishes(listId?: Ref<string | null | undefined>) {
   const nuxtApp = useNuxtApp()
@@ -28,12 +38,11 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  // Status sort order: shipping -> wanted -> purchased/delivered -> gifted
+  // Status sort order: shipping -> wanted -> owned -> gifted
   const statusOrder: Record<WishStatus, number> = {
     shipping: 0,
     wanted: 1,
-    purchased: 2,
-    delivered: 2,
+    owned: 2,
     gifted: 3,
   }
 
@@ -45,8 +54,10 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
   // Sort wishes by status -> priority (desc) -> price (asc)
   const sortWishes = (wishList: Wish[]): Wish[] => {
     return [...wishList].sort((a, b) => {
-      // First sort by status
-      const statusDiff = statusOrder[a.status] - statusOrder[b.status]
+      // First sort by status (normalize legacy statuses)
+      const statusA = normalizeStatus(a.status)
+      const statusB = normalizeStatus(b.status)
+      const statusDiff = statusOrder[statusA] - statusOrder[statusB]
       if (statusDiff !== 0) {
         return statusDiff
       }
@@ -89,6 +100,9 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
       (snapshot) => {
         const rawWishes = snapshot.docs.map(docSnap => {
           const data = docSnap.data()
+          // Normalize legacy statuses (purchased, delivered -> owned)
+          const rawStatus = data.status || 'wanted'
+          const normalizedStatus = normalizeStatus(rawStatus)
           return {
             id: docSnap.id,
             listId: data.listId,
@@ -102,7 +116,7 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
             priceSources: data.priceSources || [],
             currency: data.currency || 'USD',
             priority: data.priority || 3,
-            status: data.status || 'wanted',
+            status: normalizedStatus,
             trackingUrl: data.trackingUrl || '',
             estimatedDelivery: data.estimatedDelivery
               ? (data.estimatedDelivery as Timestamp).toDate()
@@ -113,8 +127,10 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
             updatedAt: data.updatedAt,
           } as Wish
         })
+        // Filter out owned items from regular list views
+        const filteredWishes = rawWishes.filter(wish => wish.status !== 'owned')
         // Sort by priority (desc) then by price (asc)
-        wishes.value = sortWishes(rawWishes)
+        wishes.value = sortWishes(filteredWishes)
         loading.value = false
       },
       (err) => {
@@ -146,8 +162,8 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
           storeName: s.storeName,
           price: parseFloat(s.price),
           currency: s.currency,
-          url: s.url || null,
-          imageUrl: s.imageUrl || null,
+          url: s.url || undefined,
+          imageUrl: s.imageUrl || undefined,
           searchedAt: s.searchedAt ? new Date(s.searchedAt) : null,
         }))
 
@@ -171,7 +187,7 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
         status: data.status || 'wanted',
         trackingUrl: data.trackingUrl || '',
         estimatedDelivery: data.estimatedDelivery
-          ? Timestamp.fromDate(new Date(data.estimatedDelivery))
+          ? Timestamp.fromDate(parseLocalDate(data.estimatedDelivery))
           : null,
         forPerson: data.forPerson || '',
         questions: questions,
@@ -213,8 +229,8 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
             storeName: s.storeName,
             price: parseFloat(s.price),
             currency: s.currency,
-            url: s.url || null,
-            imageUrl: s.imageUrl || null,
+            url: s.url || undefined,
+            imageUrl: s.imageUrl || undefined,
             searchedAt: s.searchedAt ? new Date(s.searchedAt) : null,
           }))
       }
@@ -224,7 +240,7 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
       if (data.trackingUrl !== undefined) updateData.trackingUrl = data.trackingUrl
       if (data.estimatedDelivery !== undefined) {
         updateData.estimatedDelivery = data.estimatedDelivery
-          ? Timestamp.fromDate(new Date(data.estimatedDelivery))
+          ? Timestamp.fromDate(parseLocalDate(data.estimatedDelivery))
           : null
       }
       if (data.forPerson !== undefined) updateData.forPerson = data.forPerson
@@ -331,7 +347,7 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
   }
 
   return {
-    wishes: readonly(wishes),
+    wishes: readonly(wishes) as Readonly<Ref<Wish[]>>,
     loading: readonly(loading),
     error: readonly(error),
     createWish,
@@ -344,5 +360,221 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
     getWishById,
     subscribeToWishes,
     unsubscribeFromWishes,
+  }
+}
+
+// Composable for fetching all owned wishes across all lists
+export function useOwnedWishes() {
+  const nuxtApp = useNuxtApp()
+  const { user } = useAuth()
+
+  const getDb = (): Firestore | null => {
+    if (import.meta.server) return null
+    return nuxtApp.$db as Firestore | null
+  }
+
+  const wishes = ref<Wish[]>([])
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+
+  let unsubscribe: (() => void) | null = null
+
+  const subscribeToOwnedWishes = () => {
+    if (import.meta.server) return
+
+    const db = getDb()
+    if (!user.value || !db) return
+
+    loading.value = true
+    error.value = null
+
+    // Query all wishes for this user - we'll filter by status client-side
+    // since we need to match multiple statuses (owned, purchased, delivered)
+    const wishesRef = collection(db, 'wishes')
+    const q = query(
+      wishesRef,
+      where('userId', '==', user.value.uid),
+      orderBy('updatedAt', 'desc')
+    )
+
+    unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const allWishes = snapshot.docs.map(docSnap => {
+          const data = docSnap.data()
+          const rawStatus = data.status || 'wanted'
+          const normalizedStatus = normalizeStatus(rawStatus)
+          return {
+            id: docSnap.id,
+            listId: data.listId,
+            userId: data.userId,
+            title: data.title,
+            description: data.description || '',
+            imageUrl: data.imageUrl || '',
+            shoppingLinks: data.shoppingLinks || [],
+            expectedPrice: data.expectedPrice,
+            targetPrice: data.targetPrice,
+            priceSources: data.priceSources || [],
+            currency: data.currency || 'USD',
+            priority: data.priority || 3,
+            status: normalizedStatus,
+            trackingUrl: data.trackingUrl || '',
+            estimatedDelivery: data.estimatedDelivery
+              ? (data.estimatedDelivery as Timestamp).toDate()
+              : null,
+            forPerson: data.forPerson || '',
+            questions: data.questions || [],
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+          } as Wish
+        })
+        // Filter to only include owned items
+        wishes.value = allWishes.filter(wish => wish.status === 'owned')
+        loading.value = false
+      },
+      (err) => {
+        console.error('Error fetching owned wishes:', err)
+        error.value = 'Failed to load owned wishes'
+        loading.value = false
+      }
+    )
+  }
+
+  const unsubscribeFromOwnedWishes = () => {
+    if (unsubscribe) {
+      unsubscribe()
+      unsubscribe = null
+    }
+  }
+
+  // Auto-subscribe when user is available (only on client)
+  if (import.meta.client) {
+    watch(user, (newUser) => {
+      unsubscribeFromOwnedWishes()
+      if (newUser) {
+        subscribeToOwnedWishes()
+      } else {
+        wishes.value = []
+      }
+    }, { immediate: true })
+
+    onUnmounted(() => {
+      unsubscribeFromOwnedWishes()
+    })
+  }
+
+  return {
+    ownedWishes: readonly(wishes) as Readonly<Ref<Wish[]>>,
+    loading: readonly(loading),
+    error: readonly(error),
+    subscribeToOwnedWishes,
+    unsubscribeFromOwnedWishes,
+  }
+}
+
+// Composable for fetching all shipping wishes across all lists
+export function useShippingWishes() {
+  const nuxtApp = useNuxtApp()
+  const { user } = useAuth()
+
+  const getDb = (): Firestore | null => {
+    if (import.meta.server) return null
+    return nuxtApp.$db as Firestore | null
+  }
+
+  const wishes = ref<Wish[]>([])
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+
+  let unsubscribe: (() => void) | null = null
+
+  const subscribeToShippingWishes = () => {
+    if (import.meta.server) return
+
+    const db = getDb()
+    if (!user.value || !db) return
+
+    loading.value = true
+    error.value = null
+
+    const wishesRef = collection(db, 'wishes')
+    const q = query(
+      wishesRef,
+      where('userId', '==', user.value.uid),
+      orderBy('updatedAt', 'desc')
+    )
+
+    unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const allWishes = snapshot.docs.map(docSnap => {
+          const data = docSnap.data()
+          const rawStatus = data.status || 'wanted'
+          const normalizedStatus = normalizeStatus(rawStatus)
+          return {
+            id: docSnap.id,
+            listId: data.listId,
+            userId: data.userId,
+            title: data.title,
+            description: data.description || '',
+            imageUrl: data.imageUrl || '',
+            shoppingLinks: data.shoppingLinks || [],
+            expectedPrice: data.expectedPrice,
+            targetPrice: data.targetPrice,
+            priceSources: data.priceSources || [],
+            currency: data.currency || 'USD',
+            priority: data.priority || 3,
+            status: normalizedStatus,
+            trackingUrl: data.trackingUrl || '',
+            estimatedDelivery: data.estimatedDelivery
+              ? (data.estimatedDelivery as Timestamp).toDate()
+              : null,
+            forPerson: data.forPerson || '',
+            questions: data.questions || [],
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+          } as Wish
+        })
+        // Filter to only include shipping items
+        wishes.value = allWishes.filter(wish => wish.status === 'shipping')
+        loading.value = false
+      },
+      (err) => {
+        console.error('Error fetching shipping wishes:', err)
+        error.value = 'Failed to load shipping wishes'
+        loading.value = false
+      }
+    )
+  }
+
+  const unsubscribeFromShippingWishes = () => {
+    if (unsubscribe) {
+      unsubscribe()
+      unsubscribe = null
+    }
+  }
+
+  // Auto-subscribe when user is available (only on client)
+  if (import.meta.client) {
+    watch(user, (newUser) => {
+      unsubscribeFromShippingWishes()
+      if (newUser) {
+        subscribeToShippingWishes()
+      } else {
+        wishes.value = []
+      }
+    }, { immediate: true })
+
+    onUnmounted(() => {
+      unsubscribeFromShippingWishes()
+    })
+  }
+
+  return {
+    shippingWishes: readonly(wishes) as Readonly<Ref<Wish[]>>,
+    loading: readonly(loading),
+    error: readonly(error),
+    subscribeToShippingWishes,
+    unsubscribeFromShippingWishes,
   }
 }

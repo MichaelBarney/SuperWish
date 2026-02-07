@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-white rounded-2xl shadow-soft hover:shadow-soft-lg transition-all duration-300 overflow-hidden group">
+  <div
+    class="bg-white rounded-2xl shadow-soft hover:shadow-soft-lg transition-all duration-300 overflow-hidden group"
+    :class="compact ? 'w-48' : ''"
+  >
     <!-- Image Section -->
     <div class="relative aspect-[4/3] bg-gray-100 overflow-hidden">
       <img
@@ -10,11 +13,11 @@
         @error="handleImageError"
       />
       <div v-else class="w-full h-full flex items-center justify-center">
-        <Icon name="lucide:image" class="w-12 h-12 text-gray-300" />
+        <Icon name="lucide:image" :class="compact ? 'w-8 h-8' : 'w-12 h-12'" class="text-gray-300" />
       </div>
 
-      <!-- Priority Stars -->
-      <div class="absolute top-3 left-3 flex gap-0.5">
+      <!-- Priority Stars (hidden in compact mode) -->
+      <div v-if="!compact" class="absolute top-3 left-3 flex gap-0.5">
         <Icon
           v-for="i in 5"
           :key="i"
@@ -25,128 +28,139 @@
       </div>
 
       <!-- Status Badge -->
-      <div class="absolute top-3 right-3">
+      <div :class="compact ? 'absolute top-2 right-2' : 'absolute top-3 right-3'">
         <WishesWishStatusBadge :status="wish.status" :since-text="sinceText" :estimated-delivery="wish.estimatedDelivery" />
       </div>
 
       <!-- Action Buttons (on hover) -->
-      <div class="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div :class="compact ? 'absolute bottom-2 right-2 flex gap-1' : 'absolute bottom-3 right-3 flex gap-2'" class="opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           @click.stop="$emit('edit', wish)"
-          class="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors"
+          :class="compact ? 'p-1.5' : 'p-2'"
+          class="bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors"
         >
-          <Icon name="lucide:pencil" class="w-4 h-4 text-gray-600" />
+          <Icon name="lucide:pencil" :class="compact ? 'w-3 h-3' : 'w-4 h-4'" class="text-gray-600" />
         </button>
         <button
           @click.stop="$emit('move', wish)"
-          class="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors"
+          :class="compact ? 'p-1.5' : 'p-2'"
+          class="bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors"
         >
-          <Icon name="lucide:move-horizontal" class="w-4 h-4 text-gray-600" />
+          <Icon name="lucide:move-horizontal" :class="compact ? 'w-3 h-3' : 'w-4 h-4'" class="text-gray-600" />
         </button>
         <button
           @click.stop="$emit('delete', wish)"
-          class="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-red-50 transition-colors"
+          :class="compact ? 'p-1.5' : 'p-2'"
+          class="bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-red-50 transition-colors"
         >
-          <Icon name="lucide:trash-2" class="w-4 h-4 text-red-500" />
+          <Icon name="lucide:trash-2" :class="compact ? 'w-3 h-3' : 'w-4 h-4'" class="text-red-500" />
         </button>
       </div>
     </div>
 
     <!-- Content Section -->
-    <div class="p-4">
-      <h3 class="font-semibold text-gray-900 truncate mb-1">{{ wish.title }}</h3>
+    <div :class="compact ? 'p-2' : 'p-4'">
+      <h3 :class="compact ? 'text-sm font-medium' : 'font-semibold'" class="text-gray-900 truncate mb-1">{{ wish.title }}</h3>
 
-      <p v-if="wish.description" class="text-sm text-gray-500 line-clamp-2 mb-3">
+      <!-- List Name Badge -->
+      <div v-if="listName" class="flex items-center gap-1 text-xs text-gray-500" :class="compact ? 'mb-1' : 'mb-2'">
+        <Icon name="lucide:list" class="w-3 h-3" />
+        <span class="truncate">{{ listName }}</span>
+      </div>
+
+      <!-- Description (hidden in compact mode) -->
+      <p v-if="!compact && wish.description" class="text-sm text-gray-500 line-clamp-2 mb-3">
         {{ wish.description }}
       </p>
 
-      <!-- Price Comparison Section -->
-      <div v-if="hasAnyPriceInfo" class="space-y-2 mb-3">
-        <!-- Target Price -->
-        <div v-if="wish.targetPrice" class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">{{ $t('wishes.card.target') }}</span>
-          <span class="text-sm font-medium text-gray-700">
-            {{ getCurrencySymbol(wish.currency) }}{{ formatPrice(wish.targetPrice) }}
-          </span>
-        </div>
+      <!-- Price Comparison Section (hidden in compact mode) -->
+      <template v-if="!compact">
+        <div v-if="hasAnyPriceInfo" class="space-y-2 mb-3">
+          <!-- Target Price -->
+          <div v-if="wish.targetPrice" class="flex items-center justify-between">
+            <span class="text-xs text-gray-500">{{ $t('wishes.card.target') }}</span>
+            <span class="text-sm font-medium text-gray-700">
+              {{ getCurrencySymbol(wish.currency) }}{{ formatPrice(wish.targetPrice) }}
+            </span>
+          </div>
 
-        <!-- Best Price -->
-        <div v-if="bestPrice" class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">{{ $t('wishes.card.best') }}</span>
-          <div class="flex items-center gap-2">
-            <span class="text-lg font-semibold text-accent-600">
-              {{ getCurrencySymbol(bestPrice.currency) }}{{ formatPrice(bestPrice.price) }}
-            </span>
-            <a
-              v-if="bestPrice.url"
-              :href="bestPrice.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              @click.stop
-              class="text-xs text-accent-500 hover:text-accent-600 hover:underline"
-            >
-              {{ bestPrice.storeName }}
-            </a>
-            <span v-else class="text-xs text-gray-400">
-              {{ bestPrice.storeName }}
-            </span>
+          <!-- Best Price -->
+          <div v-if="bestPrice" class="flex items-center justify-between">
+            <span class="text-xs text-gray-500">{{ $t('wishes.card.best') }}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-semibold text-accent-600">
+                {{ getCurrencySymbol(bestPrice.currency) }}{{ formatPrice(bestPrice.price) }}
+              </span>
+              <a
+                v-if="bestPrice.url"
+                :href="bestPrice.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                @click.stop
+                class="text-xs text-accent-500 hover:text-accent-600 hover:underline"
+              >
+                {{ bestPrice.storeName }}
+              </a>
+              <span v-else class="text-xs text-gray-400">
+                {{ bestPrice.storeName }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Price Sources Count -->
+          <div v-if="wish.priceSources && wish.priceSources.length > 1" class="flex items-center gap-1.5 text-xs text-gray-400">
+            <Icon name="lucide:bar-chart-3" class="w-3.5 h-3.5" />
+            {{ $t('wishes.card.sourcesTracked', { count: wish.priceSources.length }) }}
           </div>
         </div>
 
-        <!-- Price Sources Count -->
-        <div v-if="wish.priceSources && wish.priceSources.length > 1" class="flex items-center gap-1.5 text-xs text-gray-400">
-          <Icon name="lucide:bar-chart-3" class="w-3.5 h-3.5" />
-          {{ $t('wishes.card.sourcesTracked', { count: wish.priceSources.length }) }}
+        <!-- Legacy Price (fallback if no price sources) -->
+        <div v-else-if="wish.expectedPrice" class="flex items-center justify-between mb-3">
+          <span class="text-lg font-semibold text-accent-600">
+            {{ getCurrencySymbol(wish.currency) }}{{ formatPrice(wish.expectedPrice) }}
+          </span>
         </div>
-      </div>
 
-      <!-- Legacy Price (fallback if no price sources) -->
-      <div v-else-if="wish.expectedPrice" class="flex items-center justify-between mb-3">
-        <span class="text-lg font-semibold text-accent-600">
-          {{ getCurrencySymbol(wish.currency) }}{{ formatPrice(wish.expectedPrice) }}
-        </span>
-      </div>
+        <!-- For Person Badge -->
+        <div v-if="wish.forPerson" class="mb-3">
+          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+            {{ $t('common.for', { person: wish.forPerson }) }}
+          </span>
+        </div>
 
-      <!-- For Person Badge -->
-      <div v-if="wish.forPerson" class="mb-3">
-        <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-          {{ $t('common.for', { person: wish.forPerson }) }}
-        </span>
-      </div>
-
-      <!-- Shopping Links -->
-      <div v-if="wish.shoppingLinks && wish.shoppingLinks.length > 0" class="flex flex-wrap gap-2">
-        <a
-          v-for="(link, index) in wish.shoppingLinks.slice(0, 2)"
-          :key="index"
-          :href="link.url"
-          target="_blank"
-          rel="noopener noreferrer"
-          @click.stop
-          class="inline-flex items-center gap-1 text-xs text-accent-600 hover:text-accent-700 hover:underline"
-        >
-          <Icon name="lucide:external-link" class="w-3.5 h-3.5" />
-          {{ link.label || getLinkDomain(link.url) }}
-        </a>
-        <span v-if="wish.shoppingLinks.length > 2" class="text-xs text-gray-400">
-          {{ $t('common.more', { count: wish.shoppingLinks.length - 2 }) }}
-        </span>
-      </div>
-
-      <!-- Tracking Info -->
-      <div v-if="wish.status === 'shipping' && wish.trackingUrl" class="mt-3 pt-3 border-t border-gray-100">
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-          <Icon name="lucide:info" class="w-4 h-4 text-amber-500" />
+        <!-- Shopping Links -->
+        <div v-if="wish.shoppingLinks && wish.shoppingLinks.length > 0" class="flex flex-wrap gap-2">
           <a
-            :href="wish.trackingUrl"
+            v-for="(link, index) in wish.shoppingLinks.slice(0, 2)"
+            :key="index"
+            :href="link.url"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-accent-600 hover:underline"
             @click.stop
+            class="inline-flex items-center gap-1 text-xs text-accent-600 hover:text-accent-700 hover:underline"
           >
-            {{ $t('wishes.card.trackPackage') }}
+            <Icon name="lucide:external-link" class="w-3.5 h-3.5" />
+            {{ link.label || getLinkDomain(link.url) }}
           </a>
+          <span v-if="wish.shoppingLinks.length > 2" class="text-xs text-gray-400">
+            {{ $t('common.more', { count: wish.shoppingLinks.length - 2 }) }}
+          </span>
         </div>
+      </template>
+
+      <!-- Tracking Info -->
+      <div v-if="wish.status === 'shipping' && wish.trackingUrl" :class="compact ? 'mt-1 pt-1' : 'mt-3 pt-3'" class="border-t border-gray-100">
+        <a
+          :href="wish.trackingUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-1.5 text-accent-600 hover:underline"
+          :class="compact ? 'text-xs' : 'text-sm'"
+          @click.stop
+        >
+          <Icon name="lucide:package" :class="compact ? 'w-3 h-3' : 'w-4 h-4'" class="text-amber-500" />
+          {{ $t('wishes.card.trackPackage') }}
+        </a>
       </div>
     </div>
   </div>
@@ -159,6 +173,8 @@ import type { Timestamp } from 'firebase/firestore'
 
 interface Props {
   wish: Wish
+  listName?: string
+  compact?: boolean
 }
 
 const props = defineProps<Props>()

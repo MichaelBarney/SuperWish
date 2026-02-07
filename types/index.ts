@@ -15,7 +15,22 @@ declare module '#app' {
   }
 }
 
-export type WishStatus = 'wanted' | 'purchased' | 'shipping' | 'delivered' | 'gifted'
+export type WishStatus = 'wanted' | 'owned' | 'shipping' | 'gifted'
+
+// Legacy statuses that map to 'owned' - used for backwards compatibility with existing data
+export type LegacyWishStatus = 'purchased' | 'delivered'
+export type AnyWishStatus = WishStatus | LegacyWishStatus
+
+// Check if a status should be treated as 'owned'
+export function isOwnedStatus(status: string): boolean {
+  return status === 'owned' || status === 'purchased' || status === 'delivered'
+}
+
+// Normalize legacy statuses to current statuses
+export function normalizeStatus(status: string): WishStatus {
+  if (isOwnedStatus(status)) return 'owned'
+  return status as WishStatus
+}
 
 export interface WishQuestion {
   questionKey: string  // i18n key for the question
@@ -152,14 +167,14 @@ export function getRegionCurrency(regionCode: string): string {
 
 export const WISH_STATUSES: { value: WishStatus; label: string; color: string }[] = [
   { value: 'wanted', label: 'Wanted', color: 'gray' },
-  { value: 'purchased', label: 'Purchased', color: 'blue' },
+  { value: 'owned', label: 'Owned', color: 'green' },
   { value: 'shipping', label: 'Shipping', color: 'amber' },
-  { value: 'delivered', label: 'Delivered', color: 'green' },
   { value: 'gifted', label: 'Gifted', color: 'purple' },
 ]
 
-export function getStatusConfig(status: WishStatus) {
-  return WISH_STATUSES.find(s => s.value === status) || WISH_STATUSES[0]
+export function getStatusConfig(status: WishStatus | LegacyWishStatus) {
+  const normalizedStatus = normalizeStatus(status)
+  return WISH_STATUSES.find(s => s.value === normalizedStatus) || WISH_STATUSES[0]
 }
 
 export function getCurrencySymbol(code: string): string {

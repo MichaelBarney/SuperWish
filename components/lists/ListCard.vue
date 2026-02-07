@@ -1,6 +1,6 @@
 <template>
   <NuxtLink
-    :to="`/list/${list.id}`"
+    :to="`/wish/list/${list.id}`"
     class="group block bg-white rounded-xl shadow-soft hover:shadow-soft-lg transition-all duration-300 overflow-hidden flex-shrink-0 w-48"
   >
     <!-- Card Header with gradient -->

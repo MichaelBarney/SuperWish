@@ -19,7 +19,7 @@ export function useProductSearch() {
 
     try {
       const searchFn = httpsCallable<
-        { query: string; gl?: string; hl?: string; location?: string; domain?: string },
+        { query: string; gl?: string; hl?: string; location?: string; domain?: string; currency?: string },
         { results: ProductSearchResult[] }
       >(
         $functions,
@@ -31,6 +31,7 @@ export function useProductSearch() {
         hl: region.serpApi.hl,
         location: region.serpApi.location,
         domain: region.serpApi.domain,
+        currency: region.currency.code,
       })
       results.value = response.data.results
     } catch (e: unknown) {

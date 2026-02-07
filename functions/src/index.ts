@@ -22,12 +22,13 @@ export const searchProducts = onCall(
       throw new HttpsError("unauthenticated", "Must be logged in");
     }
 
-    const { query, gl, hl, location, domain } = request.data as {
+    const { query, gl, hl, location, domain, currency } = request.data as {
       query?: string;
       gl?: string;
       hl?: string;
       location?: string;
       domain?: string;
+      currency?: string;
     };
     if (!query || typeof query !== "string" || query.trim().length === 0) {
       throw new HttpsError("invalid-argument", "Search query is required");
@@ -77,7 +78,7 @@ export const searchProducts = onCall(
       .map((item: Record<string, unknown>) => ({
         title: (item.title as string) || "",
         price: (item.extracted_price as number) ?? null,
-        currency: (item.currency as string) || "USD",
+        currency: (item.currency as string) || currency || "USD",
         imageUrl: (item.thumbnail as string) || "",
         link: (item.link as string) || (item.product_link as string) || "",
         storeName: (item.source as string) || "",

@@ -16,7 +16,7 @@
 
     <!-- Empty State -->
     <div
-      v-else-if="lists.length === 0"
+      v-else-if="!hasContent"
       class="text-center py-12"
     >
       <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
@@ -37,6 +37,11 @@
         ref="scrollContainer"
         class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
       >
+        <!-- Owned List Card (always first) -->
+        <ListsOwnedListCard
+          v-if="ownedCount && ownedCount > 0"
+          :count="ownedCount"
+        />
         <ListsListCard
           v-for="list in lists"
           :key="list.id"
@@ -71,9 +76,13 @@ import type { WishList } from '~/types'
 interface Props {
   lists: readonly WishList[]
   loading?: boolean
+  ownedCount?: number
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+// Show carousel if there are lists OR owned items
+const hasContent = computed(() => props.lists.length > 0 || (props.ownedCount ?? 0) > 0)
 
 defineEmits<{
   create: []
