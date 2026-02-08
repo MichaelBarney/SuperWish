@@ -1,30 +1,40 @@
 <template>
-  <NuxtLink
-    :to="`/trip/${trip.id}`"
-    class="group block bg-white rounded-2xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1"
+  <div
+    class="group block bg-white rounded-2xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 cursor-pointer"
+    @click="$emit('click', quest)"
   >
     <!-- Cover Image -->
     <div class="relative aspect-[16/9] overflow-hidden">
       <img
-        v-if="trip.coverUrl"
-        :src="trip.coverUrl"
-        :alt="trip.name"
+        v-if="quest.coverUrl"
+        :src="quest.coverUrl"
+        :alt="quest.name"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       <div
         v-else
-        class="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center"
+        class="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center"
       >
-        <Icon name="lucide:plane" class="w-12 h-12 text-white/50" />
+        <Icon name="lucide:target" class="w-12 h-12 text-white/50" />
       </div>
 
       <!-- Gradient overlay -->
       <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
+      <!-- Status Badge -->
+      <div class="absolute top-3 right-3">
+        <span
+          class="px-2.5 py-1 rounded-full text-xs font-medium"
+          :class="statusBadgeClass"
+        >
+          {{ $t(`quest.quests.status.${quest.status}`) }}
+        </span>
+      </div>
+
       <!-- Title overlay -->
       <div class="absolute bottom-0 left-0 right-0 p-4">
         <h3 class="text-lg font-semibold text-white truncate">
-          {{ trip.name }}
+          {{ quest.name }}
         </h3>
         <p v-if="dateRange" class="text-sm text-white/80 mt-0.5">
           {{ dateRange }}
@@ -34,47 +44,47 @@
 
     <!-- Content -->
     <div class="p-4">
-      <p v-if="trip.description" class="text-sm text-gray-500 line-clamp-2 mb-3">
-        {{ trip.description }}
+      <p v-if="quest.goal" class="text-sm text-gray-700 font-medium mb-1 line-clamp-1">
+        {{ quest.goal }}
       </p>
-
-      <!-- Budget info -->
-      <div v-if="trip.totalBudget" class="flex items-center gap-2 text-sm text-gray-500">
-        <Icon name="lucide:dollar-sign" class="w-4 h-4" />
-        <span>{{ formattedBudget }}</span>
-      </div>
+      <p v-if="quest.description" class="text-sm text-gray-500 line-clamp-2">
+        {{ quest.description }}
+      </p>
     </div>
-  </NuxtLink>
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { Trip } from '~/types'
-import { getCurrencySymbol } from '~/types'
+import type { Quest } from '~/types'
 
 interface Props {
-  trip: Trip
+  quest: Quest
 }
 
 const props = defineProps<Props>()
+defineEmits<{
+  click: [quest: Quest]
+}>()
+
 const { locale } = useI18n()
 
 const statusBadgeClass = computed(() => {
-  switch (props.trip.status) {
+  switch (props.quest.status) {
     case 'planning':
       return 'bg-gray-100 text-gray-700'
-    case 'upcoming':
-      return 'bg-blue-100 text-blue-700'
-    case 'active':
+    case 'in_progress':
       return 'bg-green-100 text-green-700'
     case 'completed':
-      return 'bg-purple-100 text-purple-700'
+      return 'bg-emerald-100 text-emerald-700'
+    case 'on_hold':
+      return 'bg-amber-100 text-amber-700'
     default:
       return 'bg-gray-100 text-gray-700'
   }
 })
 
 const dateRange = computed(() => {
-  const { startDate, endDate } = props.trip
+  const { startDate, endDate } = props.quest
   if (!startDate && !endDate) return null
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
@@ -84,7 +94,6 @@ const dateRange = computed(() => {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
     const end = endDate instanceof Date ? endDate : new Date(endDate)
 
-    // If same year, don't repeat year
     if (start.getFullYear() === end.getFullYear()) {
       return `${start.toLocaleDateString(dateLocale, formatOptions)} - ${end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
     }
@@ -98,12 +107,5 @@ const dateRange = computed(() => {
   }
 
   return null
-})
-
-const formattedBudget = computed(() => {
-  if (!props.trip.totalBudget) return ''
-
-  const symbol = getCurrencySymbol(props.trip.baseCurrency)
-  return `${symbol} ${props.trip.totalBudget.toLocaleString()}`
 })
 </script>

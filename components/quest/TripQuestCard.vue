@@ -21,6 +21,24 @@
       <!-- Gradient overlay -->
       <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
+      <!-- SuperTrip Badge -->
+      <div class="absolute top-3 left-3">
+        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500 text-white flex items-center gap-1">
+          <Icon name="lucide:plane" class="w-3 h-3" />
+          SuperTrip
+        </span>
+      </div>
+
+      <!-- Status Badge -->
+      <div class="absolute top-3 right-3">
+        <span
+          class="px-2.5 py-1 rounded-full text-xs font-medium"
+          :class="statusBadgeClass"
+        >
+          {{ $t(`travel.trips.status.${trip.status}`) }}
+        </span>
+      </div>
+
       <!-- Title overlay -->
       <div class="absolute bottom-0 left-0 right-0 p-4">
         <h3 class="text-lg font-semibold text-white truncate">
@@ -34,22 +52,18 @@
 
     <!-- Content -->
     <div class="p-4">
-      <p v-if="trip.description" class="text-sm text-gray-500 line-clamp-2 mb-3">
+      <p v-if="trip.description" class="text-sm text-gray-500 line-clamp-2">
         {{ trip.description }}
       </p>
-
-      <!-- Budget info -->
-      <div v-if="trip.totalBudget" class="flex items-center gap-2 text-sm text-gray-500">
-        <Icon name="lucide:dollar-sign" class="w-4 h-4" />
-        <span>{{ formattedBudget }}</span>
-      </div>
+      <p v-else class="text-sm text-purple-600">
+        {{ $t('quest.tripQuest.viewTrip') }}
+      </p>
     </div>
   </NuxtLink>
 </template>
 
 <script setup lang="ts">
 import type { Trip } from '~/types'
-import { getCurrencySymbol } from '~/types'
 
 interface Props {
   trip: Trip
@@ -84,7 +98,6 @@ const dateRange = computed(() => {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
     const end = endDate instanceof Date ? endDate : new Date(endDate)
 
-    // If same year, don't repeat year
     if (start.getFullYear() === end.getFullYear()) {
       return `${start.toLocaleDateString(dateLocale, formatOptions)} - ${end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
     }
@@ -98,12 +111,5 @@ const dateRange = computed(() => {
   }
 
   return null
-})
-
-const formattedBudget = computed(() => {
-  if (!props.trip.totalBudget) return ''
-
-  const symbol = getCurrencySymbol(props.trip.baseCurrency)
-  return `${symbol} ${props.trip.totalBudget.toLocaleString()}`
 })
 </script>

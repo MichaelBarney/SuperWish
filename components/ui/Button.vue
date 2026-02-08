@@ -36,7 +36,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // Get app context for theme-aware styling
-const { isSuperTrip } = useAppContext()
+const { isSuperTrip, isSuperQuest } = useAppContext()
 
 const sizeClasses = computed(() => {
   switch (props.size) {
@@ -55,10 +55,14 @@ const variantClasses = computed(() => {
     case 'danger':
       return 'bg-red-50 text-red-600 hover:bg-red-100 focus:ring-red-300'
     default:
-      // Use purple for SuperTrip, teal for SuperWish
-      return isSuperTrip.value
-        ? 'bg-purple-500 text-white hover:bg-purple-600 focus:ring-purple-300 shadow-sm hover:shadow-md'
-        : 'bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-300 shadow-sm hover:shadow-md'
+      // Use purple for SuperTrip, green for SuperQuest, teal for SuperWish
+      if (isSuperTrip.value) {
+        return 'bg-purple-500 text-white hover:bg-purple-600 focus:ring-purple-300 shadow-sm hover:shadow-md'
+      }
+      if (isSuperQuest.value) {
+        return 'bg-green-500 text-white hover:bg-green-600 focus:ring-green-300 shadow-sm hover:shadow-md'
+      }
+      return 'bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-300 shadow-sm hover:shadow-md'
   }
 })
 </script>

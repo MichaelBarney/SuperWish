@@ -145,16 +145,6 @@
 
       <!-- Itinerary Section -->
       <div class="mb-8">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-gray-900">{{ $t('travel.itinerary.title') }}</h2>
-          <UiButton variant="secondary" size="sm" @click="showAddDestinationModal = true">
-            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            {{ $t('travel.destinations.addDestination') }}
-          </UiButton>
-        </div>
-
         <!-- Loading -->
         <div v-if="destinationsLoading || transportationsLoading" class="bg-white rounded-xl shadow-soft p-8 text-center">
           <svg class="animate-spin h-6 w-6 text-purple-500 mx-auto" fill="none" viewBox="0 0 24 24">

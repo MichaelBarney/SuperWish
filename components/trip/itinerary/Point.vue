@@ -22,9 +22,8 @@
   <!-- Destination Card (new design) -->
   <div
     v-else
-    class="relative overflow-hidden rounded-2xl shadow-lg cursor-pointer group max-w-md mx-auto"
+    class="relative overflow-hidden rounded-2xl shadow-lg group max-w-md mx-auto"
     :class="compact ? 'min-h-[120px]' : 'min-h-[160px]'"
-    @click="$emit('click')"
   >
     <!-- Background Image -->
     <div
@@ -35,24 +34,9 @@
     <!-- Gradient Overlay -->
     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
 
-    <!-- Status Badge -->
-    <div
-      v-if="isConfirmed"
-      class="absolute top-3 right-3 px-2.5 py-1 bg-green-500 text-white text-xs font-semibold rounded-full uppercase tracking-wide"
-    >
-      {{ $t('travel.itinerary.status.confirmed') }}
-    </div>
 
     <!-- Content -->
     <div class="relative h-full flex flex-col justify-end p-3" :class="compact ? 'p-2.5' : 'p-3'">
-      <!-- Order Badge -->
-      <div
-        v-if="order"
-        class="absolute top-3 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
-      >
-        <span class="text-xs font-bold text-white">{{ order }}</span>
-      </div>
-
       <!-- City Name -->
       <h3
         class="font-bold text-white drop-shadow-lg"
@@ -95,13 +79,39 @@
       </div>
     </div>
 
-    <!-- Hover Edit Indicator -->
-    <div class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-      <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-        <div class="p-3 bg-white/20 backdrop-blur-sm rounded-full">
-          <Icon name="lucide:pencil" class="w-5 h-5 text-white" />
+    <!-- 3-Dot Menu -->
+    <div class="absolute top-3 z-10" :class="'right-3'">
+      <button
+        ref="menuButtonRef"
+        @click.stop="toggleMenu"
+        class="w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm flex items-center justify-center transition-colors cursor-pointer"
+      >
+        <Icon name="lucide:more-vertical" class="w-4 h-4 text-white" />
+      </button>
+
+      <!-- Dropdown Menu -->
+      <Transition
+        enter-active-class="transition ease-out duration-100"
+        enter-from-class="transform opacity-0 scale-95"
+        enter-to-class="transform opacity-100 scale-100"
+        leave-active-class="transition ease-in duration-75"
+        leave-from-class="transform opacity-100 scale-100"
+        leave-to-class="transform opacity-0 scale-95"
+      >
+        <div
+          v-if="isMenuOpen"
+          ref="menuRef"
+          class="absolute right-0 top-full mt-1 z-50 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+        >
+          <button
+            @click="handleEdit"
+            class="w-full flex items-center gap-2 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <Icon name="lucide:pencil" class="w-4 h-4" />
+            <span class="text-sm font-medium">{{ $t('common.edit') }}</span>
+          </button>
         </div>
-      </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -130,11 +140,50 @@ const props = withDefaults(defineProps<Props>(), {
   compact: false,
 })
 
-defineEmits<{
+const emit = defineEmits<{
   click: []
 }>()
 
 const { locale } = useI18n()
+
+// Menu state
+const isMenuOpen = ref(false)
+const menuButtonRef = ref<HTMLElement | null>(null)
+const menuRef = ref<HTMLElement | null>(null)
+
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value
+}
+
+function closeMenu() {
+  isMenuOpen.value = false
+}
+
+function handleEdit() {
+  emit('click')
+  closeMenu()
+}
+
+// Click outside handler
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as Node
+  if (
+    menuButtonRef.value &&
+    menuRef.value &&
+    !menuButtonRef.value.contains(target) &&
+    !menuRef.value.contains(target)
+  ) {
+    closeMenu()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 // Country flag emoji
 const countryFlag = computed(() => {

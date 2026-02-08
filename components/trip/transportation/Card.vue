@@ -34,6 +34,11 @@
             </span>
           </p>
 
+          <!-- Date -->
+          <p v-if="formattedDate" class="text-xs text-gray-600 mt-0.5">
+            {{ formattedDate }}
+          </p>
+          
           <!-- Times -->
           <p class="text-xs text-gray-500 mt-0.5">
             {{ formattedDepartureTime }} <span class="text-gray-400">›</span> {{ formattedArrivalTime }}
@@ -198,6 +203,17 @@ const formatTime = (dateTime: Date | string | undefined): string => {
 
 const formattedDepartureTime = computed(() => formatTime(props.transportation?.departureDateTime))
 const formattedArrivalTime = computed(() => formatTime(props.transportation?.arrivalDateTime))
+
+// Format date (e.g., "Jan 15")
+const formattedDate = computed(() => {
+  if (!props.transportation?.departureDateTime) return null
+  const date = props.transportation.departureDateTime instanceof Date
+    ? props.transportation.departureDateTime
+    : new Date(props.transportation.departureDateTime)
+  if (isNaN(date.getTime())) return null
+  const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
+  return date.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
+})
 
 // Calculate duration
 const duration = computed(() => {

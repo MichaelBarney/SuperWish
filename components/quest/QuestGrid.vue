@@ -17,29 +17,37 @@
 
     <!-- Empty State -->
     <div
-      v-else-if="trips.length === 0"
+      v-else-if="quests.length === 0 && trips.length === 0"
       class="text-center py-16 bg-gray-50 rounded-2xl"
     >
-      <div class="w-20 h-20 rounded-2xl bg-purple-100 flex items-center justify-center mx-auto mb-6">
-        <Icon name="lucide:plane" class="w-10 h-10 text-purple-500" />
+      <div class="w-20 h-20 rounded-2xl bg-green-100 flex items-center justify-center mx-auto mb-6">
+        <Icon name="lucide:target" class="w-10 h-10 text-green-500" />
       </div>
       <h3 class="text-lg font-semibold text-gray-900 mb-2">
-        {{ $t('travel.trips.empty.title') }}
+        {{ $t('quest.quests.empty.title') }}
       </h3>
       <p class="text-gray-500 mb-6">
-        {{ $t('travel.trips.empty.description') }}
+        {{ $t('quest.quests.empty.description') }}
       </p>
       <UiButton variant="primary" @click="$emit('create')">
         <Icon name="lucide:plus" class="w-4 h-4 mr-1.5" />
-        {{ $t('travel.trips.empty.createButton') }}
+        {{ $t('quest.quests.empty.createButton') }}
       </UiButton>
     </div>
 
-    <!-- Trips Grid -->
+    <!-- Quest Grid -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <TripTripsTripCard
+      <!-- Native Quests -->
+      <QuestCard
+        v-for="quest in sortedQuests"
+        :key="`quest-${quest.id}`"
+        :quest="quest"
+        @click="$emit('edit', quest)"
+      />
+      <!-- Trips as Quests -->
+      <QuestTripQuestCard
         v-for="trip in sortedTrips"
-        :key="trip.id"
+        :key="`trip-${trip.id}`"
         :trip="trip"
       />
     </div>
@@ -47,9 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Trip } from '~/types'
+import type { Quest, Trip } from '~/types'
 
 interface Props {
+  quests: readonly Quest[]
   trips: readonly Trip[]
   loading?: boolean
 }
@@ -60,10 +69,27 @@ const props = withDefaults(defineProps<Props>(), {
 
 defineEmits<{
   create: []
+  edit: [quest: Quest]
 }>()
 
+// Sort quests: in_progress first, then planning, then others
+const questStatusOrder: Record<string, number> = {
+  in_progress: 0,
+  planning: 1,
+  on_hold: 2,
+  completed: 3,
+}
+
+const sortedQuests = computed(() => {
+  return [...props.quests].sort((a, b) => {
+    const orderA = questStatusOrder[a.status] ?? 99
+    const orderB = questStatusOrder[b.status] ?? 99
+    return orderA - orderB
+  })
+})
+
 // Sort trips: upcoming first, then planning, then others
-const statusOrder: Record<string, number> = {
+const tripStatusOrder: Record<string, number> = {
   upcoming: 0,
   planning: 1,
   active: 2,
@@ -72,8 +98,8 @@ const statusOrder: Record<string, number> = {
 
 const sortedTrips = computed(() => {
   return [...props.trips].sort((a, b) => {
-    const orderA = statusOrder[a.status] ?? 99
-    const orderB = statusOrder[b.status] ?? 99
+    const orderA = tripStatusOrder[a.status] ?? 99
+    const orderB = tripStatusOrder[b.status] ?? 99
     return orderA - orderB
   })
 })

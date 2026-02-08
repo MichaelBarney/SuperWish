@@ -26,13 +26,19 @@
         title="SuperX"
       >
         <div
-          class="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
-          :class="isSuperTrip ? 'bg-gradient-to-br from-purple-400 to-purple-600' : 'bg-gradient-to-br from-accent-400 to-accent-600'"
+          class="w-10 h-10 rounded-xl flex items-center justify-center transition-colors bg-gradient-to-br"
+          :class="[
+            isSuperTrip ? 'from-purple-400 to-purple-600' :
+            isSuperQuest ? 'from-green-400 to-green-600' :
+            'from-accent-400 to-accent-600'
+          ]"
         >
           <!-- Star icon for SuperWish -->
-          <Icon v-if="!isSuperTrip" name="lucide:star" class="w-5 h-5 text-white" />
+          <Icon v-if="!isSuperTrip && !isSuperQuest" name="lucide:star" class="w-5 h-5 text-white" />
           <!-- Plane icon for SuperTrip -->
-          <Icon v-else name="lucide:plane" class="w-5 h-5 text-white" />
+          <Icon v-else-if="isSuperTrip" name="lucide:plane" class="w-5 h-5 text-white" />
+          <!-- Target icon for SuperQuest -->
+          <Icon v-else name="lucide:target" class="w-5 h-5 text-white" />
         </div>
       </NuxtLink>
 
@@ -54,7 +60,7 @@
     <!-- Navigation -->
     <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
       <!-- SuperWish Navigation -->
-      <template v-if="!isSuperTrip">
+      <template v-if="!isSuperTrip && !isSuperQuest">
         <NavigationAppSidebarItem
           to="/wish"
           :label="$t('dashboard.myLists')"
@@ -69,7 +75,7 @@
       </template>
 
       <!-- SuperTrip Navigation -->
-      <template v-else>
+      <template v-else-if="isSuperTrip">
         <NavigationAppSidebarItem
           to="/trip"
           :label="$t('travel.nav.trips')"
@@ -106,6 +112,21 @@
           </NavigationAppSidebarItem>
         </template>
       </template>
+
+      <!-- SuperQuest Navigation -->
+      <template v-else>
+        <NavigationAppSidebarItem
+          to="/quest"
+          :label="$t('quest.nav.quests')"
+          :is-active="route.path === '/quest' || route.path.startsWith('/quest/')"
+          :collapsed="!isMobile"
+          variant="green"
+        >
+          <template #icon>
+            <Icon name="lucide:target" class="w-5 h-5" />
+          </template>
+        </NavigationAppSidebarItem>
+      </template>
     </nav>
 
     <!-- Footer - User Profile (links to settings) -->
@@ -114,7 +135,7 @@
       <NuxtLink
         to="/settings"
         class="hidden lg:flex items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
-        :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : 'bg-accent-50') : ''"
+        :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : isSuperQuest ? 'bg-green-50' : 'bg-accent-50') : ''"
         :title="$t('nav.settings')"
       >
         <img
@@ -126,11 +147,11 @@
         <div
           v-else
           class="w-9 h-9 rounded-full flex items-center justify-center"
-          :class="isSuperTrip ? 'bg-purple-100' : 'bg-accent-100'"
+          :class="isSuperTrip ? 'bg-purple-100' : isSuperQuest ? 'bg-green-100' : 'bg-accent-100'"
         >
           <span
             class="text-sm font-medium"
-            :class="isSuperTrip ? 'text-purple-700' : 'text-accent-700'"
+            :class="isSuperTrip ? 'text-purple-700' : isSuperQuest ? 'text-green-700' : 'text-accent-700'"
           >
             {{ user.displayName?.charAt(0) || user.email?.charAt(0) || '?' }}
           </span>
@@ -142,7 +163,7 @@
         <NuxtLink
           to="/settings"
           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-gray-100"
-          :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : 'bg-accent-50') : ''"
+          :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : isSuperQuest ? 'bg-green-50' : 'bg-accent-50') : ''"
         >
           <img
             v-if="user.photoURL"
@@ -153,11 +174,11 @@
           <div
             v-else
             class="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-            :class="isSuperTrip ? 'bg-purple-100' : 'bg-accent-100'"
+            :class="isSuperTrip ? 'bg-purple-100' : isSuperQuest ? 'bg-green-100' : 'bg-accent-100'"
           >
             <span
               class="text-sm font-medium"
-              :class="isSuperTrip ? 'text-purple-700' : 'text-accent-700'"
+              :class="isSuperTrip ? 'text-purple-700' : isSuperQuest ? 'text-green-700' : 'text-accent-700'"
             >
               {{ user.displayName?.charAt(0) || user.email?.charAt(0) || '?' }}
             </span>
@@ -199,7 +220,7 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const { user, signOut } = useAuth()
-const { isSuperTrip } = useAppContext()
+const { isSuperTrip, isSuperQuest } = useAppContext()
 
 // Check if we're on mobile
 const isMobile = ref(false)

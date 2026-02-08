@@ -20,7 +20,7 @@
 
         <!-- Logged In: App Selector -->
         <template v-else-if="user">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
             <!-- SuperWish Card -->
             <NuxtLink
               to="/wish"
@@ -44,11 +44,23 @@
               <h2 class="text-xl font-bold text-gray-900 mb-2">SuperTrip</h2>
               <p class="text-gray-500 text-sm">{{ $t('landing.superTripDescription') }}</p>
             </NuxtLink>
+
+            <!-- SuperQuest Card -->
+            <NuxtLink
+              to="/quest"
+              class="group bg-white rounded-2xl shadow-soft p-8 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-green-200"
+            >
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mx-auto mb-4 transition-transform group-hover:scale-110">
+                <Icon name="lucide:target" class="w-8 h-8 text-white" />
+              </div>
+              <h2 class="text-xl font-bold text-gray-900 mb-2">SuperQuest</h2>
+              <p class="text-gray-500 text-sm">{{ $t('landing.superQuestDescription') }}</p>
+            </NuxtLink>
           </div>
 
           <!-- User info -->
           <div class="text-center text-sm text-gray-500">
-            <span>{{ $t('landing.signedInAs') }} </span>
+            <span>{{ $t('landing.signedInAs') }} &nbsp; </span>
             <span class="font-medium text-gray-700">{{ user.displayName || user.email }}</span>
             <span class="mx-2">·</span>
             <button
@@ -87,10 +99,10 @@
               <p class="text-sm font-medium text-gray-700">{{ $t('landing.planTrips') }}</p>
             </div>
             <div class="p-4">
-              <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                <Icon name="lucide:sparkles" class="w-5 h-5 text-gray-600" />
+              <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mx-auto mb-3">
+                <Icon name="lucide:target" class="w-5 h-5 text-green-600" />
               </div>
-              <p class="text-sm font-medium text-gray-700">{{ $t('landing.andMore') }}</p>
+              <p class="text-sm font-medium text-gray-700">{{ $t('landing.trackQuests') }}</p>
             </div>
           </div>
         </template>

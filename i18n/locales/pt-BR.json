@@ -25,6 +25,7 @@
     "appName": "SuperX",
     "superWish": "SuperWish",
     "superTrip": "SuperTrip",
+    "superQuest": "SuperQuest",
     "dashboard": "Painel",
     "settings": "Configuracoes",
     "signOut": "Sair"
@@ -43,9 +44,11 @@
     "trackWishes": "Acompanhe Desejos",
     "setDeadlines": "Defina Prazos",
     "planTrips": "Planeje Viagens",
+    "trackQuests": "Acompanhe Metas",
     "andMore": "E Mais",
     "superWishDescription": "Organize listas de desejos, acompanhe precos e nunca perca um presente",
     "superTripDescription": "Planeje suas aventuras com itinerarios e orcamentos",
+    "superQuestDescription": "Gerencie projetos e acompanhe seus objetivos",
     "signedInAs": "Conectado como",
     "footer": "Feito com carinho para os momentos especiais da vida"
   },
@@ -483,6 +486,46 @@
         "planned": "Planejado",
         "cancelled": "Cancelado"
       }
+    }
+  },
+  "quest": {
+    "nav": {
+      "quests": "Minhas Metas"
+    },
+    "quests": {
+      "title": "Minhas Metas",
+      "newQuest": "Nova Meta",
+      "editQuest": "Editar Meta",
+      "deleteQuest": "Excluir Meta",
+      "deleteConfirm": "Tem certeza que deseja excluir esta meta? Esta acao nao pode ser desfeita.",
+      "questCount": "{count} meta | {count} metas",
+      "empty": {
+        "title": "Nenhuma meta ainda",
+        "description": "Comece um novo projeto ou objetivo para acompanhar",
+        "createButton": "Criar Meta"
+      },
+      "form": {
+        "name": "Nome da Meta",
+        "namePlaceholder": "ex., Aprender Espanhol",
+        "nameRequired": "Nome da meta e obrigatorio",
+        "goal": "Objetivo",
+        "goalPlaceholder": "O que voce quer alcancar?",
+        "description": "Descricao",
+        "descriptionPlaceholder": "Mais detalhes sobre esta meta...",
+        "coverImage": "Imagem de Capa",
+        "startDate": "Data de Inicio",
+        "endDate": "Data Alvo de Termino",
+        "createQuest": "Criar Meta"
+      },
+      "status": {
+        "planning": "Planejando",
+        "in_progress": "Em Andamento",
+        "completed": "Concluida",
+        "on_hold": "Pausada"
+      }
+    },
+    "tripQuest": {
+      "viewTrip": "Ver no SuperTrip"
     }
   }
 }

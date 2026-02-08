@@ -611,3 +611,44 @@ export interface CitySelection {
   country: string
   countryCode: string
 }
+
+// =============================================
+// QUEST TYPES (SuperQuest)
+// =============================================
+
+export type QuestStatus = 'planning' | 'in_progress' | 'completed' | 'on_hold'
+
+export interface Quest {
+  id: string
+  userId: string
+  name: string
+  goal?: string
+  description?: string
+  coverUrl?: string
+  startDate?: Date | null
+  endDate?: Date | null
+  status: QuestStatus
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+export interface QuestForm {
+  name: string
+  goal: string
+  description: string
+  coverUrl: string
+  startDate: string
+  endDate: string
+  status: QuestStatus
+}
+
+export const QUEST_STATUSES: { value: QuestStatus; label: string; color: string }[] = [
+  { value: 'planning', label: 'Planning', color: 'gray' },
+  { value: 'in_progress', label: 'In Progress', color: 'green' },
+  { value: 'completed', label: 'Completed', color: 'emerald' },
+  { value: 'on_hold', label: 'On Hold', color: 'amber' },
+]
+
+export function getQuestStatusConfig(status: QuestStatus) {
+  return QUEST_STATUSES.find(s => s.value === status) || QUEST_STATUSES[0]
+}
