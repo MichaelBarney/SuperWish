@@ -143,6 +143,23 @@
         </div>
       </div>
 
+      <!-- Tasks Section -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">{{ $t('task.task.title') }}</h2>
+        </div>
+        <div class="bg-white rounded-xl shadow-soft">
+          <TaskList
+            :tasks="tripTasks"
+            :trip-id="tripId"
+            @toggle="handleToggleTask"
+            @edit="() => {}"
+            @delete="handleDeleteTask"
+            @add="handleQuickAddTask"
+          />
+        </div>
+      </div>
+
       <!-- Itinerary Section -->
       <div class="mb-8">
         <!-- Loading -->
@@ -410,7 +427,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TripForm, Destination, DestinationForm, TransportationForm, Transportation } from '~/types'
+import type { TripForm, Destination, DestinationForm, TransportationForm, Transportation, Task } from '~/types'
 import { getCurrencySymbol } from '~/types'
 
 definePageMeta({
@@ -446,6 +463,10 @@ const {
   getTransportationBetween,
   getOrphanTransportations,
 } = useTransportation(tripId)
+
+// Tasks
+const { getTasksByTripId, createTask, toggleTaskComplete, deleteTask: deleteTaskById } = useTasks()
+const tripTasks = computed(() => getTasksByTripId(tripId.value))
 
 // Modals
 const showEditModal = ref(false)
@@ -784,6 +805,26 @@ async function handleTransportationDelete() {
     showTransportationModal.value = false
     selectedTransportation.value = null
   }
+}
+
+// Task handlers
+async function handleToggleTask(id: string, completed: boolean) {
+  await toggleTaskComplete(id, completed)
+}
+
+async function handleDeleteTask(id: string) {
+  await deleteTaskById(id)
+}
+
+async function handleQuickAddTask(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string }) {
+  await createTask({
+    title: data.title,
+    description: '',
+    questId: '',
+    subQuestId: '',
+    tripId: tripId.value,
+    destinationId: '',
+  })
 }
 
 // Helper to get origin label

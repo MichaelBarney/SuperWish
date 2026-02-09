@@ -1,4 +1,4 @@
-export type AppType = 'superwish' | 'supertrip' | 'superquest'
+export type AppType = 'superwish' | 'supertrip' | 'superquest' | 'supertask'
 
 const STORAGE_KEY = 'app-context'
 
@@ -12,7 +12,7 @@ export function useAppContext() {
     if (initialized.value) return
     if (import.meta.client) {
       const savedApp = localStorage.getItem(STORAGE_KEY) as AppType | null
-      if (savedApp && (savedApp === 'superwish' || savedApp === 'supertrip' || savedApp === 'superquest')) {
+      if (savedApp && (savedApp === 'superwish' || savedApp === 'supertrip' || savedApp === 'superquest' || savedApp === 'supertask')) {
         currentApp.value = savedApp
       }
       initialized.value = true
@@ -36,11 +36,15 @@ export function useAppContext() {
   // Computed: is SuperQuest active
   const isSuperQuest = computed(() => currentApp.value === 'superquest')
 
+  // Computed: is SuperTask active
+  const isSuperTask = computed(() => currentApp.value === 'supertask')
+
   // Computed: accent color class prefix based on current app
   const accentColorClass = computed(() => {
     switch (currentApp.value) {
       case 'supertrip': return 'purple'
       case 'superquest': return 'green'
+      case 'supertask': return 'orange'
       default: return 'accent'
     }
   })
@@ -58,6 +62,7 @@ export function useAppContext() {
     isSuperTrip,
     isSuperWish,
     isSuperQuest,
+    isSuperTask,
     accentColorClass,
     setApp,
     getAccentClass,

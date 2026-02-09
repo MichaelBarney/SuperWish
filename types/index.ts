@@ -652,3 +652,58 @@ export const QUEST_STATUSES: { value: QuestStatus; label: string; color: string 
 export function getQuestStatusConfig(status: QuestStatus) {
   return QUEST_STATUSES.find(s => s.value === status) || QUEST_STATUSES[0]
 }
+
+export interface SubQuest {
+  id: string
+  questId: string
+  userId: string
+  name: string
+  goal?: string
+  description?: string
+  coverUrl?: string
+  startDate?: Date | null
+  endDate?: Date | null
+  status: QuestStatus
+  order: number
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+export interface SubQuestForm {
+  name: string
+  goal: string
+  description: string
+  coverUrl: string
+  startDate: string
+  endDate: string
+  status: QuestStatus
+}
+
+// =============================================
+// TASK TYPES (SuperTask)
+// =============================================
+
+export interface Task {
+  id: string
+  userId: string
+  title: string
+  description?: string
+  completed: boolean
+  completedAt?: Date | null
+  questId?: string | null
+  subQuestId?: string | null
+  tripId?: string | null
+  destinationId?: string | null
+  order: number
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+export interface TaskForm {
+  title: string
+  description: string
+  questId: string
+  subQuestId: string
+  tripId: string
+  destinationId: string
+}

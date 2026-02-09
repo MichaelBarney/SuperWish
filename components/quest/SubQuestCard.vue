@@ -1,14 +1,14 @@
 <template>
-  <NuxtLink
-    :to="`/quest/${quest.id}`"
+  <div
     class="group block bg-white rounded-2xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 cursor-pointer"
+    @click="$emit('click', subquest)"
   >
     <!-- Cover Image -->
     <div class="relative aspect-[16/9] overflow-hidden">
       <img
-        v-if="quest.coverUrl"
-        :src="quest.coverUrl"
-        :alt="quest.name"
+        v-if="subquest.coverUrl"
+        :src="subquest.coverUrl"
+        :alt="subquest.name"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       <div
@@ -27,14 +27,14 @@
           class="px-2.5 py-1 rounded-full text-xs font-medium"
           :class="statusBadgeClass"
         >
-          {{ $t(`quest.quests.status.${quest.status}`) }}
+          {{ $t(`quest.quests.status.${subquest.status}`) }}
         </span>
       </div>
 
       <!-- Title overlay -->
       <div class="absolute bottom-0 left-0 right-0 p-4">
         <h3 class="text-lg font-semibold text-white truncate">
-          {{ quest.name }}
+          {{ subquest.name }}
         </h3>
         <p v-if="dateRange" class="text-sm text-white/80 mt-0.5">
           {{ dateRange }}
@@ -44,29 +44,32 @@
 
     <!-- Content -->
     <div class="p-4">
-      <p v-if="quest.goal" class="text-sm text-gray-700 font-medium mb-1 line-clamp-1">
-        {{ quest.goal }}
+      <p v-if="subquest.goal" class="text-sm text-gray-700 font-medium mb-1 line-clamp-1">
+        {{ subquest.goal }}
       </p>
-      <p v-if="quest.description" class="text-sm text-gray-500 line-clamp-2">
-        {{ quest.description }}
+      <p v-if="subquest.description" class="text-sm text-gray-500 line-clamp-2">
+        {{ subquest.description }}
       </p>
     </div>
-  </NuxtLink>
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { Quest } from '~/types'
+import type { SubQuest } from '~/types'
 
 interface Props {
-  quest: Quest
+  subquest: SubQuest
 }
 
 const props = defineProps<Props>()
+defineEmits<{
+  click: [subquest: SubQuest]
+}>()
 
 const { locale } = useI18n()
 
 const statusBadgeClass = computed(() => {
-  switch (props.quest.status) {
+  switch (props.subquest.status) {
     case 'planning':
       return 'bg-gray-100 text-gray-700'
     case 'in_progress':
@@ -81,7 +84,7 @@ const statusBadgeClass = computed(() => {
 })
 
 const dateRange = computed(() => {
-  const { startDate, endDate } = props.quest
+  const { startDate, endDate } = props.subquest
   if (!startDate && !endDate) return null
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'

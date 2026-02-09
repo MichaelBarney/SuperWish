@@ -27,19 +27,20 @@ For detailed project documentation, see `documentation/PROJECT.md`. It covers th
 
 ## Architecture
 
-**SuperX** is a personal life management SPA built with Nuxt 3 (SSR disabled), Firebase, and Tailwind CSS. It contains three modules that share authentication, navigation, UI components, and i18n:
+**SuperX** is a personal life management SPA built with Nuxt 3 (SSR disabled), Firebase, and Tailwind CSS. It contains four modules that share authentication, navigation, UI components, and i18n:
 
 | Module | Route prefix | Accent color | Icon |
 |--------|-------------|--------------|------|
 | SuperWish | `/wish` | Teal (accent) | `lucide:star` |
 | SuperTrip | `/trip` | Purple | `lucide:plane` |
 | SuperQuest | `/quest` | Green | `lucide:target` |
+| SuperTask | `/task` | Orange | `lucide:square-check-big` |
 
 ### Key Patterns
 
 **Module theming**: Components use `useAppContext()` to get the active module and dynamically apply the correct accent color. The `Button.vue`, `AppSidebar.vue`, `AppSidebarItem.vue`, and `AppSwitcher.vue` components all branch on the current app to apply module-specific colors. When adding a new module, follow `documentation/CREATENEWAPP.md` for the full checklist.
 
-**Data layer**: All data flows through composables (`useLists`, `useWishes`, `useTrips`, `useQuests`, etc.) that wrap Firestore operations. Each composable follows the same pattern: reactive `ref<T[]>` state, `onSnapshot` real-time listeners with unsubscribe cleanup, user validation via `useAuth()`, and `getDb()` helper to access Firestore.
+**Data layer**: All data flows through composables (`useLists`, `useWishes`, `useTrips`, `useQuests`, `useTasks`, etc.) that wrap Firestore operations. Each composable follows the same pattern: reactive `ref<T[]>` state, `onSnapshot` real-time listeners with unsubscribe cleanup, user validation via `useAuth()`, and `getDb()` helper to access Firestore.
 
 **Form types**: Each data model has a separate `*Form` type (e.g., `Wish` vs `WishForm`). Forms use string fields for dates/prices that get converted to proper types on save.
 
@@ -51,10 +52,12 @@ For detailed project documentation, see `documentation/PROJECT.md`. It covers th
 
 **Types**: All shared types live in `types/index.ts`, including data models, status enums/constants, region/currency definitions, and helper functions like `normalizeStatus()` for legacy status migration.
 
+**Component naming (IMPORTANT)**: Nuxt auto-imports deduplicate when the filename already starts with the folder name. `components/task/TaskList.vue` → `<TaskList>` (NOT `<TaskTaskList>`). `components/quest/SubQuestList.vue` → `<QuestSubQuestList>` (folder prefix added since filename doesn't start with `Quest`).
+
 ## Firebase
 
 - **Auth**: Google Sign-In only
-- **Firestore**: Collections are `users`, `lists`, `wishes`, `trips`, `destinations`, `transportations`, `quests` — each document has a `userId` field for ownership-based security rules
+- **Firestore**: Collections are `users`, `lists`, `wishes`, `trips`, `destinations`, `transportations`, `quests`, `subquests`, `tasks` — each document has a `userId` field for ownership-based security rules
 - **Storage**: Images only, 5MB limit, path pattern `users/{userId}/{filename}`
 - **Cloud Functions**: `searchProducts` calls SerpAPI for Google Shopping results
 

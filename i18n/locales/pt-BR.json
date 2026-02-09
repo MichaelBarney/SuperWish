@@ -26,6 +26,7 @@
     "superWish": "SuperWish",
     "superTrip": "SuperTrip",
     "superQuest": "SuperQuest",
+    "superTask": "SuperTask",
     "dashboard": "Painel",
     "settings": "Configuracoes",
     "signOut": "Sair"
@@ -44,11 +45,13 @@
     "trackWishes": "Acompanhe Desejos",
     "setDeadlines": "Defina Prazos",
     "planTrips": "Planeje Viagens",
-    "trackQuests": "Acompanhe Metas",
+    "trackQuests": "Acompanhe Missões",
     "andMore": "E Mais",
     "superWishDescription": "Organize listas de desejos, acompanhe precos e nunca perca um presente",
     "superTripDescription": "Planeje suas aventuras com itinerarios e orcamentos",
     "superQuestDescription": "Gerencie projetos e acompanhe seus objetivos",
+    "superTaskDescription": "Gerencie tarefas entre suas missões e viagens",
+    "manageTasks": "Gerenciar Tarefas",
     "signedInAs": "Conectado como",
     "footer": "Feito com carinho para os momentos especiais da vida"
   },
@@ -490,42 +493,121 @@
   },
   "quest": {
     "nav": {
-      "quests": "Minhas Metas"
+      "quests": "Minhas Missões"
     },
     "quests": {
-      "title": "Minhas Metas",
-      "newQuest": "Nova Meta",
-      "editQuest": "Editar Meta",
-      "deleteQuest": "Excluir Meta",
+      "title": "Minhas Missões",
+      "newQuest": "Nova Missão",
+      "editQuest": "Editar Missão",
+      "deleteQuest": "Excluir Missão",
       "deleteConfirm": "Tem certeza que deseja excluir esta meta? Esta acao nao pode ser desfeita.",
-      "questCount": "{count} meta | {count} metas",
+      "questCount": "{count} missão | {count} missões",
       "empty": {
-        "title": "Nenhuma meta ainda",
+        "title": "Nenhuma missão ainda",
         "description": "Comece um novo projeto ou objetivo para acompanhar",
-        "createButton": "Criar Meta"
+        "createButton": "Criar Missão"
       },
       "form": {
-        "name": "Nome da Meta",
+        "name": "Nome da Missão",
         "namePlaceholder": "ex., Aprender Espanhol",
-        "nameRequired": "Nome da meta e obrigatorio",
+        "nameRequired": "Nome da missão e obrigatorio",
         "goal": "Objetivo",
         "goalPlaceholder": "O que voce quer alcancar?",
         "description": "Descricao",
-        "descriptionPlaceholder": "Mais detalhes sobre esta meta...",
+        "descriptionPlaceholder": "Mais detalhes sobre esta missão...",
         "coverImage": "Imagem de Capa",
         "startDate": "Data de Inicio",
         "endDate": "Data Alvo de Termino",
-        "createQuest": "Criar Meta"
+        "createQuest": "Criar Missão"
       },
       "status": {
         "planning": "Planejando",
         "in_progress": "Em Andamento",
-        "completed": "Concluida",
+        "completed": "Concluída",
         "on_hold": "Pausada"
       }
     },
     "tripQuest": {
       "viewTrip": "Ver no SuperTrip"
+    },
+    "subquests": {
+      "title": "Sub-Missões",
+      "newSubQuest": "Nova Sub-Missão",
+      "editSubQuest": "Editar Sub-Missão",
+      "deleteSubQuest": "Excluir Sub-Missão",
+      "deleteConfirm": "Tem certeza que deseja excluir esta sub-missão? Esta acao nao pode ser desfeita.",
+      "subquestCount": "{count} sub-missão | {count} sub-missões",
+      "progress": "{completed} de {total} concluidas",
+      "empty": {
+        "title": "Nenhuma sub-missão ainda",
+        "description": "Divida esta missão em etapas menores",
+        "createButton": "Adicionar Sub-Missão"
+      },
+      "form": {
+        "name": "Nome da Sub-Missão",
+        "namePlaceholder": "ex., Completar Capitulo 1",
+        "nameRequired": "Nome da sub-missão e obrigatorio",
+        "goal": "Objetivo",
+        "goalPlaceholder": "O que esta etapa alcanca?",
+        "description": "Descricao",
+        "descriptionPlaceholder": "Mais detalhes sobre esta sub-missão...",
+        "coverImage": "Imagem de Capa",
+        "startDate": "Data de Inicio",
+        "endDate": "Data Alvo de Termino",
+        "createSubQuest": "Criar Sub-Missão"
+      }
+    }
+  },
+  "task": {
+    "nav": {
+      "myTasks": "Minhas Tarefas"
+    },
+    "views": {
+      "inbox": "Caixa de Entrada",
+      "today": "Hoje",
+      "allTasks": "Todas as Tarefas"
+    },
+    "sections": {
+      "quests": "Missões",
+      "trips": "Viagens"
+    },
+    "task": {
+      "title": "Tarefas",
+      "newTask": "Nova Tarefa",
+      "editTask": "Editar Tarefa",
+      "deleteTask": "Excluir Tarefa",
+      "deleteConfirm": "Tem certeza que deseja excluir esta tarefa?",
+      "completed": "Concluída",
+      "active": "Ativa",
+      "showCompleted": "Mostrar concluídas",
+      "hideCompleted": "Ocultar concluídas",
+      "taskCount": "{count} tarefa | {count} tarefas",
+      "noTasks": "Nenhuma tarefa ainda",
+      "addTask": "Adicionar tarefa..."
+    },
+    "form": {
+      "title": "Título",
+      "titlePlaceholder": "O que precisa ser feito?",
+      "titleRequired": "Título da tarefa é obrigatório",
+      "description": "Descrição",
+      "descriptionPlaceholder": "Adicione mais detalhes...",
+      "linkTo": "Vincular a",
+      "linkNone": "Nenhum",
+      "linkQuest": "Missão",
+      "linkSubQuest": "Sub-Missão",
+      "linkTrip": "Viagem",
+      "linkDestination": "Destino",
+      "selectQuest": "Selecione uma missão",
+      "selectSubQuest": "Selecione uma sub-missão",
+      "selectTrip": "Selecione uma viagem",
+      "selectDestination": "Selecione um destino",
+      "createTask": "Criar Tarefa"
+    },
+    "empty": {
+      "title": "Nenhuma tarefa ainda",
+      "description": "Adicione sua primeira tarefa para começar",
+      "inboxDescription": "Tarefas não vinculadas a nenhuma missão ou viagem aparecem aqui",
+      "todayDescription": "Tarefas criadas hoje aparecem aqui"
     }
   }
 }

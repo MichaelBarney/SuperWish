@@ -1,12 +1,13 @@
 # SuperX - Personal Life Manager
 
-A modern, minimal personal life management application built with Nuxt 3, Firebase, and Tailwind CSS. SuperX combines three integrated modules:
+A modern, minimal personal life management application built with Nuxt 3, Firebase, and Tailwind CSS. SuperX combines four integrated modules:
 
 | Module | Description | Documentation |
 |--------|-------------|---------------|
 | **SuperWish** | Wishlist management with price tracking | [SUPERWISH.md](./SUPERWISH.md) |
 | **SuperTrip** | Travel planning with itineraries | [SUPERTRIP.md](./SUPERTRIP.md) |
 | **SuperQuest** | Goal and project tracking | [SUPERQUEST.md](./SUPERQUEST.md) |
+| **SuperTask** | Task management across quests and trips | — |
 
 ## Tech Stack
 
@@ -54,7 +55,8 @@ superwish/
 │   ├── settings.vue           # User settings
 │   ├── wish/                  # SuperWish pages
 │   ├── trip/                  # SuperTrip pages
-│   └── quest/                 # SuperQuest pages
+│   ├── quest/                 # SuperQuest pages
+│   └── task/                  # SuperTask pages
 │
 ├── components/
 │   ├── auth/                  # Authentication components
@@ -63,6 +65,7 @@ superwish/
 │   ├── wishes/                # SuperWish wish components
 │   ├── trip/                  # SuperTrip components
 │   ├── quest/                 # SuperQuest components
+│   ├── task/                  # SuperTask components
 │   └── ui/                    # Shared UI components
 │
 ├── composables/               # Vue composables
@@ -101,12 +104,26 @@ superwish/
 - DM Sans typography
 - Responsive design with sidebar navigation
 - Mobile-friendly with collapsible sidebar
-- Module switcher between SuperWish, SuperTrip, SuperQuest
+- Module switcher between SuperWish, SuperTrip, SuperQuest, SuperTask
 - Theme-aware components that adapt colors based on active module
 - Smooth transitions and hover states
 - Loading skeletons and empty states
 - Modal-based forms
 - Image upload with compression
+
+### Nuxt Component Auto-Import Naming
+
+Nuxt auto-imports components using the folder path as a prefix. **When the filename already starts with the folder name, Nuxt deduplicates the prefix.** This is critical to get right:
+
+| File path | Resolved component name |
+|-----------|------------------------|
+| `components/ui/Button.vue` | `<UiButton>` |
+| `components/quest/SubQuestList.vue` | `<QuestSubQuestList>` |
+| `components/quest/QuestCard.vue` | `<QuestCard>` (NOT `<QuestQuestCard>`) |
+| `components/task/TaskList.vue` | `<TaskList>` (NOT `<TaskTaskList>`) |
+| `components/trip/trips/TripForm.vue` | `<TripTripsTripForm>` (nested folders) |
+
+**Rule**: If the filename starts with the folder name (e.g. `task/TaskList.vue`), the folder prefix is NOT added again. Use `<TaskList>`, not `<TaskTaskList>`.
 
 ## Shared Composables
 
@@ -118,6 +135,8 @@ superwish/
 | useImageUpload | `composables/useImageUpload.ts` | Image upload with compression |
 | useUrlMetadata | `composables/useUrlMetadata.ts` | URL metadata extraction |
 | useDynamicHead | `composables/useDynamicHead.ts` | Dynamic page head management |
+| useSubquests | `composables/useSubquests.ts` | Sub-quest CRUD operations (SuperQuest) |
+| useTasks | `composables/useTasks.ts` | Task CRUD operations (SuperTask) |
 
 ## Shared UI Components
 
@@ -243,6 +262,7 @@ Each app module has its own accent color:
 - **SuperWish**: Teal (#14b8a6 - accent-500)
 - **SuperTrip**: Purple (#a855f7 - purple-500)
 - **SuperQuest**: Green (#22c55e - green-500)
+- **SuperTask**: Orange (#f97316 - orange-500)
 
 > **Adding a new app?** See [CREATENEWAPP.md](./CREATENEWAPP.md) for the complete guide.
 

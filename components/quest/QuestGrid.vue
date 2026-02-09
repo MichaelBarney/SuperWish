@@ -42,7 +42,6 @@
         v-for="quest in sortedQuests"
         :key="`quest-${quest.id}`"
         :quest="quest"
-        @click="$emit('edit', quest)"
       />
       <!-- Trips as Quests -->
       <QuestTripQuestCard
@@ -69,7 +68,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 defineEmits<{
   create: []
-  edit: [quest: Quest]
 }>()
 
 // Sort quests: in_progress first, then planning, then others
