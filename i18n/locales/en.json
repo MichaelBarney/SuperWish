@@ -526,7 +526,15 @@
         "in_progress": "In Progress",
         "completed": "Completed",
         "on_hold": "On Hold"
-      }
+      },
+      "dateStarts": "Starts {date}",
+      "dateDue": "Due {date}"
+    },
+    "sections": {
+      "ongoing": "Ongoing",
+      "planning": "Planning",
+      "on_hold": "On Hold",
+      "completed": "Completed"
     },
     "tripQuest": {
       "viewTrip": "View in SuperTrip"
@@ -573,7 +581,9 @@
       "trips": "Trips",
       "subquests": "Sub-Quests",
       "destinations": "Destinations",
-      "general": "General"
+      "general": "General",
+      "ongoing": "Ongoing",
+      "planning": "Planning"
     },
     "task": {
       "title": "Tasks",

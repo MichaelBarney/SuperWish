@@ -1,10 +1,10 @@
 <template>
   <NuxtLink
     :to="`/quest/${quest.id}`"
-    class="group block bg-white rounded-2xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 cursor-pointer"
+    class="group block bg-white rounded-xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-0.5 cursor-pointer"
   >
     <!-- Cover Image -->
-    <div class="relative aspect-[16/9] overflow-hidden">
+    <div class="relative aspect-[2/1] overflow-hidden">
       <img
         v-if="quest.coverUrl"
         :src="quest.coverUrl"
@@ -15,16 +15,16 @@
         v-else
         class="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center"
       >
-        <Icon :name="quest.icon || 'lucide:target'" class="w-12 h-12 text-white/50" />
+        <Icon :name="quest.icon || 'lucide:target'" class="w-8 h-8 text-white/50" />
       </div>
 
       <!-- Gradient overlay -->
       <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
       <!-- Status Badge -->
-      <div class="absolute top-3 right-3">
+      <div class="absolute top-2 right-2">
         <span
-          class="px-2.5 py-1 rounded-full text-xs font-medium"
+          class="px-2 py-0.5 rounded-full text-[11px] font-medium"
           :class="statusBadgeClass"
         >
           {{ $t(`quest.quests.status.${quest.status}`) }}
@@ -32,22 +32,22 @@
       </div>
 
       <!-- Title overlay -->
-      <div class="absolute bottom-0 left-0 right-0 p-4">
-        <h3 class="text-lg font-semibold text-white truncate">
+      <div class="absolute bottom-0 left-0 right-0 p-3">
+        <h3 class="text-sm font-semibold text-white truncate">
           {{ quest.name }}
         </h3>
-        <p v-if="dateRange" class="text-sm text-white/80 mt-0.5">
+        <p v-if="dateRange" class="text-xs text-white/80 mt-0.5">
           {{ dateRange }}
         </p>
       </div>
     </div>
 
     <!-- Content -->
-    <div class="p-4">
-      <p v-if="quest.goal" class="text-sm text-gray-700 font-medium mb-1 line-clamp-1">
+    <div v-if="quest.goal || quest.description" class="px-3 py-2">
+      <p v-if="quest.goal" class="text-xs text-gray-700 font-medium mb-0.5 line-clamp-1">
         {{ quest.goal }}
       </p>
-      <p v-if="quest.description" class="text-sm text-gray-500 line-clamp-2">
+      <p v-if="quest.description" class="text-xs text-gray-500 line-clamp-1">
         {{ quest.description }}
       </p>
     </div>
@@ -63,7 +63,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 const statusBadgeClass = computed(() => {
   switch (props.quest.status) {
@@ -85,7 +85,7 @@ const dateRange = computed(() => {
   if (!startDate && !endDate) return null
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', timeZone: 'UTC' }
 
   if (startDate && endDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
@@ -100,7 +100,12 @@ const dateRange = computed(() => {
 
   if (startDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
-    return `Starts ${start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
+    return t('quest.quests.dateStarts', { date: start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' }) })
+  }
+
+  if (endDate) {
+    const end = endDate instanceof Date ? endDate : new Date(endDate)
+    return t('quest.quests.dateDue', { date: end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' }) })
   }
 
   return null

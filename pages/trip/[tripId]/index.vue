@@ -569,7 +569,7 @@ const dateRange = computed(() => {
   if (!startDate && !endDate) return null
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' }
+  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }
 
   if (startDate && endDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)

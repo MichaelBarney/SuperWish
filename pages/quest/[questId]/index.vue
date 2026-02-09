@@ -105,6 +105,24 @@
         </div>
       </div>
 
+      <!-- Tasks Section -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">{{ $t('task.task.title') }}</h2>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-soft">
+          <TaskList
+            :tasks="questTasks"
+            :quest-id="questId"
+            @toggle="handleToggleTask"
+            @edit="openEditTaskModal"
+            @delete="handleDeleteTask"
+            @add="handleQuickAddTask"
+          />
+        </div>
+      </div>
+
       <!-- Sub-Quests Section -->
       <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
@@ -123,23 +141,6 @@
         />
       </div>
 
-      <!-- Tasks Section -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-gray-900">{{ $t('task.task.title') }}</h2>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-soft">
-          <TaskList
-            :tasks="questTasks"
-            :quest-id="questId"
-            @toggle="handleToggleTask"
-            @edit="openEditTaskModal"
-            @delete="handleDeleteTask"
-            @add="handleQuickAddTask"
-          />
-        </div>
-      </div>
     </template>
 
     <!-- Edit Quest Modal -->
@@ -263,7 +264,7 @@ const dateRange = computed(() => {
   if (!startDate && !endDate) return null
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' }
+  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }
 
   if (startDate && endDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)

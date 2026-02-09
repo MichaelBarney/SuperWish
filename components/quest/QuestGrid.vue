@@ -1,16 +1,16 @@
 <template>
   <div>
     <!-- Loading State -->
-    <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
       <div
-        v-for="i in 3"
+        v-for="i in 4"
         :key="i"
-        class="bg-white rounded-2xl shadow-soft overflow-hidden animate-pulse"
+        class="bg-white rounded-xl shadow-soft overflow-hidden animate-pulse"
       >
-        <div class="aspect-[16/9] bg-gray-200" />
-        <div class="p-4 space-y-3">
-          <div class="h-4 bg-gray-200 rounded w-3/4" />
-          <div class="h-3 bg-gray-100 rounded w-1/2" />
+        <div class="aspect-[2/1] bg-gray-200" />
+        <div class="px-3 py-2 space-y-2">
+          <div class="h-3 bg-gray-200 rounded w-3/4" />
+          <div class="h-2.5 bg-gray-100 rounded w-1/2" />
         </div>
       </div>
     </div>
@@ -36,25 +36,28 @@
     </div>
 
     <!-- Quest Grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Native Quests -->
-      <QuestCard
-        v-for="quest in sortedQuests"
-        :key="`quest-${quest.id}`"
-        :quest="quest"
-      />
-      <!-- Trips as Quests -->
-      <QuestTripQuestCard
-        v-for="trip in sortedTrips"
-        :key="`trip-${trip.id}`"
-        :trip="trip"
-      />
+    <div v-else class="space-y-8">
+      <div v-for="section in sections" :key="section.key">
+        <h2 class="text-lg font-semibold text-gray-500 mb-3">
+          {{ $t(`quest.sections.${section.key}`) }}
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <template v-for="item in section.items" :key="`${item.type}-${item.data.id}`">
+            <QuestCard v-if="item.type === 'quest'" :quest="item.data" />
+            <QuestTripQuestCard v-else :trip="item.data" />
+          </template>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Quest, Trip } from '~/types'
+
+type QuestGridItem =
+  | { type: 'quest'; data: Quest }
+  | { type: 'trip'; data: Trip }
 
 interface Props {
   quests: readonly Quest[]
@@ -70,35 +73,38 @@ defineEmits<{
   create: []
 }>()
 
-// Sort quests: in_progress first, then planning, then others
-const questStatusOrder: Record<string, number> = {
-  in_progress: 0,
-  planning: 1,
-  on_hold: 2,
-  completed: 3,
+function getSortDate(item: QuestGridItem): Date | null {
+  const d = item.data.endDate ?? item.data.startDate
+  return d instanceof Date ? d : null
 }
 
-const sortedQuests = computed(() => {
-  return [...props.quests].sort((a, b) => {
-    const orderA = questStatusOrder[a.status] ?? 99
-    const orderB = questStatusOrder[b.status] ?? 99
-    return orderA - orderB
-  })
-})
-
-// Sort trips: upcoming first, then planning, then others
-const tripStatusOrder: Record<string, number> = {
-  upcoming: 0,
-  planning: 1,
-  active: 2,
-  completed: 3,
+function byDate(a: QuestGridItem, b: QuestGridItem): number {
+  const dateA = getSortDate(a)
+  const dateB = getSortDate(b)
+  if (dateA && dateB) return dateA.getTime() - dateB.getTime()
+  if (dateA && !dateB) return -1
+  if (!dateA && dateB) return 1
+  return 0
 }
 
-const sortedTrips = computed(() => {
-  return [...props.trips].sort((a, b) => {
-    const orderA = tripStatusOrder[a.status] ?? 99
-    const orderB = tripStatusOrder[b.status] ?? 99
-    return orderA - orderB
-  })
+const sections = computed(() => {
+  const all: QuestGridItem[] = [
+    ...props.quests.map((q): QuestGridItem => ({ type: 'quest', data: q })),
+    ...props.trips.map((t): QuestGridItem => ({ type: 'trip', data: t })),
+  ]
+
+  const defs = [
+    { key: 'ongoing', statuses: ['in_progress', 'upcoming', 'active'] },
+    { key: 'on_hold', statuses: ['on_hold'] },
+    { key: 'planning', statuses: ['planning'] },
+    { key: 'completed', statuses: ['completed'] },
+  ]
+
+  return defs
+    .map(def => ({
+      key: def.key,
+      items: all.filter(i => def.statuses.includes(i.data.status)).sort(byDate),
+    }))
+    .filter(s => s.items.length > 0)
 })
 </script>

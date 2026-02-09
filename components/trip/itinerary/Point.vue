@@ -223,9 +223,9 @@ const formatDate = (date: string | Date | null | undefined): FormattedDate | nul
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
   return {
-    day: d.getDate(),
-    month: d.toLocaleDateString(dateLocale, { month: 'short' }),
-    weekday: d.toLocaleDateString(dateLocale, { weekday: 'long' })
+    day: d.getUTCDate(),
+    month: d.toLocaleDateString(dateLocale, { month: 'short', timeZone: 'UTC' }),
+    weekday: d.toLocaleDateString(dateLocale, { weekday: 'long', timeZone: 'UTC' })
   }
 }
 

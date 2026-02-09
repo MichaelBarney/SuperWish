@@ -526,7 +526,15 @@
         "in_progress": "Em Andamento",
         "completed": "Concluída",
         "on_hold": "Pausada"
-      }
+      },
+      "dateStarts": "Inicia em {date}",
+      "dateDue": "Prazo: {date}"
+    },
+    "sections": {
+      "ongoing": "Em Andamento",
+      "planning": "Planejamento",
+      "on_hold": "Pausado",
+      "completed": "Concluídas"
     },
     "tripQuest": {
       "viewTrip": "Ver no SuperTrip"
@@ -573,7 +581,9 @@
       "trips": "Viagens",
       "subquests": "Sub-Missões",
       "destinations": "Destinos",
-      "general": "Geral"
+      "general": "Geral",
+      "ongoing": "Em Andamento",
+      "planning": "Planejamento"
     },
     "task": {
       "title": "Tarefas",

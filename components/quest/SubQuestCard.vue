@@ -48,7 +48,7 @@ defineEmits<{
   click: [subquest: SubQuest]
 }>()
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 const statusBadgeClass = computed(() => {
   switch (props.subquest.status) {
@@ -96,7 +96,7 @@ const dateRange = computed(() => {
   if (!startDate && !endDate) return null
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', timeZone: 'UTC' }
 
   if (startDate && endDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
@@ -111,7 +111,12 @@ const dateRange = computed(() => {
 
   if (startDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
-    return `Starts ${start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
+    return t('quest.quests.dateStarts', { date: start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' }) })
+  }
+
+  if (endDate) {
+    const end = endDate instanceof Date ? endDate : new Date(endDate)
+    return t('quest.quests.dateDue', { date: end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' }) })
   }
 
   return null

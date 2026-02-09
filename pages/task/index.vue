@@ -25,12 +25,13 @@
             </span>
           </button>
 
-          <!-- Quests section -->
-          <div v-if="quests.length > 0" class="pt-4">
+          <!-- Status-grouped sections -->
+          <div v-for="group in sidebarGroups" :key="group.key" class="pt-4">
             <p class="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              {{ $t('task.sections.quests') }}
+              {{ group.label }}
             </p>
-            <div v-for="quest in quests" :key="quest.id">
+            <!-- Quests in this group -->
+            <div v-for="quest in group.quests" :key="quest.id">
               <div class="flex items-center">
                 <button
                   v-if="getSubquestsByQuestId(quest.id).length > 0"
@@ -71,14 +72,8 @@
                 </button>
               </div>
             </div>
-          </div>
-
-          <!-- Trips section -->
-          <div v-if="trips.length > 0" class="pt-4">
-            <p class="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              {{ $t('task.sections.trips') }}
-            </p>
-            <div v-for="trip in trips" :key="trip.id">
+            <!-- Trips in this group -->
+            <div v-for="trip in group.trips" :key="trip.id">
               <div class="flex items-center">
                 <button
                   v-if="getDestinationsByTripId(trip.id).length > 0"
@@ -134,8 +129,8 @@
           <option v-for="view in views" :key="view.key" :value="view.key">
             {{ view.label }} ({{ view.count }})
           </option>
-          <optgroup v-if="quests.length > 0" :label="$t('task.sections.quests')">
-            <template v-for="quest in quests" :key="quest.id">
+          <optgroup v-for="group in sidebarGroups" :key="group.key" :label="group.label">
+            <template v-for="quest in group.quests" :key="quest.id">
               <option :value="'quest:' + quest.id">
                 {{ quest.name }}
               </option>
@@ -147,9 +142,7 @@
                 &nbsp;&nbsp;&nbsp;&nbsp;{{ subquest.name }}
               </option>
             </template>
-          </optgroup>
-          <optgroup v-if="trips.length > 0" :label="$t('task.sections.trips')">
-            <template v-for="trip in trips" :key="trip.id">
+            <template v-for="trip in group.trips" :key="trip.id">
               <option :value="'trip:' + trip.id">
                 {{ trip.name }}
               </option>
@@ -313,6 +306,22 @@ const tripNameMap = computed(() => {
   const map: Record<string, string> = {}
   trips.value.forEach(t => { map[t.id] = t.name })
   return map
+})
+
+// Sidebar groups by status
+const sidebarGroups = computed(() => {
+  const groups: Array<{ key: string; label: string; quests: typeof quests.value; trips: typeof trips.value }> = []
+  const ongoingQ = quests.value.filter(q => q.status === 'in_progress')
+  const ongoingT = trips.value.filter(t => t.status === 'active' || t.status === 'upcoming')
+  if (ongoingQ.length || ongoingT.length) {
+    groups.push({ key: 'ongoing', label: t('task.sections.ongoing'), quests: ongoingQ, trips: ongoingT })
+  }
+  const planningQ = quests.value.filter(q => q.status === 'planning')
+  const planningT = trips.value.filter(t => t.status === 'planning')
+  if (planningQ.length || planningT.length) {
+    groups.push({ key: 'planning', label: t('task.sections.planning'), quests: planningQ, trips: planningT })
+  }
+  return groups
 })
 
 // Views config

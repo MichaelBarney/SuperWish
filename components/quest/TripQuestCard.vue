@@ -1,10 +1,10 @@
 <template>
   <NuxtLink
     :to="`/trip/${trip.id}`"
-    class="group block bg-white rounded-2xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1"
+    class="group block bg-white rounded-xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-0.5"
   >
     <!-- Cover Image -->
-    <div class="relative aspect-[16/9] overflow-hidden">
+    <div class="relative aspect-[2/1] overflow-hidden">
       <img
         v-if="trip.coverUrl"
         :src="trip.coverUrl"
@@ -15,24 +15,24 @@
         v-else
         class="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center"
       >
-        <Icon name="lucide:plane" class="w-12 h-12 text-white/50" />
+        <Icon name="lucide:plane" class="w-8 h-8 text-white/50" />
       </div>
 
       <!-- Gradient overlay -->
       <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
       <!-- SuperTrip Badge -->
-      <div class="absolute top-3 left-3">
-        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500 text-white flex items-center gap-1">
-          <Icon name="lucide:plane" class="w-3 h-3" />
+      <div class="absolute top-2 left-2">
+        <span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-purple-500 text-white flex items-center gap-1">
+          <Icon name="lucide:plane" class="w-2.5 h-2.5" />
           SuperTrip
         </span>
       </div>
 
       <!-- Status Badge -->
-      <div class="absolute top-3 right-3">
+      <div class="absolute top-2 right-2">
         <span
-          class="px-2.5 py-1 rounded-full text-xs font-medium"
+          class="px-2 py-0.5 rounded-full text-[11px] font-medium"
           :class="statusBadgeClass"
         >
           {{ $t(`travel.trips.status.${trip.status}`) }}
@@ -40,22 +40,22 @@
       </div>
 
       <!-- Title overlay -->
-      <div class="absolute bottom-0 left-0 right-0 p-4">
-        <h3 class="text-lg font-semibold text-white truncate">
+      <div class="absolute bottom-0 left-0 right-0 p-3">
+        <h3 class="text-sm font-semibold text-white truncate">
           {{ trip.name }}
         </h3>
-        <p v-if="dateRange" class="text-sm text-white/80 mt-0.5">
+        <p v-if="dateRange" class="text-xs text-white/80 mt-0.5">
           {{ dateRange }}
         </p>
       </div>
     </div>
 
     <!-- Content -->
-    <div class="p-4">
-      <p v-if="trip.description" class="text-sm text-gray-500 line-clamp-2">
+    <div class="px-3 py-2">
+      <p v-if="trip.description" class="text-xs text-gray-500 line-clamp-1">
         {{ trip.description }}
       </p>
-      <p v-else class="text-sm text-purple-600">
+      <p v-else class="text-xs text-purple-600">
         {{ $t('quest.tripQuest.viewTrip') }}
       </p>
     </div>
@@ -70,7 +70,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 const statusBadgeClass = computed(() => {
   switch (props.trip.status) {
@@ -92,7 +92,7 @@ const dateRange = computed(() => {
   if (!startDate && !endDate) return null
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', timeZone: 'UTC' }
 
   if (startDate && endDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
@@ -107,7 +107,12 @@ const dateRange = computed(() => {
 
   if (startDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
-    return `Starts ${start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
+    return t('quest.quests.dateStarts', { date: start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' }) })
+  }
+
+  if (endDate) {
+    const end = endDate instanceof Date ? endDate : new Date(endDate)
+    return t('quest.quests.dateDue', { date: end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' }) })
   }
 
   return null
