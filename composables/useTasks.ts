@@ -12,7 +12,7 @@ import {
   Timestamp,
   type Firestore,
 } from 'firebase/firestore'
-import type { Task, TaskForm } from '~/types'
+import type { Task, TaskForm, TaskTimeHorizon } from '~/types'
 
 export function useTasks() {
   const nuxtApp = useNuxtApp()
@@ -62,6 +62,7 @@ export function useTasks() {
             tripId: data.tripId || null,
             destinationId: data.destinationId || null,
             wishId: data.wishId || null,
+            timeHorizon: data.timeHorizon || null,
             order: data.order || 0,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
@@ -106,6 +107,7 @@ export function useTasks() {
         tripId: data.tripId || null,
         destinationId: data.destinationId || null,
         wishId: data.wishId || null,
+        timeHorizon: data.timeHorizon || null,
         order: maxOrder,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -135,6 +137,7 @@ export function useTasks() {
       if (data.tripId !== undefined) updateData.tripId = data.tripId || null
       if (data.destinationId !== undefined) updateData.destinationId = data.destinationId || null
       if (data.wishId !== undefined) updateData.wishId = data.wishId || null
+      if (data.timeHorizon !== undefined) updateData.timeHorizon = data.timeHorizon || null
 
       await updateDoc(taskRef, updateData)
       return { success: true }
@@ -182,20 +185,48 @@ export function useTasks() {
     }
   }
 
+  const updateTaskTimeHorizon = async (id: string, timeHorizon: TaskTimeHorizon | null) => {
+    const db = getDb()
+    if (!user.value) return { success: false, error: 'Not authenticated' }
+    if (!db) return { success: false, error: 'Database not initialized' }
+
+    try {
+      const taskRef = doc(db, 'tasks', id)
+      await updateDoc(taskRef, {
+        timeHorizon: timeHorizon || null,
+        updatedAt: serverTimestamp(),
+      })
+      return { success: true }
+    } catch (err) {
+      console.error('Error updating task time horizon:', err)
+      return { success: false, error: 'Failed to update time horizon' }
+    }
+  }
+
   // Computed views
   const inboxTasks = computed(() =>
-    tasks.value.filter(t => !t.questId && !t.subQuestId && !t.tripId && !t.destinationId)
+    tasks.value.filter(t => !t.questId && !t.subQuestId && !t.tripId && !t.destinationId && !t.timeHorizon)
   )
 
-  const todayTasks = computed(() => {
-    const now = new Date()
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    return tasks.value.filter(t => {
-      if (!t.createdAt) return false
-      const created = t.createdAt instanceof Timestamp ? t.createdAt.toDate() : new Date(t.createdAt)
-      return created >= startOfDay
-    })
-  })
+  const todayHorizonTasks = computed(() =>
+    tasks.value.filter(t => t.timeHorizon === 'today')
+  )
+
+  const thisWeekTasks = computed(() =>
+    tasks.value.filter(t => t.timeHorizon === 'this_week')
+  )
+
+  const thisMonthTasks = computed(() =>
+    tasks.value.filter(t => t.timeHorizon === 'this_month')
+  )
+
+  const longTermTasks = computed(() =>
+    tasks.value.filter(t => t.timeHorizon === 'long_term')
+  )
+
+  const noHorizonTasks = computed(() =>
+    tasks.value.filter(t => !t.timeHorizon)
+  )
 
   // Getters by foreign key
   const getTasksByQuestId = (questId: string) =>
@@ -214,7 +245,7 @@ export function useTasks() {
     tasks.value.filter(t => t.questId === questId && !t.subQuestId)
 
   const getDirectTripTasks = (tripId: string) =>
-    tasks.value.filter(t => t.tripId === tripId && !t.destinationId)
+    tasks.value.filter(t => t.tripId === tripId && !t.destinationId && !t.subQuestId)
 
   const getTaskById = (id: string): Task | undefined => {
     return tasks.value.find(task => task.id === id)
@@ -242,9 +273,14 @@ export function useTasks() {
     loading: readonly(loading),
     error: readonly(error),
     inboxTasks,
-    todayTasks,
+    todayHorizonTasks,
+    thisWeekTasks,
+    thisMonthTasks,
+    longTermTasks,
+    noHorizonTasks,
     createTask,
     updateTask,
+    updateTaskTimeHorizon,
     toggleTaskComplete,
     deleteTask,
     getTaskById,

@@ -76,7 +76,7 @@
             <div v-for="trip in group.trips" :key="trip.id">
               <div class="flex items-center">
                 <button
-                  v-if="getDestinationsByTripId(trip.id).length > 0"
+                  v-if="getDestinationsByTripId(trip.id).length > 0 || getSubquestsByTripId(trip.id).length > 0"
                   @click="toggleTripExpand(trip.id)"
                   class="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                 >
@@ -98,8 +98,20 @@
                   <span class="flex-1 text-left truncate">{{ trip.name }}</span>
                 </button>
               </div>
-              <!-- Destinations (expanded) -->
+              <!-- SubQuests & Destinations (expanded) -->
               <div v-if="expandedTripIds[trip.id]" class="ml-5">
+                <button
+                  v-for="subquest in getSubquestsByTripId(trip.id)"
+                  :key="subquest.id"
+                  @click="selectTripSubQuestView(trip.id, subquest.id)"
+                  class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
+                  :class="currentView === 'subquest' && selectedSubQuestId === subquest.id && selectedTripId === trip.id
+                    ? 'bg-orange-50 text-orange-700 font-medium'
+                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
+                >
+                  <Icon name="lucide:circle-dot" class="w-3.5 h-3.5" />
+                  <span class="flex-1 text-left truncate">{{ subquest.name }}</span>
+                </button>
                 <button
                   v-for="destination in getDestinationsByTripId(trip.id)"
                   :key="destination.id"
@@ -145,6 +157,13 @@
             <template v-for="trip in group.trips" :key="trip.id">
               <option :value="'trip:' + trip.id">
                 {{ trip.name }}
+              </option>
+              <option
+                v-for="subquest in getSubquestsByTripId(trip.id)"
+                :key="subquest.id"
+                :value="'tripsubquest:' + trip.id + ':' + subquest.id"
+              >
+                &nbsp;&nbsp;&nbsp;&nbsp;{{ subquest.name }}
               </option>
               <option
                 v-for="destination in getDestinationsByTripId(trip.id)"
@@ -200,27 +219,101 @@
                 @edit="openEditModal"
                 @delete="handleDelete"
                 @add="handleQuickAdd"
+                @update-time-horizon="handleUpdateTimeHorizon"
               />
+            </div>
+            <!-- Add Sub-Quest button for trips -->
+            <div v-if="currentView === 'trip' && selectedTripId" class="pt-1">
+              <form
+                v-if="showAddSubQuestInput"
+                @submit.prevent="handleAddSubQuest"
+                class="flex items-center gap-2"
+              >
+                <input
+                  v-model="newSubQuestName"
+                  ref="subQuestInput"
+                  type="text"
+                  :placeholder="$t('quest.subquests.form.namePlaceholder')"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                  @keydown.escape="showAddSubQuestInput = false"
+                />
+                <UiButton type="submit" :disabled="!newSubQuestName.trim()">
+                  {{ $t('common.add') }}
+                </UiButton>
+                <button
+                  type="button"
+                  @click="showAddSubQuestInput = false"
+                  class="text-gray-400 hover:text-gray-600 p-1"
+                >
+                  <Icon name="lucide:x" class="w-4 h-4" />
+                </button>
+              </form>
+              <button
+                v-else
+                @click="openAddSubQuestInput"
+                class="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-orange-600 transition-colors"
+              >
+                <Icon name="lucide:plus" class="w-4 h-4" />
+                {{ $t('task.sections.addSubQuest') }}
+              </button>
             </div>
           </div>
 
           <!-- Flat view for inbox/today/all/subquest/destination or quest/trip without children -->
-          <div v-else class="bg-white rounded-xl shadow-soft">
-            <TaskList
-              :tasks="filteredTasks"
-              :quest-names="questNameMap"
-              :quest-icons="questIconMap"
-              :trip-names="tripNameMap"
-              :quest-id="currentView === 'quest' || currentView === 'subquest' ? selectedQuestId : ''"
-              :sub-quest-id="currentView === 'subquest' ? selectedSubQuestId : ''"
-              :trip-id="currentView === 'trip' || currentView === 'destination' ? selectedTripId : ''"
-              :destination-id="currentView === 'destination' ? selectedDestinationId : ''"
-              :empty-message="currentEmptyMessage"
-              @toggle="handleToggle"
-              @edit="openEditModal"
-              @delete="handleDelete"
-              @add="handleQuickAdd"
-            />
+          <div v-else>
+            <div class="bg-white rounded-xl shadow-soft">
+              <TaskList
+                :tasks="filteredTasks"
+                :quest-names="questNameMap"
+                :quest-icons="questIconMap"
+                :trip-names="tripNameMap"
+                :quest-id="currentView === 'quest' || (currentView === 'subquest' && selectedQuestId) ? selectedQuestId : ''"
+                :sub-quest-id="currentView === 'subquest' ? selectedSubQuestId : ''"
+                :trip-id="currentView === 'trip' || currentView === 'destination' || (currentView === 'subquest' && selectedTripId && !selectedQuestId) ? selectedTripId : ''"
+                :destination-id="currentView === 'destination' ? selectedDestinationId : ''"
+                :empty-message="currentEmptyMessage"
+                @toggle="handleToggle"
+                @edit="openEditModal"
+                @delete="handleDelete"
+                @add="handleQuickAdd"
+                @update-time-horizon="handleUpdateTimeHorizon"
+              />
+            </div>
+            <!-- Add Sub-Quest button for trips (flat view) -->
+            <div v-if="currentView === 'trip' && selectedTripId" class="pt-2">
+              <form
+                v-if="showAddSubQuestInput"
+                @submit.prevent="handleAddSubQuest"
+                class="flex items-center gap-2"
+              >
+                <input
+                  v-model="newSubQuestName"
+                  ref="subQuestInput"
+                  type="text"
+                  :placeholder="$t('quest.subquests.form.namePlaceholder')"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                  @keydown.escape="showAddSubQuestInput = false"
+                />
+                <UiButton type="submit" :disabled="!newSubQuestName.trim()">
+                  {{ $t('common.add') }}
+                </UiButton>
+                <button
+                  type="button"
+                  @click="showAddSubQuestInput = false"
+                  class="text-gray-400 hover:text-gray-600 p-1"
+                >
+                  <Icon name="lucide:x" class="w-4 h-4" />
+                </button>
+              </form>
+              <button
+                v-else
+                @click="openAddSubQuestInput"
+                class="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-orange-600 transition-colors"
+              >
+                <Icon name="lucide:plus" class="w-4 h-4" />
+                {{ $t('task.sections.addSubQuest') }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -250,7 +343,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Task, TaskForm } from '~/types'
+import type { Task, TaskForm, TaskTimeHorizon } from '~/types'
 
 definePageMeta({
   layout: 'app-with-sidebar',
@@ -266,14 +359,14 @@ onMounted(() => {
 })
 
 // Data
-const { tasks, loading: tasksLoading, createTask, updateTask, toggleTaskComplete, deleteTask, inboxTasks, todayTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
+const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
 const { quests } = useQuests()
 const { trips } = useTrips()
-const { getSubquestsByQuestId } = useAllSubquests()
+const { getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip } = useAllSubquests()
 const { getDestinationsByTripId } = useAllDestinations()
 
 // View state
-const currentView = ref<'inbox' | 'today' | 'all' | 'quest' | 'trip' | 'subquest' | 'destination'>('inbox')
+const currentView = ref<'inbox' | 'today' | 'this_week' | 'this_month' | 'long_term' | 'no_horizon' | 'quest' | 'trip' | 'subquest' | 'destination'>('inbox')
 const selectedQuestId = ref('')
 const selectedTripId = ref('')
 const selectedSubQuestId = ref('')
@@ -311,16 +404,31 @@ const tripNameMap = computed(() => {
 // Sidebar groups by status
 const sidebarGroups = computed(() => {
   const groups: Array<{ key: string; label: string; quests: typeof quests.value; trips: typeof trips.value }> = []
-  const ongoingQ = quests.value.filter(q => q.status === 'in_progress')
-  const ongoingT = trips.value.filter(t => t.status === 'active' || t.status === 'upcoming')
-  if (ongoingQ.length || ongoingT.length) {
-    groups.push({ key: 'ongoing', label: t('task.sections.ongoing'), quests: ongoingQ, trips: ongoingT })
+
+  function byDate<T extends { endDate?: Date | null; startDate?: Date | null }>(a: T, b: T): number {
+    const dateA = a.endDate ?? a.startDate
+    const dateB = b.endDate ?? b.startDate
+    if (dateA && dateB) return dateA.getTime() - dateB.getTime()
+    if (dateA && !dateB) return -1
+    if (!dateA && dateB) return 1
+    return 0
   }
-  const planningQ = quests.value.filter(q => q.status === 'planning')
-  const planningT = trips.value.filter(t => t.status === 'planning')
-  if (planningQ.length || planningT.length) {
-    groups.push({ key: 'planning', label: t('task.sections.planning'), quests: planningQ, trips: planningT })
+
+  const defs = [
+    { key: 'ongoing', questStatuses: ['in_progress'], tripStatuses: ['active', 'upcoming'] },
+    { key: 'on_hold', questStatuses: ['on_hold'], tripStatuses: ['on_hold'] },
+    { key: 'planning', questStatuses: ['planning'], tripStatuses: ['planning'] },
+    { key: 'completed', questStatuses: ['completed'], tripStatuses: ['completed'] },
+  ]
+
+  for (const def of defs) {
+    const q = quests.value.filter(q => def.questStatuses.includes(q.status)).sort(byDate)
+    const tr = trips.value.filter(t => def.tripStatuses.includes(t.status)).sort(byDate)
+    if (q.length || tr.length) {
+      groups.push({ key: def.key, label: t(`task.sections.${def.key}`), quests: q, trips: tr })
+    }
   }
+
   return groups
 })
 
@@ -334,15 +442,33 @@ const views = computed(() => [
   },
   {
     key: 'today' as const,
-    label: t('task.views.today'),
-    icon: 'lucide:calendar',
-    count: todayTasks.value.filter(t => !t.completed).length,
+    label: t('task.timeHorizon.today'),
+    icon: 'lucide:sun',
+    count: todayHorizonTasks.value.filter(t => !t.completed).length,
   },
   {
-    key: 'all' as const,
-    label: t('task.views.allTasks'),
-    icon: 'lucide:list',
-    count: tasks.value.filter(t => !t.completed).length,
+    key: 'this_week' as const,
+    label: t('task.timeHorizon.thisWeek'),
+    icon: 'lucide:calendar-days',
+    count: thisWeekTasks.value.filter(t => !t.completed).length,
+  },
+  {
+    key: 'this_month' as const,
+    label: t('task.timeHorizon.thisMonth'),
+    icon: 'lucide:calendar',
+    count: thisMonthTasks.value.filter(t => !t.completed).length,
+  },
+  {
+    key: 'long_term' as const,
+    label: t('task.timeHorizon.longTerm'),
+    icon: 'lucide:clock',
+    count: longTermTasks.value.filter(t => !t.completed).length,
+  },
+  {
+    key: 'no_horizon' as const,
+    label: t('task.views.noHorizon'),
+    icon: 'lucide:circle-off',
+    count: noHorizonTasks.value.filter(t => !t.completed).length,
   },
 ])
 
@@ -352,7 +478,15 @@ const filteredTasks = computed(() => {
     case 'inbox':
       return inboxTasks.value
     case 'today':
-      return todayTasks.value
+      return todayHorizonTasks.value
+    case 'this_week':
+      return thisWeekTasks.value
+    case 'this_month':
+      return thisMonthTasks.value
+    case 'long_term':
+      return longTermTasks.value
+    case 'no_horizon':
+      return noHorizonTasks.value
     case 'quest':
       return selectedQuestId.value ? getTasksByQuestId(selectedQuestId.value) : []
     case 'trip':
@@ -369,7 +503,11 @@ const filteredTasks = computed(() => {
 const currentViewTitle = computed(() => {
   switch (currentView.value) {
     case 'inbox': return t('task.views.inbox')
-    case 'today': return t('task.views.today')
+    case 'today': return t('task.timeHorizon.today')
+    case 'this_week': return t('task.timeHorizon.thisWeek')
+    case 'this_month': return t('task.timeHorizon.thisMonth')
+    case 'long_term': return t('task.timeHorizon.longTerm')
+    case 'no_horizon': return t('task.views.noHorizon')
     case 'quest': {
       const quest = quests.value.find(q => q.id === selectedQuestId.value)
       return quest?.name || t('task.sections.quests')
@@ -379,8 +517,10 @@ const currentViewTitle = computed(() => {
       return trip?.name || t('task.sections.trips')
     }
     case 'subquest': {
-      const subquests = selectedQuestId.value ? getSubquestsByQuestId(selectedQuestId.value) : []
-      const subquest = subquests.find(s => s.id === selectedSubQuestId.value)
+      const sqFromQuest = selectedQuestId.value ? getSubquestsByQuestId(selectedQuestId.value) : []
+      const sqFromTrip = selectedTripId.value ? getSubquestsByTripId(selectedTripId.value) : []
+      const allSq = [...sqFromQuest, ...sqFromTrip]
+      const subquest = allSq.find(s => s.id === selectedSubQuestId.value)
       return subquest?.name || t('task.sections.subquests')
     }
     case 'destination': {
@@ -388,7 +528,7 @@ const currentViewTitle = computed(() => {
       const destination = destinations.find(d => d.id === selectedDestinationId.value)
       return destination?.name || t('task.sections.destinations')
     }
-    default: return t('task.views.allTasks')
+    default: return t('task.views.noHorizon')
   }
 })
 
@@ -431,8 +571,9 @@ const questSections = computed(() => {
 const tripSections = computed(() => {
   if (currentView.value !== 'trip' || !selectedTripId.value) return []
   const destinations = getDestinationsByTripId(selectedTripId.value)
-  // If no destinations, don't show sections — just use flat list
-  if (destinations.length === 0) return []
+  const tripSubquests = getSubquestsByTripId(selectedTripId.value)
+  // If no destinations and no subquests, don't show sections — just use flat list
+  if (destinations.length === 0 && tripSubquests.length === 0) return []
   const sections: Array<{ id: string; label: string; icon: string; tasks: Task[]; questId: string; subQuestId: string; tripId: string; destinationId: string }> = []
   // General section (direct trip tasks)
   sections.push({
@@ -445,6 +586,19 @@ const tripSections = computed(() => {
     tripId: selectedTripId.value,
     destinationId: '',
   })
+  // One section per subquest
+  for (const sq of tripSubquests) {
+    sections.push({
+      id: sq.id,
+      label: sq.name,
+      icon: 'lucide:circle-dot',
+      tasks: getTasksBySubQuestId(sq.id),
+      questId: '',
+      subQuestId: sq.id,
+      tripId: selectedTripId.value,
+      destinationId: '',
+    })
+  }
   // One section per destination
   for (const dest of destinations) {
     sections.push({
@@ -477,6 +631,7 @@ const selectedTaskForm = computed(() => {
     tripId: selectedTask.value.tripId || '',
     destinationId: selectedTask.value.destinationId || '',
     wishId: selectedTask.value.wishId || '',
+    timeHorizon: selectedTask.value.timeHorizon || '',
   }
 })
 
@@ -505,6 +660,14 @@ function selectDestinationView(tripId: string, destinationId: string) {
   expandedTripIds.value[tripId] = true
 }
 
+function selectTripSubQuestView(tripId: string, subQuestId: string) {
+  currentView.value = 'subquest'
+  selectedTripId.value = tripId
+  selectedQuestId.value = ''
+  selectedSubQuestId.value = subQuestId
+  expandedTripIds.value[tripId] = true
+}
+
 function toggleQuestExpand(questId: string) {
   expandedQuestIds.value[questId] = !expandedQuestIds.value[questId]
 }
@@ -515,7 +678,10 @@ function toggleTripExpand(tripId: string) {
 
 function handleMobileViewChange() {
   const val = mobileView.value
-  if (val.startsWith('subquest:')) {
+  if (val.startsWith('tripsubquest:')) {
+    const parts = val.split(':')
+    selectTripSubQuestView(parts[1], parts[2])
+  } else if (val.startsWith('subquest:')) {
     const parts = val.split(':')
     selectSubQuestView(parts[1], parts[2])
   } else if (val.startsWith('destination:')) {
@@ -526,8 +692,28 @@ function handleMobileViewChange() {
   } else if (val.startsWith('trip:')) {
     selectTripView(val.replace('trip:', ''))
   } else {
-    currentView.value = val as 'inbox' | 'today' | 'all'
+    currentView.value = val as 'inbox' | 'today' | 'this_week' | 'this_month' | 'long_term' | 'no_horizon'
   }
+}
+
+// Add Sub-Quest for trip
+const showAddSubQuestInput = ref(false)
+const newSubQuestName = ref('')
+const subQuestInput = ref<HTMLInputElement | null>(null)
+
+function openAddSubQuestInput() {
+  showAddSubQuestInput.value = true
+  newSubQuestName.value = ''
+  nextTick(() => {
+    subQuestInput.value?.focus()
+  })
+}
+
+async function handleAddSubQuest() {
+  if (!newSubQuestName.value.trim() || !selectedTripId.value) return
+  await createSubQuestForTrip(selectedTripId.value, newSubQuestName.value.trim())
+  newSubQuestName.value = ''
+  showAddSubQuestInput.value = false
 }
 
 // CRUD handlers
@@ -539,6 +725,12 @@ async function handleCreate(data: TaskForm) {
 }
 
 async function handleQuickAdd(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }) {
+  const viewToHorizon: Record<string, string> = {
+    today: 'today',
+    this_week: 'this_week',
+    this_month: 'this_month',
+    long_term: 'long_term',
+  }
   await createTask({
     title: data.title,
     description: '',
@@ -547,6 +739,7 @@ async function handleQuickAdd(data: { title: string; questId: string; subQuestId
     tripId: data.tripId,
     destinationId: data.destinationId,
     wishId: data.wishId,
+    timeHorizon: viewToHorizon[currentView.value] || '',
   })
 }
 
@@ -566,6 +759,10 @@ async function handleUpdate(data: TaskForm) {
 
 async function handleToggle(id: string, completed: boolean) {
   await toggleTaskComplete(id, completed)
+}
+
+async function handleUpdateTimeHorizon(id: string, timeHorizon: TaskTimeHorizon | null) {
+  await updateTaskTimeHorizon(id, timeHorizon)
 }
 
 async function handleDelete(id: string) {

@@ -15,7 +15,7 @@
     </button>
 
     <!-- Expanded state -->
-    <div v-else class="relative mx-3">
+    <div v-else class="relative px-3 pb-3 pt-3">
       <div class="border border-gray-300 rounded-xl shadow-sm">
         <div class="px-3 pt-3 pb-2">
           <div class="flex items-center gap-2">

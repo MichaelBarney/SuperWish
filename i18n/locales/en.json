@@ -574,7 +574,14 @@
     "views": {
       "inbox": "Inbox",
       "today": "Today",
-      "allTasks": "All Tasks"
+      "noHorizon": "No Horizon"
+    },
+    "timeHorizon": {
+      "today": "Today",
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "longTerm": "Long Term",
+      "none": "No horizon"
     },
     "sections": {
       "quests": "Quests",
@@ -582,8 +589,11 @@
       "subquests": "Sub-Quests",
       "destinations": "Destinations",
       "general": "General",
+      "addSubQuest": "Add Sub-Quest",
       "ongoing": "Ongoing",
-      "planning": "Planning"
+      "on_hold": "On Hold",
+      "planning": "Planning",
+      "completed": "Completed"
     },
     "task": {
       "title": "Tasks",
@@ -605,6 +615,7 @@
       "titleRequired": "Task title is required",
       "description": "Description",
       "descriptionPlaceholder": "Add more details...",
+      "timeHorizon": "Time Horizon",
       "linkTo": "Link to",
       "linkNone": "None",
       "linkQuest": "Quest",
@@ -629,7 +640,7 @@
       "title": "No tasks yet",
       "description": "Add your first task to get started",
       "inboxDescription": "Tasks not linked to any quest or trip appear here",
-      "todayDescription": "Tasks created today appear here"
+      "todayDescription": "Tasks with the 'Today' time horizon appear here"
     }
   }
 }

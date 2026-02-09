@@ -39,6 +39,23 @@
       />
     </div>
 
+    <!-- Time Horizon -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        {{ $t('task.form.timeHorizon') }}
+      </label>
+      <select
+        v-model="form.timeHorizon"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400"
+      >
+        <option value="">{{ $t('task.timeHorizon.none') }}</option>
+        <option value="today">{{ $t('task.timeHorizon.today') }}</option>
+        <option value="this_week">{{ $t('task.timeHorizon.thisWeek') }}</option>
+        <option value="this_month">{{ $t('task.timeHorizon.thisMonth') }}</option>
+        <option value="long_term">{{ $t('task.timeHorizon.longTerm') }}</option>
+      </select>
+    </div>
+
     <!-- Link to -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -167,6 +184,7 @@ const form = reactive<TaskForm>({
   tripId: props.initialData?.tripId || '',
   destinationId: props.initialData?.destinationId || '',
   wishId: props.initialData?.wishId || '',
+  timeHorizon: props.initialData?.timeHorizon || '',
 })
 
 const linkType = ref<'none' | 'quest' | 'trip' | 'wish'>(

@@ -574,7 +574,14 @@
     "views": {
       "inbox": "Caixa de Entrada",
       "today": "Hoje",
-      "allTasks": "Todas as Tarefas"
+      "noHorizon": "Sem Horizonte"
+    },
+    "timeHorizon": {
+      "today": "Hoje",
+      "thisWeek": "Esta Semana",
+      "thisMonth": "Este Mês",
+      "longTerm": "Longo Prazo",
+      "none": "Sem horizonte"
     },
     "sections": {
       "quests": "Missões",
@@ -582,8 +589,11 @@
       "subquests": "Sub-Missões",
       "destinations": "Destinos",
       "general": "Geral",
+      "addSubQuest": "Adicionar Sub-Quest",
       "ongoing": "Em Andamento",
-      "planning": "Planejamento"
+      "on_hold": "Pausado",
+      "planning": "Planejamento",
+      "completed": "Concluídas"
     },
     "task": {
       "title": "Tarefas",
@@ -605,6 +615,7 @@
       "titleRequired": "Título da tarefa é obrigatório",
       "description": "Descrição",
       "descriptionPlaceholder": "Adicione mais detalhes...",
+      "timeHorizon": "Horizonte de Tempo",
       "linkTo": "Vincular a",
       "linkNone": "Nenhum",
       "linkQuest": "Missão",
@@ -629,7 +640,7 @@
       "title": "Nenhuma tarefa ainda",
       "description": "Adicione sua primeira tarefa para começar",
       "inboxDescription": "Tarefas não vinculadas a nenhuma missão ou viagem aparecem aqui",
-      "todayDescription": "Tarefas criadas hoje aparecem aqui"
+      "todayDescription": "Tarefas com horizonte 'Hoje' aparecem aqui"
     }
   }
 }

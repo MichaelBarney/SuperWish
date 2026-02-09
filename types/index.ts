@@ -657,7 +657,8 @@ export function getQuestStatusConfig(status: QuestStatus) {
 
 export interface SubQuest {
   id: string
-  questId: string
+  questId?: string
+  tripId?: string
   userId: string
   name: string
   icon?: string
@@ -685,6 +686,8 @@ export interface SubQuestForm {
 // TASK TYPES (SuperTask)
 // =============================================
 
+export type TaskTimeHorizon = 'today' | 'this_week' | 'this_month' | 'long_term'
+
 export interface Task {
   id: string
   userId: string
@@ -697,6 +700,7 @@ export interface Task {
   tripId?: string | null
   destinationId?: string | null
   wishId?: string | null
+  timeHorizon?: TaskTimeHorizon | null
   order: number
   createdAt: Timestamp
   updatedAt: Timestamp
@@ -710,4 +714,5 @@ export interface TaskForm {
   tripId: string
   destinationId: string
   wishId: string
+  timeHorizon: string
 }

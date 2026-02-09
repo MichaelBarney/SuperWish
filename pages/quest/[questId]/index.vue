@@ -352,6 +352,7 @@ async function handleQuickAddTask(data: { title: string; questId: string; subQue
     tripId: '',
     destinationId: '',
     wishId: data.wishId || '',
+    timeHorizon: '',
   })
 }
 </script>

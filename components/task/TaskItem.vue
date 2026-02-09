@@ -59,6 +59,54 @@
       </div>
     </div>
 
+    <!-- Time horizon pill -->
+    <div class="relative mt-0.5" ref="horizonDropdownRef">
+      <button
+        v-if="task.timeHorizon"
+        @click.stop="toggleHorizonDropdown"
+        class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors"
+        :class="horizonPillClass"
+      >
+        <Icon :name="horizonIcon" class="w-3 h-3" />
+        <span>{{ horizonLabel }}</span>
+      </button>
+      <button
+        v-else
+        @click.stop="toggleHorizonDropdown"
+        class="p-1 text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-all"
+      >
+        <Icon name="lucide:calendar-clock" class="w-4 h-4" />
+      </button>
+
+      <!-- Dropdown -->
+      <div
+        v-if="showHorizonDropdown"
+        class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+      >
+        <button
+          v-for="option in horizonOptions"
+          :key="option.value"
+          @click.stop="selectHorizon(option.value)"
+          class="w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors"
+          :class="task.timeHorizon === option.value
+            ? 'bg-orange-50 text-orange-700 font-medium'
+            : 'text-gray-700 hover:bg-gray-50'"
+        >
+          <Icon :name="option.icon" class="w-3.5 h-3.5" />
+          <span>{{ option.label }}</span>
+        </button>
+        <div v-if="task.timeHorizon" class="border-t border-gray-100 mt-1 pt-1">
+          <button
+            @click.stop="selectHorizon(null)"
+            class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+          >
+            <Icon name="lucide:x" class="w-3.5 h-3.5" />
+            <span>{{ $t('task.timeHorizon.none') }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Delete button (on hover) -->
     <button
       @click.stop="$emit('delete', task.id)"
@@ -72,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Task, Wish } from '~/types'
+import type { Task, Wish, TaskTimeHorizon } from '~/types'
 import { isOwnedStatus, getCurrencySymbol } from '~/types'
 
 interface Props {
@@ -92,7 +140,10 @@ const emit = defineEmits<{
   toggle: [id: string, completed: boolean]
   edit: [task: Task]
   delete: [id: string]
+  updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
 }>()
+
+const { t } = useI18n()
 
 const isWishLinked = computed(() => !!props.task.wishId)
 
@@ -107,4 +158,54 @@ function handleToggle() {
   if (isWishLinked.value) return
   emit('toggle', props.task.id, !effectiveCompleted.value)
 }
+
+// Time horizon dropdown
+const showHorizonDropdown = ref(false)
+const horizonDropdownRef = ref<HTMLElement | null>(null)
+
+const horizonOptions = computed(() => [
+  { value: 'today' as const, label: t('task.timeHorizon.today'), icon: 'lucide:sun' },
+  { value: 'this_week' as const, label: t('task.timeHorizon.thisWeek'), icon: 'lucide:calendar-days' },
+  { value: 'this_month' as const, label: t('task.timeHorizon.thisMonth'), icon: 'lucide:calendar' },
+  { value: 'long_term' as const, label: t('task.timeHorizon.longTerm'), icon: 'lucide:clock' },
+])
+
+const horizonIcon = computed(() => {
+  const option = horizonOptions.value.find(o => o.value === props.task.timeHorizon)
+  return option?.icon || 'lucide:calendar-clock'
+})
+
+const horizonLabel = computed(() => {
+  const option = horizonOptions.value.find(o => o.value === props.task.timeHorizon)
+  return option?.label || ''
+})
+
+const horizonPillClass = computed(() => {
+  switch (props.task.timeHorizon) {
+    case 'today': return 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+    case 'this_week': return 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+    case 'this_month': return 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+    case 'long_term': return 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+    default: return 'bg-gray-100 text-gray-500'
+  }
+})
+
+function toggleHorizonDropdown() {
+  showHorizonDropdown.value = !showHorizonDropdown.value
+}
+
+function selectHorizon(value: TaskTimeHorizon | null) {
+  emit('updateTimeHorizon', props.task.id, value)
+  showHorizonDropdown.value = false
+}
+
+// Close dropdown on outside click
+function handleClickOutside(e: MouseEvent) {
+  if (horizonDropdownRef.value && !horizonDropdownRef.value.contains(e.target as Node)) {
+    showHorizonDropdown.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 </script>

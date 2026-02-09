@@ -4,6 +4,8 @@ import {
   where,
   orderBy,
   onSnapshot,
+  addDoc,
+  serverTimestamp,
   Timestamp,
   type Firestore,
 } from 'firebase/firestore'
@@ -45,7 +47,8 @@ export function useAllSubquests() {
           const data = docSnap.data()
           return {
             id: docSnap.id,
-            questId: data.questId,
+            questId: data.questId || undefined,
+            tripId: data.tripId || undefined,
             userId: data.userId,
             name: data.name,
             goal: data.goal || '',
@@ -79,6 +82,36 @@ export function useAllSubquests() {
     return subquests.value.filter(s => s.questId === questId)
   }
 
+  const getSubquestsByTripId = (tripId: string): SubQuest[] => {
+    return subquests.value.filter(s => s.tripId === tripId)
+  }
+
+  const createSubQuestForTrip = async (tripId: string, name: string) => {
+    const db = getDb()
+    if (!user.value || !db) return { success: false, error: 'Not authenticated' }
+
+    try {
+      const subquestsRef = collection(db, 'subquests')
+      const maxOrder = subquests.value.length > 0
+        ? Math.max(...subquests.value.map(s => s.order)) + 1
+        : 0
+
+      const docRef = await addDoc(subquestsRef, {
+        userId: user.value.uid,
+        tripId,
+        name,
+        status: 'in_progress',
+        order: maxOrder,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      })
+      return { success: true, id: docRef.id }
+    } catch (err) {
+      console.error('Error creating subquest for trip:', err)
+      return { success: false, error: 'Failed to create sub-quest' }
+    }
+  }
+
   if (import.meta.client) {
     watch(user, (newUser) => {
       if (newUser) {
@@ -98,5 +131,7 @@ export function useAllSubquests() {
     subquests: readonly(subquests),
     loading: readonly(loading),
     getSubquestsByQuestId,
+    getSubquestsByTripId,
+    createSubQuestForTrip,
   }
 }

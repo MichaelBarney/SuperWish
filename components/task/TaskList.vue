@@ -12,6 +12,7 @@
         @toggle="handleToggle"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
+        @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
       />
     </div>
 
@@ -55,6 +56,7 @@
           @toggle="handleToggle"
           @edit="$emit('edit', $event)"
           @delete="$emit('delete', $event)"
+          @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
         />
       </div>
     </div>
@@ -62,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Task } from '~/types'
+import type { Task, TaskTimeHorizon } from '~/types'
 import { isOwnedStatus } from '~/types'
 
 interface Props {
@@ -88,6 +90,7 @@ const emit = defineEmits<{
   edit: [task: Task]
   delete: [id: string]
   add: [data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }]
+  updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
 }>()
 
 const { getWishById } = useAllWishes()
