@@ -61,6 +61,7 @@ export function useTasks() {
             subQuestId: data.subQuestId || null,
             tripId: data.tripId || null,
             destinationId: data.destinationId || null,
+            wishId: data.wishId || null,
             order: data.order || 0,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
@@ -104,6 +105,7 @@ export function useTasks() {
         subQuestId: data.subQuestId || null,
         tripId: data.tripId || null,
         destinationId: data.destinationId || null,
+        wishId: data.wishId || null,
         order: maxOrder,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -132,6 +134,7 @@ export function useTasks() {
       if (data.subQuestId !== undefined) updateData.subQuestId = data.subQuestId || null
       if (data.tripId !== undefined) updateData.tripId = data.tripId || null
       if (data.destinationId !== undefined) updateData.destinationId = data.destinationId || null
+      if (data.wishId !== undefined) updateData.wishId = data.wishId || null
 
       await updateDoc(taskRef, updateData)
       return { success: true }
@@ -145,6 +148,10 @@ export function useTasks() {
     const db = getDb()
     if (!user.value) return { success: false, error: 'Not authenticated' }
     if (!db) return { success: false, error: 'Database not initialized' }
+
+    // Wish-linked tasks can't be manually toggled
+    const task = tasks.value.find(t => t.id === id)
+    if (task?.wishId) return { success: false, error: 'Wish-linked tasks cannot be manually toggled' }
 
     try {
       const taskRef = doc(db, 'tasks', id)
@@ -203,6 +210,12 @@ export function useTasks() {
   const getTasksByDestinationId = (destinationId: string) =>
     tasks.value.filter(t => t.destinationId === destinationId)
 
+  const getDirectQuestTasks = (questId: string) =>
+    tasks.value.filter(t => t.questId === questId && !t.subQuestId)
+
+  const getDirectTripTasks = (tripId: string) =>
+    tasks.value.filter(t => t.tripId === tripId && !t.destinationId)
+
   const getTaskById = (id: string): Task | undefined => {
     return tasks.value.find(task => task.id === id)
   }
@@ -239,6 +252,8 @@ export function useTasks() {
     getTasksBySubQuestId,
     getTasksByTripId,
     getTasksByDestinationId,
+    getDirectQuestTasks,
+    getDirectTripTasks,
     subscribeToTasks,
     unsubscribeFromTasks,
   }

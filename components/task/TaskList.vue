@@ -8,7 +8,8 @@
         :task="task"
         :project-label="getProjectLabel(task)"
         :project-icon="getProjectIcon(task)"
-        @toggle="$emit('toggle', $event, !task.completed)"
+        :linked-wish="task.wishId ? getWishById(task.wishId) || null : null"
+        @toggle="handleToggle"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
       />
@@ -22,14 +23,6 @@
       :destination-id="destinationId"
       @add="$emit('add', $event)"
     />
-
-    <!-- Empty state -->
-    <div v-if="activeTasks.length === 0 && completedTasks.length === 0" class="py-8 text-center">
-      <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center mx-auto mb-3">
-        <Icon name="lucide:square-check-big" class="w-6 h-6 text-orange-400" />
-      </div>
-      <p class="text-sm text-gray-500">{{ emptyMessage || $t('task.empty.title') }}</p>
-    </div>
 
     <!-- Completed tasks toggle -->
     <div v-if="completedTasks.length > 0" class="mt-4">
@@ -58,7 +51,8 @@
           :task="task"
           :project-label="getProjectLabel(task)"
           :project-icon="getProjectIcon(task)"
-          @toggle="$emit('toggle', $event, !task.completed)"
+          :linked-wish="task.wishId ? getWishById(task.wishId) || null : null"
+          @toggle="handleToggle"
           @edit="$emit('edit', $event)"
           @delete="$emit('delete', $event)"
         />
@@ -69,6 +63,7 @@
 
 <script setup lang="ts">
 import type { Task } from '~/types'
+import { isOwnedStatus } from '~/types'
 
 interface Props {
   tasks: Task[]
@@ -76,8 +71,8 @@ interface Props {
   subQuestId?: string
   tripId?: string
   destinationId?: string
-  emptyMessage?: string
   questNames?: Record<string, string>
+  questIcons?: Record<string, string>
   tripNames?: Record<string, string>
 }
 
@@ -86,20 +81,33 @@ const props = withDefaults(defineProps<Props>(), {
   subQuestId: '',
   tripId: '',
   destinationId: '',
-  emptyMessage: '',
 })
 
-defineEmits<{
+const emit = defineEmits<{
   toggle: [id: string, completed: boolean]
   edit: [task: Task]
   delete: [id: string]
-  add: [data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string }]
+  add: [data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }]
 }>()
+
+const { getWishById } = useAllWishes()
 
 const showCompleted = ref(false)
 
-const activeTasks = computed(() => props.tasks.filter(t => !t.completed))
-const completedTasks = computed(() => props.tasks.filter(t => t.completed))
+function isTaskCompleted(task: Task): boolean {
+  if (task.wishId) {
+    const wish = getWishById(task.wishId)
+    return wish ? isOwnedStatus(wish.status) : false
+  }
+  return task.completed
+}
+
+const activeTasks = computed(() => props.tasks.filter(t => !isTaskCompleted(t)))
+const completedTasks = computed(() => props.tasks.filter(t => isTaskCompleted(t)))
+
+function handleToggle(id: string, completed: boolean) {
+  emit('toggle', id, completed)
+}
 
 function getProjectLabel(task: Task): string {
   if (task.questId && props.questNames?.[task.questId]) {
@@ -112,7 +120,9 @@ function getProjectLabel(task: Task): string {
 }
 
 function getProjectIcon(task: Task): string {
-  if (task.questId) return 'lucide:target'
+  if (task.questId) {
+    return (props.questIcons?.[task.questId]) || 'lucide:target'
+  }
   if (task.tripId) return 'lucide:plane'
   return 'lucide:hash'
 }

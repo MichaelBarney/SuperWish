@@ -10,6 +10,9 @@
         required
       />
 
+      <!-- Icon -->
+      <QuestIconPicker v-model="form.icon" />
+
       <!-- Goal -->
       <UiInput
         v-model="form.goal"
@@ -89,6 +92,7 @@ const submitting = ref(false)
 
 const form = ref<QuestForm>({
   name: props.initialData?.name || '',
+  icon: props.initialData?.icon || 'lucide:target',
   goal: props.initialData?.goal || '',
   description: props.initialData?.description || '',
   coverUrl: props.initialData?.coverUrl || '',
@@ -131,6 +135,7 @@ watch(() => props.initialData, (newData) => {
   if (newData) {
     form.value = {
       name: newData.name || '',
+      icon: newData.icon || 'lucide:target',
       goal: newData.goal || '',
       description: newData.description || '',
       coverUrl: newData.coverUrl || '',

@@ -60,9 +60,9 @@ export function useSubquests(questId: Ref<string | null | undefined>) {
             questId: data.questId,
             userId: data.userId,
             name: data.name,
+            icon: data.icon || '',
             goal: data.goal || '',
             description: data.description || '',
-            coverUrl: data.coverUrl || '',
             startDate: data.startDate ? (data.startDate as Timestamp).toDate() : null,
             endDate: data.endDate ? (data.endDate as Timestamp).toDate() : null,
             status: data.status || 'planning',
@@ -101,9 +101,9 @@ export function useSubquests(questId: Ref<string | null | undefined>) {
         questId: targetQuestId,
         userId: user.value.uid,
         name: data.name,
+        icon: data.icon || '',
         goal: data.goal || '',
         description: data.description || '',
-        coverUrl: data.coverUrl || '',
         startDate: data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null,
         endDate: data.endDate ? Timestamp.fromDate(new Date(data.endDate)) : null,
         status: data.status || 'planning',
@@ -130,9 +130,9 @@ export function useSubquests(questId: Ref<string | null | undefined>) {
       }
 
       if (data.name !== undefined) updateData.name = data.name
+      if (data.icon !== undefined) updateData.icon = data.icon
       if (data.goal !== undefined) updateData.goal = data.goal
       if (data.description !== undefined) updateData.description = data.description
-      if (data.coverUrl !== undefined) updateData.coverUrl = data.coverUrl
       if (data.status !== undefined) updateData.status = data.status
       if (data.startDate !== undefined) {
         updateData.startDate = data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null

@@ -30,18 +30,47 @@
             <p class="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               {{ $t('task.sections.quests') }}
             </p>
-            <button
-              v-for="quest in quests"
-              :key="quest.id"
-              @click="selectQuestView(quest.id)"
-              class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-              :class="currentView === 'quest' && selectedQuestId === quest.id
-                ? 'bg-orange-50 text-orange-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
-            >
-              <Icon name="lucide:target" class="w-4 h-4" />
-              <span class="flex-1 text-left truncate">{{ quest.name }}</span>
-            </button>
+            <div v-for="quest in quests" :key="quest.id">
+              <div class="flex items-center">
+                <button
+                  v-if="getSubquestsByQuestId(quest.id).length > 0"
+                  @click="toggleQuestExpand(quest.id)"
+                  class="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <Icon
+                    name="lucide:chevron-right"
+                    class="w-3.5 h-3.5 transition-transform"
+                    :class="expandedQuestIds[quest.id] ? 'rotate-90' : ''"
+                  />
+                </button>
+                <div v-else class="w-5.5" />
+                <button
+                  @click="selectQuestView(quest.id)"
+                  class="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
+                  :class="currentView === 'quest' && selectedQuestId === quest.id
+                    ? 'bg-orange-50 text-orange-700'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
+                >
+                  <Icon :name="quest.icon || 'lucide:target'" class="w-4 h-4" />
+                  <span class="flex-1 text-left truncate">{{ quest.name }}</span>
+                </button>
+              </div>
+              <!-- SubQuests (expanded) -->
+              <div v-if="expandedQuestIds[quest.id]" class="ml-5">
+                <button
+                  v-for="subquest in getSubquestsByQuestId(quest.id)"
+                  :key="subquest.id"
+                  @click="selectSubQuestView(quest.id, subquest.id)"
+                  class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
+                  :class="currentView === 'subquest' && selectedSubQuestId === subquest.id
+                    ? 'bg-orange-50 text-orange-700 font-medium'
+                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
+                >
+                  <Icon name="lucide:circle-dot" class="w-3.5 h-3.5" />
+                  <span class="flex-1 text-left truncate">{{ subquest.name }}</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Trips section -->
@@ -49,19 +78,49 @@
             <p class="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               {{ $t('task.sections.trips') }}
             </p>
-            <button
-              v-for="trip in trips"
-              :key="trip.id"
-              @click="selectTripView(trip.id)"
-              class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-              :class="currentView === 'trip' && selectedTripId === trip.id
-                ? 'bg-orange-50 text-orange-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
-            >
-              <Icon name="lucide:plane" class="w-4 h-4" />
-              <span class="flex-1 text-left truncate">{{ trip.name }}</span>
-            </button>
+            <div v-for="trip in trips" :key="trip.id">
+              <div class="flex items-center">
+                <button
+                  v-if="getDestinationsByTripId(trip.id).length > 0"
+                  @click="toggleTripExpand(trip.id)"
+                  class="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <Icon
+                    name="lucide:chevron-right"
+                    class="w-3.5 h-3.5 transition-transform"
+                    :class="expandedTripIds[trip.id] ? 'rotate-90' : ''"
+                  />
+                </button>
+                <div v-else class="w-5.5" />
+                <button
+                  @click="selectTripView(trip.id)"
+                  class="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
+                  :class="currentView === 'trip' && selectedTripId === trip.id
+                    ? 'bg-orange-50 text-orange-700'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
+                >
+                  <Icon name="lucide:plane" class="w-4 h-4" />
+                  <span class="flex-1 text-left truncate">{{ trip.name }}</span>
+                </button>
+              </div>
+              <!-- Destinations (expanded) -->
+              <div v-if="expandedTripIds[trip.id]" class="ml-5">
+                <button
+                  v-for="destination in getDestinationsByTripId(trip.id)"
+                  :key="destination.id"
+                  @click="selectDestinationView(trip.id, destination.id)"
+                  class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
+                  :class="currentView === 'destination' && selectedDestinationId === destination.id
+                    ? 'bg-orange-50 text-orange-700 font-medium'
+                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
+                >
+                  <Icon name="lucide:map-pin" class="w-3.5 h-3.5" />
+                  <span class="flex-1 text-left truncate">{{ destination.name }}</span>
+                </button>
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
 
@@ -76,14 +135,32 @@
             {{ view.label }} ({{ view.count }})
           </option>
           <optgroup v-if="quests.length > 0" :label="$t('task.sections.quests')">
-            <option v-for="quest in quests" :key="quest.id" :value="'quest:' + quest.id">
-              {{ quest.name }}
-            </option>
+            <template v-for="quest in quests" :key="quest.id">
+              <option :value="'quest:' + quest.id">
+                {{ quest.name }}
+              </option>
+              <option
+                v-for="subquest in getSubquestsByQuestId(quest.id)"
+                :key="subquest.id"
+                :value="'subquest:' + quest.id + ':' + subquest.id"
+              >
+                &nbsp;&nbsp;&nbsp;&nbsp;{{ subquest.name }}
+              </option>
+            </template>
           </optgroup>
           <optgroup v-if="trips.length > 0" :label="$t('task.sections.trips')">
-            <option v-for="trip in trips" :key="trip.id" :value="'trip:' + trip.id">
-              {{ trip.name }}
-            </option>
+            <template v-for="trip in trips" :key="trip.id">
+              <option :value="'trip:' + trip.id">
+                {{ trip.name }}
+              </option>
+              <option
+                v-for="destination in getDestinationsByTripId(trip.id)"
+                :key="destination.id"
+                :value="'destination:' + trip.id + ':' + destination.id"
+              >
+                &nbsp;&nbsp;&nbsp;&nbsp;{{ destination.name }}
+              </option>
+            </template>
           </optgroup>
         </select>
       </div>
@@ -105,19 +182,53 @@
         </div>
 
         <!-- Task list -->
-        <div v-else class="bg-white rounded-xl shadow-soft">
-          <TaskList
-            :tasks="filteredTasks"
-            :quest-names="questNameMap"
-            :trip-names="tripNameMap"
-            :quest-id="currentView === 'quest' ? selectedQuestId : ''"
-            :trip-id="currentView === 'trip' ? selectedTripId : ''"
-            :empty-message="currentEmptyMessage"
-            @toggle="handleToggle"
-            @edit="openEditModal"
-            @delete="handleDelete"
-            @add="handleQuickAdd"
-          />
+        <div v-else>
+          <!-- Sectioned view for quest/trip with subquests/destinations -->
+          <div v-if="showSectionedView && activeSections.length > 0" class="space-y-2">
+            <div
+              v-for="(section, idx) in activeSections"
+              :key="section.id"
+              class="bg-white rounded-xl shadow-soft"
+            >
+              <div class="flex items-center gap-2 px-4 pt-3 pb-1">
+                <Icon v-if="section.icon" :name="section.icon" class="w-3.5 h-3.5 text-gray-400" />
+                <span class="text-sm font-bold text-gray-700">{{ section.label }}</span>
+              </div>
+              <TaskList
+                :tasks="section.tasks"
+                :quest-names="questNameMap"
+                :quest-icons="questIconMap"
+                :trip-names="tripNameMap"
+                :quest-id="section.questId"
+                :sub-quest-id="section.subQuestId"
+                :trip-id="section.tripId"
+                :destination-id="section.destinationId"
+                @toggle="handleToggle"
+                @edit="openEditModal"
+                @delete="handleDelete"
+                @add="handleQuickAdd"
+              />
+            </div>
+          </div>
+
+          <!-- Flat view for inbox/today/all/subquest/destination or quest/trip without children -->
+          <div v-else class="bg-white rounded-xl shadow-soft">
+            <TaskList
+              :tasks="filteredTasks"
+              :quest-names="questNameMap"
+              :quest-icons="questIconMap"
+              :trip-names="tripNameMap"
+              :quest-id="currentView === 'quest' || currentView === 'subquest' ? selectedQuestId : ''"
+              :sub-quest-id="currentView === 'subquest' ? selectedSubQuestId : ''"
+              :trip-id="currentView === 'trip' || currentView === 'destination' ? selectedTripId : ''"
+              :destination-id="currentView === 'destination' ? selectedDestinationId : ''"
+              :empty-message="currentEmptyMessage"
+              @toggle="handleToggle"
+              @edit="openEditModal"
+              @delete="handleDelete"
+              @add="handleQuickAdd"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -162,15 +273,23 @@ onMounted(() => {
 })
 
 // Data
-const { tasks, loading: tasksLoading, createTask, updateTask, toggleTaskComplete, deleteTask, inboxTasks, todayTasks, getTasksByQuestId, getTasksByTripId } = useTasks()
+const { tasks, loading: tasksLoading, createTask, updateTask, toggleTaskComplete, deleteTask, inboxTasks, todayTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
 const { quests } = useQuests()
 const { trips } = useTrips()
+const { getSubquestsByQuestId } = useAllSubquests()
+const { getDestinationsByTripId } = useAllDestinations()
 
 // View state
-const currentView = ref<'inbox' | 'today' | 'all' | 'quest' | 'trip'>('inbox')
+const currentView = ref<'inbox' | 'today' | 'all' | 'quest' | 'trip' | 'subquest' | 'destination'>('inbox')
 const selectedQuestId = ref('')
 const selectedTripId = ref('')
+const selectedSubQuestId = ref('')
+const selectedDestinationId = ref('')
 const mobileView = ref('inbox')
+
+// Expand state for sidebar tree
+const expandedQuestIds = ref<Record<string, boolean>>({})
+const expandedTripIds = ref<Record<string, boolean>>({})
 
 // Modals
 const showCreateModal = ref(false)
@@ -181,6 +300,12 @@ const selectedTask = ref<Task | null>(null)
 const questNameMap = computed(() => {
   const map: Record<string, string> = {}
   quests.value.forEach(q => { map[q.id] = q.name })
+  return map
+})
+
+const questIconMap = computed(() => {
+  const map: Record<string, string> = {}
+  quests.value.forEach(q => { if (q.icon) map[q.id] = q.icon })
   return map
 })
 
@@ -223,6 +348,10 @@ const filteredTasks = computed(() => {
       return selectedQuestId.value ? getTasksByQuestId(selectedQuestId.value) : []
     case 'trip':
       return selectedTripId.value ? getTasksByTripId(selectedTripId.value) : []
+    case 'subquest':
+      return selectedSubQuestId.value ? getTasksBySubQuestId(selectedSubQuestId.value) : []
+    case 'destination':
+      return selectedDestinationId.value ? getTasksByDestinationId(selectedDestinationId.value) : []
     default:
       return tasks.value
   }
@@ -240,16 +369,93 @@ const currentViewTitle = computed(() => {
       const trip = trips.value.find(tr => tr.id === selectedTripId.value)
       return trip?.name || t('task.sections.trips')
     }
+    case 'subquest': {
+      const subquests = selectedQuestId.value ? getSubquestsByQuestId(selectedQuestId.value) : []
+      const subquest = subquests.find(s => s.id === selectedSubQuestId.value)
+      return subquest?.name || t('task.sections.subquests')
+    }
+    case 'destination': {
+      const destinations = selectedTripId.value ? getDestinationsByTripId(selectedTripId.value) : []
+      const destination = destinations.find(d => d.id === selectedDestinationId.value)
+      return destination?.name || t('task.sections.destinations')
+    }
     default: return t('task.views.allTasks')
   }
 })
 
-const currentEmptyMessage = computed(() => {
-  switch (currentView.value) {
-    case 'inbox': return t('task.empty.inboxDescription')
-    case 'today': return t('task.empty.todayDescription')
-    default: return t('task.empty.description')
+// Sectioned view
+const showSectionedView = computed(() => currentView.value === 'quest' || currentView.value === 'trip')
+
+const questSections = computed(() => {
+  if (currentView.value !== 'quest' || !selectedQuestId.value) return []
+  const subquests = getSubquestsByQuestId(selectedQuestId.value)
+  // If no subquests, don't show sections — just use flat list
+  if (subquests.length === 0) return []
+  const sections: Array<{ id: string; label: string; icon: string; tasks: Task[]; questId: string; subQuestId: string; tripId: string; destinationId: string }> = []
+  // General section (direct quest tasks)
+  sections.push({
+    id: 'general',
+    label: t('task.sections.general'),
+    icon: '',
+    tasks: getDirectQuestTasks(selectedQuestId.value),
+    questId: selectedQuestId.value,
+    subQuestId: '',
+    tripId: '',
+    destinationId: '',
+  })
+  // One section per subquest
+  for (const sq of subquests) {
+    sections.push({
+      id: sq.id,
+      label: sq.name,
+      icon: 'lucide:circle-dot',
+      tasks: getTasksBySubQuestId(sq.id),
+      questId: selectedQuestId.value,
+      subQuestId: sq.id,
+      tripId: '',
+      destinationId: '',
+    })
   }
+  return sections
+})
+
+const tripSections = computed(() => {
+  if (currentView.value !== 'trip' || !selectedTripId.value) return []
+  const destinations = getDestinationsByTripId(selectedTripId.value)
+  // If no destinations, don't show sections — just use flat list
+  if (destinations.length === 0) return []
+  const sections: Array<{ id: string; label: string; icon: string; tasks: Task[]; questId: string; subQuestId: string; tripId: string; destinationId: string }> = []
+  // General section (direct trip tasks)
+  sections.push({
+    id: 'general',
+    label: t('task.sections.general'),
+    icon: '',
+    tasks: getDirectTripTasks(selectedTripId.value),
+    questId: '',
+    subQuestId: '',
+    tripId: selectedTripId.value,
+    destinationId: '',
+  })
+  // One section per destination
+  for (const dest of destinations) {
+    sections.push({
+      id: dest.id,
+      label: dest.name,
+      icon: 'lucide:map-pin',
+      tasks: getTasksByDestinationId(dest.id),
+      questId: '',
+      subQuestId: '',
+      tripId: selectedTripId.value,
+      destinationId: dest.id,
+    })
+  }
+  return sections
+})
+
+const activeSections = computed(() => {
+  if (currentView.value === 'quest') return questSections.value
+  if (currentView.value === 'trip') return tripSections.value
+  return []
 })
 
 const selectedTaskForm = computed(() => {
@@ -261,6 +467,7 @@ const selectedTaskForm = computed(() => {
     subQuestId: selectedTask.value.subQuestId || '',
     tripId: selectedTask.value.tripId || '',
     destinationId: selectedTask.value.destinationId || '',
+    wishId: selectedTask.value.wishId || '',
   }
 })
 
@@ -275,9 +482,37 @@ function selectTripView(tripId: string) {
   selectedTripId.value = tripId
 }
 
+function selectSubQuestView(questId: string, subQuestId: string) {
+  currentView.value = 'subquest'
+  selectedQuestId.value = questId
+  selectedSubQuestId.value = subQuestId
+  expandedQuestIds.value[questId] = true
+}
+
+function selectDestinationView(tripId: string, destinationId: string) {
+  currentView.value = 'destination'
+  selectedTripId.value = tripId
+  selectedDestinationId.value = destinationId
+  expandedTripIds.value[tripId] = true
+}
+
+function toggleQuestExpand(questId: string) {
+  expandedQuestIds.value[questId] = !expandedQuestIds.value[questId]
+}
+
+function toggleTripExpand(tripId: string) {
+  expandedTripIds.value[tripId] = !expandedTripIds.value[tripId]
+}
+
 function handleMobileViewChange() {
   const val = mobileView.value
-  if (val.startsWith('quest:')) {
+  if (val.startsWith('subquest:')) {
+    const parts = val.split(':')
+    selectSubQuestView(parts[1], parts[2])
+  } else if (val.startsWith('destination:')) {
+    const parts = val.split(':')
+    selectDestinationView(parts[1], parts[2])
+  } else if (val.startsWith('quest:')) {
     selectQuestView(val.replace('quest:', ''))
   } else if (val.startsWith('trip:')) {
     selectTripView(val.replace('trip:', ''))
@@ -294,7 +529,7 @@ async function handleCreate(data: TaskForm) {
   }
 }
 
-async function handleQuickAdd(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string }) {
+async function handleQuickAdd(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }) {
   await createTask({
     title: data.title,
     description: '',
@@ -302,6 +537,7 @@ async function handleQuickAdd(data: { title: string; questId: string; subQuestId
     subQuestId: data.subQuestId,
     tripId: data.tripId,
     destinationId: data.destinationId,
+    wishId: data.wishId,
   })
 }
 

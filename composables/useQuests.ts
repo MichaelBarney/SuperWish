@@ -54,6 +54,7 @@ export function useQuests() {
             id: docSnap.id,
             userId: data.userId,
             name: data.name,
+            icon: data.icon || '',
             goal: data.goal || '',
             description: data.description || '',
             coverUrl: data.coverUrl || '',
@@ -91,6 +92,7 @@ export function useQuests() {
       const docRef = await addDoc(questsRef, {
         userId: user.value.uid,
         name: data.name,
+        icon: data.icon || '',
         goal: data.goal || '',
         description: data.description || '',
         coverUrl: data.coverUrl || '',
@@ -119,6 +121,7 @@ export function useQuests() {
       }
 
       if (data.name !== undefined) updateData.name = data.name
+      if (data.icon !== undefined) updateData.icon = data.icon
       if (data.goal !== undefined) updateData.goal = data.goal
       if (data.description !== undefined) updateData.description = data.description
       if (data.coverUrl !== undefined) updateData.coverUrl = data.coverUrl

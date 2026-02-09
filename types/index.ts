@@ -622,6 +622,7 @@ export interface Quest {
   id: string
   userId: string
   name: string
+  icon?: string
   goal?: string
   description?: string
   coverUrl?: string
@@ -634,6 +635,7 @@ export interface Quest {
 
 export interface QuestForm {
   name: string
+  icon: string
   goal: string
   description: string
   coverUrl: string
@@ -658,9 +660,9 @@ export interface SubQuest {
   questId: string
   userId: string
   name: string
+  icon?: string
   goal?: string
   description?: string
-  coverUrl?: string
   startDate?: Date | null
   endDate?: Date | null
   status: QuestStatus
@@ -671,9 +673,9 @@ export interface SubQuest {
 
 export interface SubQuestForm {
   name: string
+  icon: string
   goal: string
   description: string
-  coverUrl: string
   startDate: string
   endDate: string
   status: QuestStatus
@@ -694,6 +696,7 @@ export interface Task {
   subQuestId?: string | null
   tripId?: string | null
   destinationId?: string | null
+  wishId?: string | null
   order: number
   createdAt: Timestamp
   updatedAt: Timestamp
@@ -706,4 +709,5 @@ export interface TaskForm {
   subQuestId: string
   tripId: string
   destinationId: string
+  wishId: string
 }

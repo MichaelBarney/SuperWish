@@ -15,7 +15,7 @@
         v-else
         class="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center"
       >
-        <Icon name="lucide:target" class="w-12 h-12 text-white/50" />
+        <Icon :name="quest.icon || 'lucide:target'" class="w-12 h-12 text-white/50" />
       </div>
 
       <!-- Gradient overlay -->

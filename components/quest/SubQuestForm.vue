@@ -10,6 +10,9 @@
         required
       />
 
+      <!-- Icon Picker -->
+      <QuestIconPicker v-model="form.icon" :label="$t('quest.subquests.form.icon')" />
+
       <!-- Goal -->
       <UiInput
         v-model="form.goal"
@@ -23,13 +26,6 @@
         :label="$t('quest.subquests.form.description')"
         :placeholder="$t('quest.subquests.form.descriptionPlaceholder')"
         :rows="3"
-      />
-
-      <!-- Cover Image -->
-      <UiImageUpload
-        v-model="form.coverUrl"
-        :label="$t('quest.subquests.form.coverImage')"
-        storage-path="subquests"
       />
 
       <!-- Date Range -->
@@ -100,9 +96,9 @@ const submitting = ref(false)
 
 const form = ref<SubQuestForm>({
   name: props.initialData?.name || '',
+  icon: props.initialData?.icon || 'lucide:target',
   goal: props.initialData?.goal || '',
   description: props.initialData?.description || '',
-  coverUrl: props.initialData?.coverUrl || '',
   startDate: props.initialData?.startDate
     ? (props.initialData.startDate instanceof Date
         ? props.initialData.startDate.toISOString().split('T')[0]
@@ -142,9 +138,9 @@ watch(() => props.initialData, (newData) => {
   if (newData) {
     form.value = {
       name: newData.name || '',
+      icon: newData.icon || 'lucide:target',
       goal: newData.goal || '',
       description: newData.description || '',
-      coverUrl: newData.coverUrl || '',
       startDate: newData.startDate
         ? (newData.startDate instanceof Date
             ? newData.startDate.toISOString().split('T')[0]

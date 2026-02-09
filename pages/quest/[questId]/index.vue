@@ -95,7 +95,7 @@
         <div class="bg-white rounded-xl shadow-soft p-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-              <Icon name="lucide:target" class="w-5 h-5 text-green-600" />
+              <Icon :name="quest.icon || 'lucide:target'" class="w-5 h-5 text-green-600" />
             </div>
             <div>
               <p class="text-2xl font-bold text-gray-900">{{ subquests.length }}</p>
@@ -342,7 +342,7 @@ async function handleDeleteTask(id: string) {
   await deleteTask(id)
 }
 
-async function handleQuickAddTask(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string }) {
+async function handleQuickAddTask(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }) {
   await createTask({
     title: data.title,
     description: '',
@@ -350,6 +350,7 @@ async function handleQuickAddTask(data: { title: string; questId: string; subQue
     subQuestId: '',
     tripId: '',
     destinationId: '',
+    wishId: data.wishId || '',
   })
 }
 </script>

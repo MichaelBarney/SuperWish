@@ -511,6 +511,7 @@
         "name": "Quest Name",
         "namePlaceholder": "e.g., Learn Spanish",
         "nameRequired": "Quest name is required",
+        "icon": "Icon",
         "goal": "Goal",
         "goalPlaceholder": "What do you want to achieve?",
         "description": "Description",
@@ -551,7 +552,7 @@
         "goalPlaceholder": "What does this step achieve?",
         "description": "Description",
         "descriptionPlaceholder": "More details about this sub-quest...",
-        "coverImage": "Cover Image",
+        "icon": "Icon",
         "startDate": "Start Date",
         "endDate": "Target End Date",
         "createSubQuest": "Create Sub-Quest"
@@ -569,7 +570,10 @@
     },
     "sections": {
       "quests": "Quests",
-      "trips": "Trips"
+      "trips": "Trips",
+      "subquests": "Sub-Quests",
+      "destinations": "Destinations",
+      "general": "General"
     },
     "task": {
       "title": "Tasks",
@@ -601,7 +605,15 @@
       "selectSubQuest": "Select a sub-quest",
       "selectTrip": "Select a trip",
       "selectDestination": "Select a destination",
+      "linkWish": "Wish",
+      "selectWish": "Select a wish",
+      "linkedToWish": "Linked to wish",
       "createTask": "Create Task"
+    },
+    "wishPicker": {
+      "searchPlaceholder": "Search wishes...",
+      "noResults": "No wishes found",
+      "title": "Select a Wish"
     },
     "empty": {
       "title": "No tasks yet",

@@ -1,56 +1,38 @@
 <template>
   <div
-    class="group block bg-white rounded-2xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 cursor-pointer"
+    class="group flex items-center gap-4 bg-white rounded-xl px-4 py-3 shadow-soft transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-0.5 cursor-pointer"
     @click="$emit('click', subquest)"
   >
-    <!-- Cover Image -->
-    <div class="relative aspect-[16/9] overflow-hidden">
-      <img
-        v-if="subquest.coverUrl"
-        :src="subquest.coverUrl"
-        :alt="subquest.name"
-        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-      />
-      <div
-        v-else
-        class="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center"
-      >
-        <Icon name="lucide:target" class="w-12 h-12 text-white/50" />
-      </div>
+    <!-- Icon -->
+    <div
+      class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+      :class="iconBgClass"
+    >
+      <Icon :name="subquest.icon || 'lucide:target'" class="w-5 h-5" :class="iconTextClass" />
+    </div>
 
-      <!-- Gradient overlay -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-      <!-- Status Badge -->
-      <div class="absolute top-3 right-3">
+    <!-- Content -->
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2">
+        <h3 class="text-sm font-semibold text-gray-900 truncate">
+          {{ subquest.name }}
+        </h3>
         <span
-          class="px-2.5 py-1 rounded-full text-xs font-medium"
+          class="px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0"
           :class="statusBadgeClass"
         >
           {{ $t(`quest.quests.status.${subquest.status}`) }}
         </span>
       </div>
-
-      <!-- Title overlay -->
-      <div class="absolute bottom-0 left-0 right-0 p-4">
-        <h3 class="text-lg font-semibold text-white truncate">
-          {{ subquest.name }}
-        </h3>
-        <p v-if="dateRange" class="text-sm text-white/80 mt-0.5">
-          {{ dateRange }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Content -->
-    <div class="p-4">
-      <p v-if="subquest.goal" class="text-sm text-gray-700 font-medium mb-1 line-clamp-1">
+      <p v-if="subquest.goal" class="text-xs text-gray-500 truncate mt-0.5">
         {{ subquest.goal }}
       </p>
-      <p v-if="subquest.description" class="text-sm text-gray-500 line-clamp-2">
-        {{ subquest.description }}
-      </p>
     </div>
+
+    <!-- Date range -->
+    <p v-if="dateRange" class="text-xs text-gray-400 shrink-0 hidden sm:block">
+      {{ dateRange }}
+    </p>
   </div>
 </template>
 
@@ -80,6 +62,32 @@ const statusBadgeClass = computed(() => {
       return 'bg-amber-100 text-amber-700'
     default:
       return 'bg-gray-100 text-gray-700'
+  }
+})
+
+const iconBgClass = computed(() => {
+  switch (props.subquest.status) {
+    case 'completed':
+      return 'bg-emerald-100'
+    case 'in_progress':
+      return 'bg-green-100'
+    case 'on_hold':
+      return 'bg-amber-100'
+    default:
+      return 'bg-green-100'
+  }
+})
+
+const iconTextClass = computed(() => {
+  switch (props.subquest.status) {
+    case 'completed':
+      return 'text-emerald-600'
+    case 'in_progress':
+      return 'text-green-600'
+    case 'on_hold':
+      return 'text-amber-600'
+    default:
+      return 'text-green-600'
   }
 })
 

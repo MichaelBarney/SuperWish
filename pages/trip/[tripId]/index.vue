@@ -816,7 +816,7 @@ async function handleDeleteTask(id: string) {
   await deleteTaskById(id)
 }
 
-async function handleQuickAddTask(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string }) {
+async function handleQuickAddTask(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }) {
   await createTask({
     title: data.title,
     description: '',
@@ -824,6 +824,7 @@ async function handleQuickAddTask(data: { title: string; questId: string; subQue
     subQuestId: '',
     tripId: tripId.value,
     destinationId: '',
+    wishId: data.wishId || '',
   })
 }
 

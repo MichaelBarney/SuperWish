@@ -1,15 +1,15 @@
 <template>
   <div>
     <!-- Loading State -->
-    <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-if="loading" class="space-y-3">
       <div
         v-for="i in 3"
         :key="i"
-        class="bg-white rounded-2xl shadow-soft overflow-hidden animate-pulse"
+        class="flex items-center gap-4 bg-white rounded-xl px-4 py-3 shadow-soft animate-pulse"
       >
-        <div class="aspect-[16/9] bg-gray-200" />
-        <div class="p-4 space-y-3">
-          <div class="h-4 bg-gray-200 rounded w-3/4" />
+        <div class="w-10 h-10 rounded-lg bg-gray-200 shrink-0" />
+        <div class="flex-1 space-y-2">
+          <div class="h-4 bg-gray-200 rounded w-1/3" />
           <div class="h-3 bg-gray-100 rounded w-1/2" />
         </div>
       </div>
@@ -35,8 +35,8 @@
       </UiButton>
     </div>
 
-    <!-- Sub-Quest Grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Sub-Quest List -->
+    <div v-else class="space-y-2">
       <QuestSubQuestCard
         v-for="subquest in subquests"
         :key="subquest.id"

@@ -511,6 +511,7 @@
         "name": "Nome da Missão",
         "namePlaceholder": "ex., Aprender Espanhol",
         "nameRequired": "Nome da missão e obrigatorio",
+        "icon": "Ícone",
         "goal": "Objetivo",
         "goalPlaceholder": "O que voce quer alcancar?",
         "description": "Descricao",
@@ -551,7 +552,7 @@
         "goalPlaceholder": "O que esta etapa alcanca?",
         "description": "Descricao",
         "descriptionPlaceholder": "Mais detalhes sobre esta sub-missão...",
-        "coverImage": "Imagem de Capa",
+        "icon": "Ícone",
         "startDate": "Data de Inicio",
         "endDate": "Data Alvo de Termino",
         "createSubQuest": "Criar Sub-Missão"
@@ -569,7 +570,10 @@
     },
     "sections": {
       "quests": "Missões",
-      "trips": "Viagens"
+      "trips": "Viagens",
+      "subquests": "Sub-Missões",
+      "destinations": "Destinos",
+      "general": "Geral"
     },
     "task": {
       "title": "Tarefas",
@@ -601,7 +605,15 @@
       "selectSubQuest": "Selecione uma sub-missão",
       "selectTrip": "Selecione uma viagem",
       "selectDestination": "Selecione um destino",
+      "linkWish": "Desejo",
+      "selectWish": "Selecione um desejo",
+      "linkedToWish": "Vinculado a desejo",
       "createTask": "Criar Tarefa"
+    },
+    "wishPicker": {
+      "searchPlaceholder": "Buscar desejos...",
+      "noResults": "Nenhum desejo encontrado",
+      "title": "Selecione um Desejo"
     },
     "empty": {
       "title": "Nenhuma tarefa ainda",
