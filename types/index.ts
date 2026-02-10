@@ -46,6 +46,7 @@ export interface User {
   photoURL: string | null
   createdAt: Timestamp
   defaultRegion?: string
+  taskGroupBy?: TaskGroupBy
 }
 
 export interface WishList {
@@ -687,6 +688,8 @@ export interface SubQuestForm {
 // =============================================
 
 export type TaskTimeHorizon = 'today' | 'this_week' | 'this_month' | 'long_term'
+export type TaskEstimatedTime = '5min' | '12min' | '25min' | '1h_plus'
+export type TaskGroupBy = 'none' | 'project'
 
 export interface Task {
   id: string
@@ -701,6 +704,7 @@ export interface Task {
   destinationId?: string | null
   wishId?: string | null
   timeHorizon?: TaskTimeHorizon | null
+  estimatedTime?: TaskEstimatedTime | null
   order: number
   createdAt: Timestamp
   updatedAt: Timestamp
@@ -715,4 +719,5 @@ export interface TaskForm {
   destinationId: string
   wishId: string
   timeHorizon: string
+  estimatedTime: string
 }

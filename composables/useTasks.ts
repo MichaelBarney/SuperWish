@@ -12,7 +12,7 @@ import {
   Timestamp,
   type Firestore,
 } from 'firebase/firestore'
-import type { Task, TaskForm, TaskTimeHorizon } from '~/types'
+import type { Task, TaskForm, TaskTimeHorizon, TaskEstimatedTime } from '~/types'
 
 export function useTasks() {
   const nuxtApp = useNuxtApp()
@@ -63,6 +63,7 @@ export function useTasks() {
             destinationId: data.destinationId || null,
             wishId: data.wishId || null,
             timeHorizon: data.timeHorizon || null,
+            estimatedTime: data.estimatedTime || null,
             order: data.order || 0,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
@@ -108,6 +109,7 @@ export function useTasks() {
         destinationId: data.destinationId || null,
         wishId: data.wishId || null,
         timeHorizon: data.timeHorizon || null,
+        estimatedTime: data.estimatedTime || null,
         order: maxOrder,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -138,6 +140,7 @@ export function useTasks() {
       if (data.destinationId !== undefined) updateData.destinationId = data.destinationId || null
       if (data.wishId !== undefined) updateData.wishId = data.wishId || null
       if (data.timeHorizon !== undefined) updateData.timeHorizon = data.timeHorizon || null
+      if (data.estimatedTime !== undefined) updateData.estimatedTime = data.estimatedTime || null
 
       await updateDoc(taskRef, updateData)
       return { success: true }
@@ -200,6 +203,24 @@ export function useTasks() {
     } catch (err) {
       console.error('Error updating task time horizon:', err)
       return { success: false, error: 'Failed to update time horizon' }
+    }
+  }
+
+  const updateTaskEstimatedTime = async (id: string, estimatedTime: TaskEstimatedTime | null) => {
+    const db = getDb()
+    if (!user.value) return { success: false, error: 'Not authenticated' }
+    if (!db) return { success: false, error: 'Database not initialized' }
+
+    try {
+      const taskRef = doc(db, 'tasks', id)
+      await updateDoc(taskRef, {
+        estimatedTime: estimatedTime || null,
+        updatedAt: serverTimestamp(),
+      })
+      return { success: true }
+    } catch (err) {
+      console.error('Error updating task estimated time:', err)
+      return { success: false, error: 'Failed to update estimated time' }
     }
   }
 
@@ -281,6 +302,7 @@ export function useTasks() {
     createTask,
     updateTask,
     updateTaskTimeHorizon,
+    updateTaskEstimatedTime,
     toggleTaskComplete,
     deleteTask,
     getTaskById,

@@ -44,7 +44,7 @@
                     :class="expandedQuestIds[quest.id] ? 'rotate-90' : ''"
                   />
                 </button>
-                <div v-else class="w-5.5" />
+                <div v-else class="w-[22px]" />
                 <button
                   @click="selectQuestView(quest.id)"
                   class="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -86,7 +86,7 @@
                     :class="expandedTripIds[trip.id] ? 'rotate-90' : ''"
                   />
                 </button>
-                <div v-else class="w-5.5" />
+                <div v-else class="w-[22px]" />
                 <button
                   @click="selectTripView(trip.id)"
                   class="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -175,6 +175,19 @@
             </template>
           </optgroup>
         </select>
+        <!-- Mobile: Group By toggle -->
+        <div v-if="isTimeHorizonView" class="flex items-center gap-2 mt-2">
+          <button
+            @click="setTaskGroupBy(taskGroupBy === 'none' ? 'project' : 'none')"
+            class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors"
+            :class="taskGroupBy === 'project'
+              ? 'border-orange-300 bg-orange-50 text-orange-700'
+              : 'border-gray-300 text-gray-500 hover:bg-gray-50'"
+          >
+            <Icon name="lucide:layers" class="w-3.5 h-3.5" />
+            {{ $t('task.groupBy.label') }}: {{ taskGroupBy === 'project' ? $t('task.groupBy.project') : $t('task.groupBy.none') }}
+          </button>
+        </div>
       </div>
 
       <!-- Right Panel: Task list -->
@@ -182,10 +195,48 @@
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-xl font-bold text-gray-900">{{ currentViewTitle }}</h1>
-          <UiButton @click="showCreateModal = true">
-            <Icon name="lucide:plus" class="w-4 h-4 mr-1.5" />
-            {{ $t('task.task.newTask') }}
-          </UiButton>
+          <div class="flex items-center gap-2">
+            <!-- Group By dropdown (desktop) -->
+            <div v-if="isTimeHorizonView" class="relative hidden md:block">
+              <button
+                @click="showGroupByDropdown = !showGroupByDropdown"
+                class="flex items-center gap-1.5 px-2.5 py-1.5 text-sm rounded-lg border transition-colors"
+                :class="taskGroupBy === 'project'
+                  ? 'border-orange-300 bg-orange-50 text-orange-700'
+                  : 'border-gray-300 text-gray-600 hover:bg-gray-50'"
+              >
+                <Icon name="lucide:layers" class="w-4 h-4" />
+                <span>{{ $t('task.groupBy.label') }}</span>
+                <Icon name="lucide:chevron-down" class="w-3 h-3" />
+              </button>
+              <div v-if="showGroupByDropdown" class="fixed inset-0 z-10" @click="showGroupByDropdown = false" />
+              <div
+                v-if="showGroupByDropdown"
+                class="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20"
+              >
+                <button
+                  @click="setTaskGroupBy('none')"
+                  class="w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors"
+                  :class="taskGroupBy === 'none' ? 'bg-orange-50 text-orange-700' : 'text-gray-700 hover:bg-gray-50'"
+                >
+                  <Icon name="lucide:list" class="w-4 h-4" />
+                  {{ $t('task.groupBy.none') }}
+                </button>
+                <button
+                  @click="setTaskGroupBy('project')"
+                  class="w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors"
+                  :class="taskGroupBy === 'project' ? 'bg-orange-50 text-orange-700' : 'text-gray-700 hover:bg-gray-50'"
+                >
+                  <Icon name="lucide:folder" class="w-4 h-4" />
+                  {{ $t('task.groupBy.project') }}
+                </button>
+              </div>
+            </div>
+            <UiButton @click="showCreateModal = true">
+              <Icon name="lucide:plus" class="w-4 h-4 mr-1.5" />
+              {{ $t('task.task.newTask') }}
+            </UiButton>
+          </div>
         </div>
 
         <!-- Loading -->
@@ -220,6 +271,7 @@
                 @delete="handleDelete"
                 @add="handleQuickAdd"
                 @update-time-horizon="handleUpdateTimeHorizon"
+                @update-estimated-time="handleUpdateEstimatedTime"
               />
             </div>
             <!-- Add Sub-Quest button for trips -->
@@ -277,6 +329,7 @@
                 @delete="handleDelete"
                 @add="handleQuickAdd"
                 @update-time-horizon="handleUpdateTimeHorizon"
+                @update-estimated-time="handleUpdateEstimatedTime"
               />
             </div>
             <!-- Add Sub-Quest button for trips (flat view) -->
@@ -343,7 +396,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Task, TaskForm, TaskTimeHorizon } from '~/types'
+import type { Task, TaskForm, TaskTimeHorizon, TaskEstimatedTime, TaskGroupBy } from '~/types'
 
 definePageMeta({
   layout: 'app-with-sidebar',
@@ -351,6 +404,8 @@ definePageMeta({
 })
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 
 // Set app context
 const { setApp } = useAppContext()
@@ -359,19 +414,57 @@ onMounted(() => {
 })
 
 // Data
-const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
+const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
 const { quests } = useQuests()
 const { trips } = useTrips()
 const { getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip } = useAllSubquests()
 const { getDestinationsByTripId } = useAllDestinations()
+const { user: authUser, updateUserPreferences } = useAuth()
+
+// Group By state
+const taskGroupBy = ref<TaskGroupBy>('none')
+const showGroupByDropdown = ref(false)
+
+// Sync from Firestore when auth resolves
+watch(authUser, (u) => {
+  if (u?.taskGroupBy) {
+    taskGroupBy.value = u.taskGroupBy
+    localStorage.setItem('taskGroupBy', u.taskGroupBy)
+  }
+}, { immediate: true })
+
+// Fast fallback from localStorage on mount
+onMounted(() => {
+  const stored = localStorage.getItem('taskGroupBy') as TaskGroupBy | null
+  if (stored && (stored === 'none' || stored === 'project')) {
+    taskGroupBy.value = stored
+  }
+})
+
+function setTaskGroupBy(value: TaskGroupBy) {
+  taskGroupBy.value = value
+  showGroupByDropdown.value = false
+  localStorage.setItem('taskGroupBy', value)
+  updateUserPreferences({ taskGroupBy: value })
+}
 
 // View state
-const currentView = ref<'inbox' | 'today' | 'this_week' | 'this_month' | 'long_term' | 'no_horizon' | 'quest' | 'trip' | 'subquest' | 'destination'>('inbox')
+type ViewType = 'inbox' | 'today' | 'this_week' | 'this_month' | 'long_term' | 'no_horizon' | 'quest' | 'trip' | 'subquest' | 'destination'
+const validViews: ViewType[] = ['inbox', 'today', 'this_week', 'this_month', 'long_term', 'no_horizon']
+const initialView: ViewType = validViews.includes(route.query.view as ViewType)
+  ? (route.query.view as ViewType)
+  : 'inbox'
+const currentView = ref<ViewType>(initialView)
 const selectedQuestId = ref('')
 const selectedTripId = ref('')
 const selectedSubQuestId = ref('')
 const selectedDestinationId = ref('')
-const mobileView = ref('inbox')
+const mobileView = ref(initialView as string)
+
+// Sync currentView to URL query parameter
+watch(currentView, (val) => {
+  router.replace({ query: { ...route.query, view: val } })
+})
 
 // Expand state for sidebar tree
 const expandedQuestIds = ref<Record<string, boolean>>({})
@@ -532,8 +625,72 @@ const currentViewTitle = computed(() => {
   }
 })
 
+// Group By helpers
+const isTimeHorizonView = computed(() =>
+  ['inbox', 'today', 'this_week', 'this_month', 'long_term', 'no_horizon'].includes(currentView.value)
+)
+
+const groupedByProjectSections = computed(() => {
+  const taskList = filteredTasks.value
+  const projectMap = new Map<string, { id: string; label: string; icon: string; tasks: Task[]; questId: string; tripId: string }>()
+  const noProjectTasks: Task[] = []
+
+  for (const task of taskList) {
+    if (task.questId) {
+      const key = `quest:${task.questId}`
+      if (!projectMap.has(key)) {
+        const name = questNameMap.value[task.questId] || t('task.sections.quests')
+        const icon = questIconMap.value[task.questId] || 'lucide:target'
+        projectMap.set(key, { id: key, label: name, icon, tasks: [], questId: task.questId, tripId: '' })
+      }
+      projectMap.get(key)!.tasks.push(task)
+    } else if (task.tripId) {
+      const key = `trip:${task.tripId}`
+      if (!projectMap.has(key)) {
+        const name = tripNameMap.value[task.tripId] || t('task.sections.trips')
+        projectMap.set(key, { id: key, label: name, icon: 'lucide:plane', tasks: [], questId: '', tripId: task.tripId })
+      }
+      projectMap.get(key)!.tasks.push(task)
+    } else {
+      noProjectTasks.push(task)
+    }
+  }
+
+  const sections: Array<{ id: string; label: string; icon: string; tasks: Task[]; questId: string; subQuestId: string; tripId: string; destinationId: string }> = []
+
+  for (const group of projectMap.values()) {
+    if (group.tasks.some(t => !t.completed)) {
+      sections.push({
+        id: group.id,
+        label: group.label,
+        icon: group.icon,
+        tasks: group.tasks,
+        questId: group.questId,
+        subQuestId: '',
+        tripId: group.tripId,
+        destinationId: '',
+      })
+    }
+  }
+
+  if (noProjectTasks.some(t => !t.completed)) {
+    sections.push({
+      id: 'no-project',
+      label: t('task.groupBy.noProject'),
+      icon: 'lucide:inbox',
+      tasks: noProjectTasks,
+      questId: '',
+      subQuestId: '',
+      tripId: '',
+      destinationId: '',
+    })
+  }
+
+  return sections
+})
+
 // Sectioned view
-const showSectionedView = computed(() => currentView.value === 'quest' || currentView.value === 'trip')
+const showSectionedView = computed(() => currentView.value === 'quest' || currentView.value === 'trip' || (isTimeHorizonView.value && taskGroupBy.value === 'project'))
 
 const questSections = computed(() => {
   if (currentView.value !== 'quest' || !selectedQuestId.value) return []
@@ -616,6 +773,7 @@ const tripSections = computed(() => {
 })
 
 const activeSections = computed(() => {
+  if (isTimeHorizonView.value && taskGroupBy.value === 'project') return groupedByProjectSections.value
   if (currentView.value === 'quest') return questSections.value
   if (currentView.value === 'trip') return tripSections.value
   return []
@@ -763,6 +921,10 @@ async function handleToggle(id: string, completed: boolean) {
 
 async function handleUpdateTimeHorizon(id: string, timeHorizon: TaskTimeHorizon | null) {
   await updateTaskTimeHorizon(id, timeHorizon)
+}
+
+async function handleUpdateEstimatedTime(id: string, estimatedTime: TaskEstimatedTime | null) {
+  await updateTaskEstimatedTime(id, estimatedTime)
 }
 
 async function handleDelete(id: string) {

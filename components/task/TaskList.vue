@@ -13,6 +13,7 @@
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
         @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
+        @update-estimated-time="(id, et) => $emit('updateEstimatedTime', id, et)"
       />
     </div>
 
@@ -64,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Task, TaskTimeHorizon } from '~/types'
+import type { Task, TaskTimeHorizon, TaskEstimatedTime } from '~/types'
 import { isOwnedStatus } from '~/types'
 
 interface Props {
@@ -91,6 +92,7 @@ const emit = defineEmits<{
   delete: [id: string]
   add: [data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
+  updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
 }>()
 
 const { getWishById } = useAllWishes()
@@ -105,8 +107,29 @@ function isTaskCompleted(task: Task): boolean {
   return task.completed
 }
 
-const activeTasks = computed(() => props.tasks.filter(t => !isTaskCompleted(t)))
-const completedTasks = computed(() => props.tasks.filter(t => isTaskCompleted(t)))
+const HORIZON_PRIORITY: Record<string, number> = {
+  today: 0,
+  this_week: 1,
+  this_month: 2,
+  long_term: 3,
+}
+
+function timeHorizonPriority(horizon: TaskTimeHorizon | null | undefined): number {
+  if (!horizon) return 4
+  return HORIZON_PRIORITY[horizon] ?? 4
+}
+
+const activeTasks = computed(() =>
+  props.tasks
+    .filter(t => !isTaskCompleted(t))
+    .sort((a, b) => timeHorizonPriority(a.timeHorizon) - timeHorizonPriority(b.timeHorizon))
+)
+
+const completedTasks = computed(() =>
+  props.tasks
+    .filter(t => isTaskCompleted(t))
+    .sort((a, b) => timeHorizonPriority(a.timeHorizon) - timeHorizonPriority(b.timeHorizon))
+)
 
 function handleToggle(id: string, completed: boolean) {
   emit('toggle', id, completed)

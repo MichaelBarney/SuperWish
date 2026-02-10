@@ -59,50 +59,101 @@
       </div>
     </div>
 
-    <!-- Time horizon pill -->
-    <div class="relative mt-0.5" ref="horizonDropdownRef">
-      <button
-        v-if="task.timeHorizon"
-        @click.stop="toggleHorizonDropdown"
-        class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors"
-        :class="horizonPillClass"
-      >
-        <Icon :name="horizonIcon" class="w-3 h-3" />
-        <span>{{ horizonLabel }}</span>
-      </button>
-      <button
-        v-else
-        @click.stop="toggleHorizonDropdown"
-        class="p-1 text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-all"
-      >
-        <Icon name="lucide:calendar-clock" class="w-4 h-4" />
-      </button>
-
-      <!-- Dropdown -->
-      <div
-        v-if="showHorizonDropdown"
-        class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
-      >
+    <!-- Badge group -->
+    <div class="flex items-start gap-1 mt-0.5 shrink-0">
+      <!-- Time horizon pill -->
+      <div class="relative min-w-[4rem] flex justify-center" ref="horizonDropdownRef">
         <button
-          v-for="option in horizonOptions"
-          :key="option.value"
-          @click.stop="selectHorizon(option.value)"
-          class="w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors"
-          :class="task.timeHorizon === option.value
-            ? 'bg-orange-50 text-orange-700 font-medium'
-            : 'text-gray-700 hover:bg-gray-50'"
+          v-if="task.timeHorizon"
+          @click.stop="toggleHorizonDropdown"
+          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+          :class="horizonPillClass"
         >
-          <Icon :name="option.icon" class="w-3.5 h-3.5" />
-          <span>{{ option.label }}</span>
+          <Icon :name="horizonIcon" class="w-3 h-3 shrink-0" />
+          <span>{{ horizonLabel }}</span>
         </button>
-        <div v-if="task.timeHorizon" class="border-t border-gray-100 mt-1 pt-1">
+        <button
+          v-else
+          @click.stop="toggleHorizonDropdown"
+          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+        >
+          <Icon name="lucide:calendar-clock" class="w-4 h-4" />
+        </button>
+
+        <!-- Dropdown -->
+        <div
+          v-if="showHorizonDropdown"
+          class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+        >
           <button
-            @click.stop="selectHorizon(null)"
-            class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+            v-for="option in horizonOptions"
+            :key="option.value"
+            @click.stop="selectHorizon(option.value)"
+            class="w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors"
+            :class="task.timeHorizon === option.value
+              ? 'bg-orange-50 text-orange-700 font-medium'
+              : 'text-gray-700 hover:bg-gray-50'"
           >
-            <Icon name="lucide:x" class="w-3.5 h-3.5" />
-            <span>{{ $t('task.timeHorizon.none') }}</span>
+            <Icon :name="option.icon" class="w-3.5 h-3.5" />
+            <span>{{ option.label }}</span>
           </button>
+          <div v-if="task.timeHorizon" class="border-t border-gray-100 mt-1 pt-1">
+            <button
+              @click.stop="selectHorizon(null)"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <Icon name="lucide:x" class="w-3.5 h-3.5" />
+              <span>{{ $t('task.timeHorizon.none') }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estimated time pill -->
+      <div class="relative min-w-[4rem] flex justify-center" ref="estimateDropdownRef">
+        <button
+          v-if="task.estimatedTime"
+          @click.stop="toggleEstimateDropdown"
+          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+          :class="estimatePillClass"
+        >
+          <Icon :name="estimateIcon" class="w-3 h-3 shrink-0" />
+          <span>{{ estimateLabel }}</span>
+        </button>
+        <button
+          v-else
+          @click.stop="toggleEstimateDropdown"
+          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+        >
+          <Icon name="lucide:timer" class="w-4 h-4" />
+        </button>
+
+        <!-- Dropdown -->
+        <div
+          v-if="showEstimateDropdown"
+          class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+        >
+          <button
+            v-for="option in estimateOptions"
+            :key="option.value"
+            @click.stop="selectEstimate(option.value)"
+            class="w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors"
+            :class="task.estimatedTime === option.value
+              ? option.activeClass
+              : 'text-gray-700 hover:bg-gray-50'"
+          >
+            <Icon :name="option.icon" class="w-3.5 h-3.5" />
+            <span>{{ option.label }}</span>
+          </button>
+          <div v-if="task.estimatedTime" class="border-t border-gray-100 mt-1 pt-1">
+            <button
+              @click.stop="selectEstimate(null)"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <Icon name="lucide:x" class="w-3.5 h-3.5" />
+              <span>{{ $t('task.estimatedTime.none') }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -120,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Task, Wish, TaskTimeHorizon } from '~/types'
+import type { Task, Wish, TaskTimeHorizon, TaskEstimatedTime } from '~/types'
 import { isOwnedStatus, getCurrencySymbol } from '~/types'
 
 interface Props {
@@ -141,6 +192,7 @@ const emit = defineEmits<{
   edit: [task: Task]
   delete: [id: string]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
+  updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
 }>()
 
 const { t } = useI18n()
@@ -199,10 +251,53 @@ function selectHorizon(value: TaskTimeHorizon | null) {
   showHorizonDropdown.value = false
 }
 
-// Close dropdown on outside click
+// Estimated time dropdown
+const showEstimateDropdown = ref(false)
+const estimateDropdownRef = ref<HTMLElement | null>(null)
+
+const estimateOptions = computed(() => [
+  { value: '5min' as const, label: t('task.estimatedTime.5min'), icon: 'lucide:zap', activeClass: 'bg-yellow-50 text-yellow-700 font-medium' },
+  { value: '12min' as const, label: t('task.estimatedTime.12min'), icon: 'noto:direct-hit', activeClass: 'bg-blue-50 text-blue-700 font-medium' },
+  { value: '25min' as const, label: t('task.estimatedTime.25min'), icon: 'noto:tomato', activeClass: 'bg-green-50 text-green-700 font-medium' },
+  { value: '1h_plus' as const, label: t('task.estimatedTime.1hPlus'), icon: 'noto:mantelpiece-clock', activeClass: 'bg-red-50 text-red-700 font-medium' },
+])
+
+const estimateIcon = computed(() => {
+  const option = estimateOptions.value.find(o => o.value === props.task.estimatedTime)
+  return option?.icon || 'lucide:timer'
+})
+
+const estimateLabel = computed(() => {
+  const option = estimateOptions.value.find(o => o.value === props.task.estimatedTime)
+  return option?.label || ''
+})
+
+const estimatePillClass = computed(() => {
+  switch (props.task.estimatedTime) {
+    case '5min': return 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+    case '12min': return 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+    case '25min': return 'bg-green-50 text-green-700 hover:bg-green-100'
+    case '1h_plus': return 'bg-red-50 text-red-700 hover:bg-red-100'
+    default: return 'bg-gray-100 text-gray-500'
+  }
+})
+
+function toggleEstimateDropdown() {
+  showEstimateDropdown.value = !showEstimateDropdown.value
+}
+
+function selectEstimate(value: TaskEstimatedTime | null) {
+  emit('updateEstimatedTime', props.task.id, value)
+  showEstimateDropdown.value = false
+}
+
+// Close dropdowns on outside click
 function handleClickOutside(e: MouseEvent) {
   if (horizonDropdownRef.value && !horizonDropdownRef.value.contains(e.target as Node)) {
     showHorizonDropdown.value = false
+  }
+  if (estimateDropdownRef.value && !estimateDropdownRef.value.contains(e.target as Node)) {
+    showEstimateDropdown.value = false
   }
 }
 

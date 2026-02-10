@@ -67,6 +67,7 @@ export function useAuth() {
           photoURL: firebaseUser.photoURL,
           createdAt: userData?.createdAt ?? null,
           defaultRegion: userData?.defaultRegion,
+          taskGroupBy: userData?.taskGroupBy,
         }
       } else {
         user.value = null
@@ -110,7 +111,7 @@ export function useAuth() {
     }
   }
 
-  const updateUserPreferences = async (preferences: { defaultRegion?: string }) => {
+  const updateUserPreferences = async (preferences: { defaultRegion?: string; taskGroupBy?: string }) => {
     const auth = getAuth()
     const db = getDb()
 
@@ -122,8 +123,11 @@ export function useAuth() {
       const userRef = doc(db, 'users', auth.currentUser.uid)
       await updateDoc(userRef, { ...preferences })
 
-      if (user.value && preferences.defaultRegion) {
-        user.value = { ...user.value, defaultRegion: preferences.defaultRegion }
+      if (user.value) {
+        const updates: Partial<typeof user.value> = {}
+        if (preferences.defaultRegion) updates.defaultRegion = preferences.defaultRegion
+        if (preferences.taskGroupBy) updates.taskGroupBy = preferences.taskGroupBy as 'none' | 'project'
+        user.value = { ...user.value, ...updates }
       }
 
       return { success: true }

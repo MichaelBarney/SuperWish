@@ -583,6 +583,19 @@
       "longTerm": "Longo Prazo",
       "none": "Sem horizonte"
     },
+    "estimatedTime": {
+      "5min": "5 min",
+      "12min": "12 min",
+      "25min": "25 min",
+      "1hPlus": "1h+",
+      "none": "Sem estimativa"
+    },
+    "groupBy": {
+      "label": "Agrupar por",
+      "none": "Nenhum",
+      "project": "Projeto",
+      "noProject": "Sem Projeto"
+    },
     "sections": {
       "quests": "Missões",
       "trips": "Viagens",
