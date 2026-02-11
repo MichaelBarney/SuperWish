@@ -112,6 +112,32 @@ export function useAllSubquests() {
     }
   }
 
+  const createSubQuestForQuest = async (questId: string, name: string) => {
+    const db = getDb()
+    if (!user.value || !db) return { success: false, error: 'Not authenticated' }
+
+    try {
+      const subquestsRef = collection(db, 'subquests')
+      const maxOrder = subquests.value.length > 0
+        ? Math.max(...subquests.value.map(s => s.order)) + 1
+        : 0
+
+      const docRef = await addDoc(subquestsRef, {
+        userId: user.value.uid,
+        questId,
+        name,
+        status: 'in_progress',
+        order: maxOrder,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      })
+      return { success: true, id: docRef.id }
+    } catch (err) {
+      console.error('Error creating subquest for quest:', err)
+      return { success: false, error: 'Failed to create sub-quest' }
+    }
+  }
+
   if (import.meta.client) {
     watch(user, (newUser) => {
       if (newUser) {
@@ -133,5 +159,6 @@ export function useAllSubquests() {
     getSubquestsByQuestId,
     getSubquestsByTripId,
     createSubQuestForTrip,
+    createSubQuestForQuest,
   }
 }

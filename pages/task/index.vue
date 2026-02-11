@@ -274,8 +274,8 @@
                 @update-estimated-time="handleUpdateEstimatedTime"
               />
             </div>
-            <!-- Add Sub-Quest button for trips -->
-            <div v-if="currentView === 'trip' && selectedTripId" class="pt-1">
+            <!-- Add Sub-Quest button for trips and quests -->
+            <div v-if="(currentView === 'trip' && selectedTripId) || (currentView === 'quest' && selectedQuestId)" class="pt-1">
               <form
                 v-if="showAddSubQuestInput"
                 @submit.prevent="handleAddSubQuest"
@@ -332,8 +332,8 @@
                 @update-estimated-time="handleUpdateEstimatedTime"
               />
             </div>
-            <!-- Add Sub-Quest button for trips (flat view) -->
-            <div v-if="currentView === 'trip' && selectedTripId" class="pt-2">
+            <!-- Add Sub-Quest button for trips and quests (flat view) -->
+            <div v-if="(currentView === 'trip' && selectedTripId) || (currentView === 'quest' && selectedQuestId)" class="pt-2">
               <form
                 v-if="showAddSubQuestInput"
                 @submit.prevent="handleAddSubQuest"
@@ -417,7 +417,7 @@ onMounted(() => {
 const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
 const { quests } = useQuests()
 const { trips } = useTrips()
-const { getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip } = useAllSubquests()
+const { getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip, createSubQuestForQuest } = useAllSubquests()
 const { getDestinationsByTripId } = useAllDestinations()
 const { user: authUser, updateUserPreferences } = useAuth()
 
@@ -868,8 +868,14 @@ function openAddSubQuestInput() {
 }
 
 async function handleAddSubQuest() {
-  if (!newSubQuestName.value.trim() || !selectedTripId.value) return
-  await createSubQuestForTrip(selectedTripId.value, newSubQuestName.value.trim())
+  if (!newSubQuestName.value.trim()) return
+  if (currentView.value === 'quest' && selectedQuestId.value) {
+    await createSubQuestForQuest(selectedQuestId.value, newSubQuestName.value.trim())
+  } else if (currentView.value === 'trip' && selectedTripId.value) {
+    await createSubQuestForTrip(selectedTripId.value, newSubQuestName.value.trim())
+  } else {
+    return
+  }
   newSubQuestName.value = ''
   showAddSubQuestInput.value = false
 }
