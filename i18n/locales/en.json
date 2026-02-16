@@ -317,7 +317,13 @@
         "deleteConfirm": "Are you sure you want to delete this destination? All experiences will also be deleted. This action cannot be undone.",
         "unscheduled": "Unscheduled",
         "experienceCount": "{count} experience | {count} experiences",
-        "taskCount": "{count} task | {count} tasks"
+        "taskCount": "{count} task | {count} tasks",
+        "dayNumber": "Day {n}",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "timeline": "Timeline",
+        "addExperienceForDay": "Add experience",
+        "emptyDay": "Nothing scheduled for this day"
       }
     },
     "transportation": {
@@ -384,7 +390,9 @@
         "booked": "Booked",
         "confirmed": "Confirmed",
         "cancelled": "Cancelled"
-      }
+      },
+      "arrivingFrom": "Arriving from",
+      "departingTo": "Departing to"
     },
     "accommodations": {
       "title": "Accommodations",

@@ -208,6 +208,7 @@ import { EXPERIENCE_CATEGORIES, EXPERIENCE_STATUSES, CURRENCIES } from '~/types'
 interface Props {
   initialData?: Experience
   tripCurrency?: string
+  defaultDate?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -232,7 +233,7 @@ const form = ref<ExperienceForm>({
     ? (props.initialData.scheduledDate instanceof Date
         ? props.initialData.scheduledDate.toISOString().split('T')[0]
         : new Date(props.initialData.scheduledDate).toISOString().split('T')[0])
-    : '',
+    : (props.defaultDate || ''),
   scheduledTime: props.initialData?.scheduledTime || '',
   duration: props.initialData?.duration ? String(props.initialData.duration) : '',
   status: props.initialData?.status || 'wishlist',

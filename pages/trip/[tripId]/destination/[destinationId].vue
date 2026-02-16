@@ -60,9 +60,30 @@
                 <p class="text-white/80 mt-1">
                   <span v-if="countryFlag">{{ countryFlag }}</span> {{ destination.country }}
                 </p>
-                <div v-if="dateRange" class="flex items-center gap-1.5 text-white/70 mt-2 text-sm">
-                  <Icon name="lucide:calendar" class="w-4 h-4" />
-                  <span>{{ dateRange }}</span>
+
+                <!-- Date display: day/month/weekday + nights badge -->
+                <div v-if="formattedArrival || formattedDeparture" class="mt-3 flex items-end gap-6">
+                  <div v-if="formattedArrival" class="text-white">
+                    <div class="flex items-baseline gap-1">
+                      <span class="text-xl font-bold">{{ formattedArrival.day }}</span>
+                      <span class="text-xs font-semibold uppercase">{{ formattedArrival.month }}</span>
+                    </div>
+                    <p class="text-xs text-white/70 capitalize">{{ formattedArrival.weekday }}</p>
+                  </div>
+
+                  <div v-if="formattedDeparture" class="text-white">
+                    <div class="flex items-baseline gap-1">
+                      <span class="text-xl font-bold">{{ formattedDeparture.day }}</span>
+                      <span class="text-xs font-semibold uppercase">{{ formattedDeparture.month }}</span>
+                    </div>
+                    <p class="text-xs text-white/70 capitalize">{{ formattedDeparture.weekday }}</p>
+                  </div>
+
+                  <div v-if="nightsCount" class="ml-auto">
+                    <span class="px-2.5 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full uppercase">
+                      {{ $t('travel.itinerary.nights', { count: nightsCount }, nightsCount) }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -85,7 +106,7 @@
         </div>
 
         <!-- Quick Stats -->
-        <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div class="bg-white rounded-xl shadow-soft p-4">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
@@ -109,6 +130,30 @@
               </div>
             </div>
           </div>
+
+          <div class="bg-white rounded-xl shadow-soft p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                <Icon name="lucide:bed-double" class="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-gray-900">{{ destinationAccommodations.length }}</p>
+                <p class="text-sm text-gray-500">{{ $t('travel.accommodations.title') }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-soft p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                <Icon name="lucide:plane" class="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-gray-900">{{ destinationTransportations.length }}</p>
+                <p class="text-sm text-gray-500">{{ $t('travel.transportation.title') }}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Tasks Section -->
@@ -129,20 +174,36 @@
           </div>
         </div>
 
-        <!-- Experiences Section -->
+        <!-- Timeline Section -->
         <div class="mb-8">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-gray-900">{{ $t('travel.experiences.title') }}</h2>
-            <UiButton size="sm" @click="openCreateExperience">
-              <Icon name="lucide:plus" class="w-4 h-4 mr-1" />
-              {{ $t('travel.experiences.addExperience') }}
-            </UiButton>
+            <h2 class="text-lg font-semibold text-gray-900">{{ $t('travel.destinations.detail.timeline') }}</h2>
+            <div class="flex items-center gap-2">
+              <UiButton size="sm" @click="openNewAccommodationModal">
+                <Icon name="lucide:plus" class="w-4 h-4 mr-1" />
+                {{ $t('travel.accommodations.addAccommodation') }}
+              </UiButton>
+              <UiButton size="sm" @click="openCreateExperience">
+                <Icon name="lucide:plus" class="w-4 h-4 mr-1" />
+                {{ $t('travel.experiences.addExperience') }}
+              </UiButton>
+            </div>
           </div>
           <div class="bg-white rounded-xl shadow-soft p-4">
-            <TripExperiencesExperienceTimeline
+            <TripDestinationsDayTimeline
               :experiences="experiences"
+              :accommodations="destinationAccommodations"
+              :transportations="destinationTransportations"
+              :destinations="destinations"
+              :destination-id="destinationId"
+              :origin-name="originName"
+              :arrival-date="effectiveArrivalDate"
+              :departure-date="effectiveDepartureDate"
               :loading="experiencesLoading"
-              @edit="openEditExperience"
+              @edit-experience="openEditExperience"
+              @edit-accommodation="openEditAccommodationModal"
+              @edit-transportation="openEditTransportationModal"
+              @add-experience="openCreateExperienceForDate"
             />
           </div>
         </div>
@@ -190,16 +251,53 @@
       <TripExperiencesExperienceForm
         :initial-data="selectedExperience || undefined"
         :trip-currency="trip?.baseCurrency || 'USD'"
+        :default-date="experiencePreFillDate"
         @submit="handleExperienceSubmit"
         @cancel="showExperienceModal = false"
         @delete="handleExperienceDelete"
+      />
+    </UiModal>
+
+    <!-- Accommodation Modal -->
+    <UiModal
+      v-model="showAccommodationModal"
+      :title="selectedAccommodation ? $t('common.edit') : $t('travel.accommodations.addAccommodation')"
+      size="lg"
+    >
+      <TripAccommodationsForm
+        :initial-data="selectedAccommodation"
+        :destinations="destinations"
+        :default-destination-id="destinationId"
+        :trip-currency="trip?.baseCurrency || 'USD'"
+        @submit="handleAccommodationSubmit"
+        @cancel="showAccommodationModal = false"
+        @delete="handleAccommodationDelete"
+      />
+    </UiModal>
+
+    <!-- Transportation Modal (edit only) -->
+    <UiModal
+      v-model="showTransportationModal"
+      :title="$t('common.edit')"
+      size="lg"
+    >
+      <TripTransportationForm
+        :initial-data="selectedTransportation"
+        :from-destination-id="transportFromId"
+        :to-destination-id="transportToId"
+        :from-label="transportFromLabel"
+        :to-label="transportToLabel"
+        :trip-currency="trip?.baseCurrency || 'USD'"
+        @submit="handleTransportationSubmit"
+        @cancel="showTransportationModal = false"
+        @delete="handleTransportationDelete"
       />
     </UiModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { DestinationForm, ExperienceForm, Experience } from '~/types'
+import type { DestinationForm, ExperienceForm, Experience, Accommodation, AccommodationForm, Transportation, TransportationForm } from '~/types'
 import { useCityImage, getGradientFallback } from '~/composables/useCityImage'
 
 definePageMeta({
@@ -233,14 +331,46 @@ const { experiences, loading: experiencesLoading, createExperience, updateExperi
 const { getDirectDestinationTasks, createTask, toggleTaskComplete, deleteTask: deleteTaskById } = useTasks()
 const destinationDirectTasks = computed(() => getDirectDestinationTasks(destinationId.value))
 
+// Accommodations
+const {
+  createAccommodation,
+  updateAccommodation,
+  deleteAccommodation,
+  getAccommodationsByDestinationId,
+} = useAccommodations(tripId)
+const destinationAccommodations = computed(() => getAccommodationsByDestinationId(destinationId.value))
+
+// Transportation
+const {
+  transportations,
+  updateTransportation,
+  deleteTransportation,
+  getTransportationBetween,
+} = useTransportation(tripId)
+
+const destinationTransportations = computed(() =>
+  transportations.value.filter(t =>
+    t.fromDestinationId === destinationId.value || t.toDestinationId === destinationId.value
+  )
+)
+
+// Origin name for transport direction labels
+const originName = computed(() => trip.value?.origin?.name || 'Origin')
+
 // Modals
 const showEditDestinationModal = ref(false)
 const showDeleteDestinationModal = ref(false)
 const showExperienceModal = ref(false)
+const showAccommodationModal = ref(false)
+const showTransportationModal = ref(false)
 
 // State
 const deleting = ref(false)
 const selectedExperience = ref<Experience | null>(null)
+const selectedAccommodation = ref<Accommodation | null>(null)
+const selectedTransportation = ref<Transportation | null>(null)
+const transportFromId = ref<string | null>(null)
+const transportToId = ref<string | null>(null)
 
 // Country flag
 const countryFlag = computed(() => {
@@ -250,25 +380,60 @@ const countryFlag = computed(() => {
   return String.fromCodePoint(...codePoints)
 })
 
-// Date range
-const dateRange = computed(() => {
-  if (!destination.value) return null
-  const { arrivalDate, departureDate } = destination.value
-  if (!arrivalDate && !departureDate) return null
+// Date formatting (matching itinerary Point.vue style)
+interface FormattedDate {
+  day: number
+  month: string
+  weekday: string
+}
+
+const formatDate = (date: string | Date | null | undefined): FormattedDate | null => {
+  if (!date) return null
+  const d = date instanceof Date ? date : new Date(date)
+  if (isNaN(d.getTime())) return null
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }
+  return {
+    day: d.getUTCDate(),
+    month: d.toLocaleDateString(dateLocale, { month: 'short', timeZone: 'UTC' }),
+    weekday: d.toLocaleDateString(dateLocale, { weekday: 'long', timeZone: 'UTC' })
+  }
+}
 
-  if (arrivalDate && departureDate) {
-    const a = arrivalDate instanceof Date ? arrivalDate : new Date(arrivalDate)
-    const d = departureDate instanceof Date ? departureDate : new Date(departureDate)
-    return `${a.toLocaleDateString(dateLocale, formatOptions)} - ${d.toLocaleDateString(dateLocale, formatOptions)}`
-  }
-  if (arrivalDate) {
-    const a = arrivalDate instanceof Date ? arrivalDate : new Date(arrivalDate)
-    return a.toLocaleDateString(dateLocale, formatOptions)
-  }
-  return null
+// Transport-based date fallback
+const destinationIndex = computed(() =>
+  destinations.value.findIndex(d => d.id === destinationId.value)
+)
+
+const effectiveArrivalDate = computed(() => {
+  if (destination.value?.arrivalDate) return destination.value.arrivalDate
+  const index = destinationIndex.value
+  if (index < 0) return null
+  const previousId = index === 0 ? null : destinations.value[index - 1]?.id
+  const incomingTransport = getTransportationBetween(previousId, destinationId.value)
+  return incomingTransport?.arrivalDateTime || null
+})
+
+const effectiveDepartureDate = computed(() => {
+  if (destination.value?.departureDate) return destination.value.departureDate
+  const index = destinationIndex.value
+  if (index < 0) return null
+  const nextId = destinations.value[index + 1]?.id ?? null
+  const outgoingTransport = getTransportationBetween(destinationId.value, nextId)
+  return outgoingTransport?.departureDateTime || null
+})
+
+const formattedArrival = computed(() => formatDate(effectiveArrivalDate.value))
+const formattedDeparture = computed(() => formatDate(effectiveDepartureDate.value))
+
+const nightsCount = computed(() => {
+  if (!effectiveArrivalDate.value || !effectiveDepartureDate.value) return null
+  const arrival = effectiveArrivalDate.value instanceof Date ? effectiveArrivalDate.value : new Date(effectiveArrivalDate.value)
+  const departure = effectiveDepartureDate.value instanceof Date ? effectiveDepartureDate.value : new Date(effectiveDepartureDate.value)
+  if (isNaN(arrival.getTime()) || isNaN(departure.getTime())) return null
+  const diffTime = departure.getTime() - arrival.getTime()
+  const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return nights > 0 ? nights : null
 })
 
 // Background image
@@ -279,6 +444,19 @@ const backgroundStyle = computed(() => {
   const url = destination.value?.imageUrl || unsplashUrl.value
   if (url) return { backgroundImage: `url(${url})` }
   return { background: getGradientFallback(destination.value?.order || 0) }
+})
+
+// Transport modal labels
+const transportFromLabel = computed(() => {
+  if (!transportFromId.value || transportFromId.value === '') return originName.value
+  const dest = destinations.value.find(d => d.id === transportFromId.value)
+  return dest?.name || 'Unknown'
+})
+
+const transportToLabel = computed(() => {
+  if (!transportToId.value || transportToId.value === '') return originName.value
+  const dest = destinations.value.find(d => d.id === transportToId.value)
+  return dest?.name || 'Unknown'
 })
 
 // Destination handlers
@@ -301,8 +479,17 @@ async function handleDeleteDestination() {
 }
 
 // Experience handlers
+const experiencePreFillDate = ref('')
+
 function openCreateExperience() {
   selectedExperience.value = null
+  experiencePreFillDate.value = ''
+  showExperienceModal.value = true
+}
+
+function openCreateExperienceForDate(dateKey: string) {
+  selectedExperience.value = null
+  experiencePreFillDate.value = dateKey
   showExperienceModal.value = true
 }
 
@@ -332,6 +519,69 @@ async function handleExperienceDelete() {
   if (result.success) {
     showExperienceModal.value = false
     selectedExperience.value = null
+  }
+}
+
+// Accommodation handlers
+function openNewAccommodationModal() {
+  selectedAccommodation.value = null
+  showAccommodationModal.value = true
+}
+
+function openEditAccommodationModal(accommodation: Accommodation) {
+  selectedAccommodation.value = accommodation
+  showAccommodationModal.value = true
+}
+
+async function handleAccommodationSubmit(data: AccommodationForm) {
+  if (selectedAccommodation.value) {
+    const result = await updateAccommodation(selectedAccommodation.value.id, data)
+    if (result.success) {
+      showAccommodationModal.value = false
+      selectedAccommodation.value = null
+    }
+  } else {
+    const result = await createAccommodation(tripId.value, data)
+    if (result.success) {
+      showAccommodationModal.value = false
+    }
+  }
+}
+
+async function handleAccommodationDelete() {
+  if (!selectedAccommodation.value) return
+  const result = await deleteAccommodation(selectedAccommodation.value.id)
+  if (result.success) {
+    showAccommodationModal.value = false
+    selectedAccommodation.value = null
+  }
+}
+
+// Transportation handlers
+function openEditTransportationModal(transportation: Transportation) {
+  selectedTransportation.value = transportation
+  transportFromId.value = transportation.fromDestinationId || null
+  transportToId.value = transportation.toDestinationId || null
+  showTransportationModal.value = true
+}
+
+async function handleTransportationSubmit(data: TransportationForm) {
+  if (!selectedTransportation.value) return
+  data.fromDestinationId = transportFromId.value || ''
+  data.toDestinationId = transportToId.value || ''
+  const result = await updateTransportation(selectedTransportation.value.id, data)
+  if (result.success) {
+    showTransportationModal.value = false
+    selectedTransportation.value = null
+  }
+}
+
+async function handleTransportationDelete() {
+  if (!selectedTransportation.value) return
+  const result = await deleteTransportation(selectedTransportation.value.id)
+  if (result.success) {
+    showTransportationModal.value = false
+    selectedTransportation.value = null
   }
 }
 

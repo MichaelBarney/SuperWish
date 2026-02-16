@@ -317,7 +317,13 @@
         "deleteConfirm": "Tem certeza que deseja excluir este destino? Todas as experiencias tambem serao excluidas. Esta acao nao pode ser desfeita.",
         "unscheduled": "Sem data",
         "experienceCount": "{count} experiencia | {count} experiencias",
-        "taskCount": "{count} tarefa | {count} tarefas"
+        "taskCount": "{count} tarefa | {count} tarefas",
+        "dayNumber": "Dia {n}",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "timeline": "Cronograma",
+        "addExperienceForDay": "Adicionar experiencia",
+        "emptyDay": "Nada agendado para este dia"
       }
     },
     "transportation": {
@@ -384,7 +390,9 @@
         "booked": "Reservado",
         "confirmed": "Confirmado",
         "cancelled": "Cancelado"
-      }
+      },
+      "arrivingFrom": "Chegando de",
+      "departingTo": "Partindo para"
     },
     "accommodations": {
       "title": "Hospedagem",
