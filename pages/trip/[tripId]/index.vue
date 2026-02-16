@@ -205,7 +205,9 @@
                   :transportation="getTransportationBetween(null, localDestinations[0]?.id)"
                   :from-label="originLabel || 'Origin'"
                   :to-label="localDestinations[0]?.name || ''"
+                  :accommodation-destination-id="localDestinations[0]?.id"
                   @click="openTransportationModal(null, localDestinations[0]?.id)"
+                  @add-accommodation="openNewAccommodationModal"
                 />
 
                 <template v-for="(destination, index) in localDestinations" :key="destination.id">
@@ -229,7 +231,6 @@
                     :accommodations="getAccommodationsByDestinationId(destination.id)"
                     :destination-id="destination.id"
                     @click="openAccommodationModal($event)"
-                    @add="openNewAccommodationModal($event)"
                   />
 
                   <!-- Transportation to next destination (if not last) -->
@@ -239,8 +240,10 @@
                     :from-label="destination.name"
                     :to-label="localDestinations[index + 1]?.name || ''"
                     :insert-position="index + 1"
+                    :accommodation-destination-id="destination.id"
                     @click="openTransportationModal(destination.id, localDestinations[index + 1]?.id)"
                     @add-destination="openAddDestinationAt"
+                    @add-accommodation="openNewAccommodationModal"
                   />
                 </template>
               </div>
@@ -249,7 +252,9 @@
                 :transportation="getTransportationBetween(localDestinations[localDestinations.length - 1]?.id, null)"
                 :from-label="localDestinations[localDestinations.length - 1]?.name || ''"
                 :to-label="originLabel || 'Origin'"
+                :accommodation-destination-id="localDestinations[localDestinations.length - 1]?.id"
                 @click="openTransportationModal(localDestinations[localDestinations.length - 1]?.id, null)"
+                @add-accommodation="openNewAccommodationModal"
               />
 
               <TripItineraryPoint
