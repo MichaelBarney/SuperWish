@@ -86,15 +86,15 @@ const dateRange = computed(() => {
 
     // If same year, don't repeat year
     if (start.getFullYear() === end.getFullYear()) {
-      return `${start.toLocaleDateString(dateLocale, formatOptions)} - ${end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
+      return `${localeDateString(start, dateLocale, formatOptions)} - ${localeDateString(end, dateLocale, { ...formatOptions, year: 'numeric' })}`
     }
 
-    return `${start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })} - ${end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
+    return `${localeDateString(start, dateLocale, { ...formatOptions, year: 'numeric' })} - ${localeDateString(end, dateLocale, { ...formatOptions, year: 'numeric' })}`
   }
 
   if (startDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
-    return `Starts ${start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
+    return `Starts ${localeDateString(start, dateLocale, { ...formatOptions, year: 'numeric' })}`
   }
 
   return null

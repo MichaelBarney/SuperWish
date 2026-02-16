@@ -92,20 +92,20 @@ const dateRange = computed(() => {
     const end = endDate instanceof Date ? endDate : new Date(endDate)
 
     if (start.getFullYear() === end.getFullYear()) {
-      return `${start.toLocaleDateString(dateLocale, formatOptions)} - ${end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
+      return `${localeDateString(start, dateLocale, formatOptions)} - ${localeDateString(end, dateLocale, { ...formatOptions, year: 'numeric' })}`
     }
 
-    return `${start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })} - ${end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' })}`
+    return `${localeDateString(start, dateLocale, { ...formatOptions, year: 'numeric' })} - ${localeDateString(end, dateLocale, { ...formatOptions, year: 'numeric' })}`
   }
 
   if (startDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
-    return t('quest.quests.dateStarts', { date: start.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' }) })
+    return t('quest.quests.dateStarts', { date: localeDateString(start, dateLocale, { ...formatOptions, year: 'numeric' }) })
   }
 
   if (endDate) {
     const end = endDate instanceof Date ? endDate : new Date(endDate)
-    return t('quest.quests.dateDue', { date: end.toLocaleDateString(dateLocale, { ...formatOptions, year: 'numeric' }) })
+    return t('quest.quests.dateDue', { date: localeDateString(end, dateLocale, { ...formatOptions, year: 'numeric' }) })
   }
 
   return null

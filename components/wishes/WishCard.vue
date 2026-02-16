@@ -244,6 +244,6 @@ function formatDate(date: Date | null | undefined): string {
   if (!date) return ''
   const d = date instanceof Date ? date : new Date(date)
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
+  return localeDateString(d, dateLocale, { month: 'short', day: 'numeric' })
 }
 </script>

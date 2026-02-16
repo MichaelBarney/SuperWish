@@ -288,7 +288,7 @@ const formattedDeadline = computed(() => {
     ? list.value.deadline
     : new Date(list.value.deadline)
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return deadline.toLocaleDateString(dateLocale, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+  return localeDateString(deadline, dateLocale, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
 })
 
 // Wish Handlers

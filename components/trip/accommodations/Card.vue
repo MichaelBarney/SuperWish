@@ -122,9 +122,9 @@ const dateRange = computed(() => {
 
   if (isNaN(checkIn.getTime())) return null
 
-  const start = checkIn.toLocaleDateString(dateLocale, formatOptions)
+  const start = localeDateString(checkIn, dateLocale, formatOptions)
   const end = !isNaN(checkOut.getTime())
-    ? checkOut.toLocaleDateString(dateLocale, formatOptions)
+    ? localeDateString(checkOut, dateLocale, formatOptions)
     : ''
 
   return end ? `${start} → ${end}` : start

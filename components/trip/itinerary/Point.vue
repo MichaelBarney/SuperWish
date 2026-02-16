@@ -59,7 +59,7 @@
             <span class="text-xl font-bold">{{ formattedArrival.day }}</span>
             <span class="text-xs font-semibold uppercase">{{ formattedArrival.month }}</span>
           </div>
-          <p class="text-xs text-white/70 capitalize">{{ formattedArrival.weekday }}</p>
+          <p class="text-xs text-white/70">{{ formattedArrival.weekday }}</p>
         </div>
 
         <!-- Departure Date -->
@@ -68,7 +68,7 @@
             <span class="text-xl font-bold">{{ formattedDeparture.day }}</span>
             <span class="text-xs font-semibold uppercase">{{ formattedDeparture.month }}</span>
           </div>
-          <p class="text-xs text-white/70 capitalize">{{ formattedDeparture.weekday }}</p>
+          <p class="text-xs text-white/70">{{ formattedDeparture.weekday }}</p>
         </div>
 
         <!-- Nights Badge -->
@@ -244,8 +244,8 @@ const formatDate = (date: string | Date | null | undefined): FormattedDate | nul
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
   return {
     day: d.getUTCDate(),
-    month: d.toLocaleDateString(dateLocale, { month: 'short', timeZone: 'UTC' }),
-    weekday: d.toLocaleDateString(dateLocale, { weekday: 'long', timeZone: 'UTC' })
+    month: localeDateString(d, dateLocale, { month: 'short', timeZone: 'UTC' }),
+    weekday: localeDateString(d, dateLocale, { weekday: 'long', timeZone: 'UTC' })
   }
 }
 

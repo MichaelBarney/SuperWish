@@ -93,7 +93,7 @@ const groupedExperiences = computed<ExperienceGroup[]>(() => {
 
   const groups: ExperienceGroup[] = sortedKeys.map(key => ({
     dateKey: key,
-    label: new Date(key + 'T00:00:00Z').toLocaleDateString(dateLocale, formatOptions),
+    label: localeDateString(new Date(key + 'T00:00:00Z'), dateLocale, formatOptions),
     experiences: dated[key],
   }))
 

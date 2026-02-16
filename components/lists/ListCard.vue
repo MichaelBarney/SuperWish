@@ -78,7 +78,7 @@ const formattedDeadline = computed(() => {
     ? props.list.deadline
     : new Date(props.list.deadline)
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return deadline.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
+  return localeDateString(deadline, dateLocale, { month: 'short', day: 'numeric' })
 })
 
 function formatRelativeTime(date?: Date): string {
@@ -93,7 +93,7 @@ function formatRelativeTime(date?: Date): string {
 
   if (days > 7) {
     const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-    return date.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
+    return localeDateString(date, dateLocale, { month: 'short', day: 'numeric' })
   } else if (days > 0) {
     return t('common.daysAgo', { days })
   } else if (hours > 0) {

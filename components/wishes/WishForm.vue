@@ -468,7 +468,7 @@ function formatSearchDate(isoDate: string): string {
   if (!isoDate) return ''
   const date = new Date(isoDate)
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return date.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })
+  return localeDateString(date, dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 function closeSearchResults() {

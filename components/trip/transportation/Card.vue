@@ -228,7 +228,7 @@ const formattedDate = computed(() => {
     : new Date(props.transportation.departureDateTime)
   if (isNaN(date.getTime())) return null
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  return date.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
+  return localeDateString(date, dateLocale, { month: 'short', day: 'numeric' })
 })
 
 // Calculate duration

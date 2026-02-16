@@ -269,7 +269,7 @@ const days = computed<DayGroup[]>(() => {
     const items = dateItems[key].sort((a, b) => a.sortTime.localeCompare(b.sortTime))
 
     // Build label: "Day N — Monday, March 15"
-    const dateLabel = new Date(key + 'T00:00:00Z').toLocaleDateString(dateLocale, formatOptions)
+    const dateLabel = localeDateString(new Date(key + 'T00:00:00Z'), dateLocale, formatOptions)
     let label: string
     if (hasRange) {
       // Calculate day number relative to arrival

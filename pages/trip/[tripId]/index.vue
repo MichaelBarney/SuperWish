@@ -658,12 +658,12 @@ const dateRange = computed(() => {
   if (startDate && endDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
     const end = endDate instanceof Date ? endDate : new Date(endDate)
-    return `${start.toLocaleDateString(dateLocale, formatOptions)} - ${end.toLocaleDateString(dateLocale, formatOptions)}`
+    return `${localeDateString(start, dateLocale, formatOptions)} - ${localeDateString(end, dateLocale, formatOptions)}`
   }
 
   if (startDate) {
     const start = startDate instanceof Date ? startDate : new Date(startDate)
-    return `Starts ${start.toLocaleDateString(dateLocale, formatOptions)}`
+    return `Starts ${localeDateString(start, dateLocale, formatOptions)}`
   }
 
   return null
@@ -713,11 +713,11 @@ const getDestinationDateInfo = (destination: Destination, index: number): Destin
 
   if (arrivalDateRaw) {
     const arrival = arrivalDateRaw instanceof Date ? arrivalDateRaw : new Date(arrivalDateRaw)
-    arrivalDate = arrival.toLocaleDateString(dateLocale, formatOptions)
+    arrivalDate = localeDateString(arrival, dateLocale, formatOptions)
 
     if (departureDateRaw) {
       const departure = departureDateRaw instanceof Date ? departureDateRaw : new Date(departureDateRaw)
-      departureDate = departure.toLocaleDateString(dateLocale, formatOptions)
+      departureDate = localeDateString(departure, dateLocale, formatOptions)
 
       // Calcular número de dias (incluindo dia de chegada e saída)
       const diffTime = departure.getTime() - arrival.getTime()

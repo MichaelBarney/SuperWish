@@ -153,7 +153,7 @@ const formattedDateTime = computed(() => {
   if (isNaN(d.getTime())) return null
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const date = d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
+  const date = localeDateString(d, dateLocale, { month: 'short', day: 'numeric' })
   const time = d.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
   return `${date}, ${time}`
 })
