@@ -99,6 +99,15 @@
         { "fieldPath": "userId", "order": "ASCENDING" },
         { "fieldPath": "departureDateTime", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "experiences",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "destinationId", "order": "ASCENDING" },
+        { "fieldPath": "scheduledDate", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

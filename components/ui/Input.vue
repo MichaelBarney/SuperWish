@@ -44,7 +44,7 @@
 <script setup lang="ts">
 interface Props {
   modelValue: string | number
-  type?: 'text' | 'email' | 'password' | 'number' | 'url' | 'date' | 'datetime-local'
+  type?: 'text' | 'email' | 'password' | 'number' | 'url' | 'date' | 'datetime-local' | 'time'
   label?: string
   placeholder?: string
   disabled?: boolean

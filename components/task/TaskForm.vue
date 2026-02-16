@@ -183,8 +183,11 @@ const form = reactive<TaskForm>({
   subQuestId: props.initialData?.subQuestId || '',
   tripId: props.initialData?.tripId || '',
   destinationId: props.initialData?.destinationId || '',
+  accommodationId: props.initialData?.accommodationId || '',
+  experienceId: props.initialData?.experienceId || '',
   wishId: props.initialData?.wishId || '',
   timeHorizon: props.initialData?.timeHorizon || '',
+  estimatedTime: props.initialData?.estimatedTime || '',
 })
 
 const linkType = ref<'none' | 'quest' | 'trip' | 'wish'>(

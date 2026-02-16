@@ -294,6 +294,8 @@
         "title": "Nenhum destino ainda",
         "description": "Adicione os lugares que voce vai visitar"
       },
+      "pendingTasks": "{count} tarefa | {count} tarefas",
+      "destinationTasks": "Tarefas — {name}",
       "form": {
         "name": "Nome da Cidade",
         "namePlaceholder": "ex., Paris",
@@ -309,6 +311,13 @@
         "notesPlaceholder": "Alguma nota sobre este destino...",
         "noCitiesFound": "Nenhuma cidade encontrada. Tente outro nome.",
         "countryAutoFilled": "Preenchido automaticamente pela cidade"
+      },
+      "detail": {
+        "editDestination": "Editar Destino",
+        "deleteConfirm": "Tem certeza que deseja excluir este destino? Todas as experiencias tambem serao excluidas. Esta acao nao pode ser desfeita.",
+        "unscheduled": "Sem data",
+        "experienceCount": "{count} experiencia | {count} experiencias",
+        "taskCount": "{count} tarefa | {count} tarefas"
       }
     },
     "transportation": {
@@ -390,20 +399,39 @@
         "airbnb": "Airbnb",
         "apartment": "Apartamento",
         "resort": "Resort",
+        "friend_house": "Casa de Amigo",
         "other": "Outro"
       },
       "form": {
         "type": "Tipo de Hospedagem",
         "name": "Nome",
         "namePlaceholder": "ex., Hotel Le Marais",
-        "address": "Endereco",
+        "address": "Endereço",
+        "addressPlaceholder": "ex., 123 Rue de Rivoli, Paris",
         "destination": "Destino",
         "checkIn": "Check-in",
         "checkOut": "Check-out",
-        "pricePerNight": "Preco por Noite",
-        "totalPrice": "Preco Total",
+        "checkInTime": "Horário de Check-in",
+        "checkOutTime": "Horário de Check-out",
+        "pricePerNight": "Preço por Noite",
+        "totalPrice": "Preço Total",
         "roomType": "Tipo de Quarto",
-        "roomTypePlaceholder": "ex., Quarto Duplo com Varanda"
+        "roomTypePlaceholder": "ex., Quarto Duplo com Varanda",
+        "bookingStatus": "Status da Reserva",
+        "bookingReference": "Referência da Reserva",
+        "bookingReferencePlaceholder": "ex., CONF-12345",
+        "currency": "Moeda",
+        "links": "Links",
+        "noLinks": "Nenhum link adicionado",
+        "documents": "Documentos",
+        "notes": "Notas",
+        "notesPlaceholder": "Notas adicionais sobre esta hospedagem..."
+      },
+      "status": {
+        "planned": "Planejado",
+        "booked": "Reservado",
+        "confirmed": "Confirmado",
+        "cancelled": "Cancelado"
       },
       "nights": "{count} noite | {count} noites"
     },

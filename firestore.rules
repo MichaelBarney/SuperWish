@@ -48,6 +48,12 @@ service cloud.firestore {
       allow create: if isOwner(request.resource.data.userId);
     }
 
+    // Accommodations collection (SuperTrip)
+    match /accommodations/{accommodationId} {
+      allow read, update, delete: if isOwner(resource.data.userId);
+      allow create: if isOwner(request.resource.data.userId);
+    }
+
     // Quests collection (SuperQuest)
     match /quests/{questId} {
       allow read, update, delete: if isOwner(resource.data.userId);
@@ -62,6 +68,12 @@ service cloud.firestore {
 
     // Tasks collection (SuperTask)
     match /tasks/{taskId} {
+      allow read, update, delete: if isOwner(resource.data.userId);
+      allow create: if isOwner(request.resource.data.userId);
+    }
+
+    // Experiences collection (SuperTrip)
+    match /experiences/{experienceId} {
       allow read, update, delete: if isOwner(resource.data.userId);
       allow create: if isOwner(request.resource.data.userId);
     }

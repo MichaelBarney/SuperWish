@@ -22,8 +22,9 @@
   <!-- Destination Card (new design) -->
   <div
     v-else
-    class="relative overflow-hidden rounded-2xl shadow-lg group max-w-md mx-auto"
+    class="relative overflow-hidden rounded-2xl shadow-lg group max-w-md mx-auto cursor-pointer"
     :class="compact ? 'min-h-[120px]' : 'min-h-[160px]'"
+    @click="handleCardClick"
   >
     <!-- Background Image -->
     <div
@@ -79,8 +80,18 @@
       </div>
     </div>
 
-    <!-- 3-Dot Menu -->
-    <div class="absolute top-3 z-10" :class="'right-3'">
+    <!-- Top-right actions -->
+    <div class="absolute top-3 right-3 z-10 flex items-center gap-2">
+      <!-- Task Badge -->
+      <button
+        v-if="pendingTaskCount > 0"
+        @click.stop="emit('showTasks')"
+        class="flex items-center gap-1 px-2.5 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full hover:bg-white/30 transition-colors cursor-pointer"
+      >
+        <Icon name="lucide:square-check-big" class="w-3.5 h-3.5" />
+        {{ pendingTaskCount }}
+      </button>
+
       <button
         ref="menuButtonRef"
         @click.stop="toggleMenu"
@@ -131,6 +142,7 @@ interface Props {
   isConfirmed?: boolean
   showEdit?: boolean
   compact?: boolean
+  pendingTaskCount?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -138,10 +150,12 @@ const props = withDefaults(defineProps<Props>(), {
   isConfirmed: false,
   showEdit: true,
   compact: false,
+  pendingTaskCount: 0,
 })
 
 const emit = defineEmits<{
   click: []
+  showTasks: []
 }>()
 
 const { locale } = useI18n()
@@ -157,6 +171,12 @@ function toggleMenu() {
 
 function closeMenu() {
   isMenuOpen.value = false
+}
+
+function handleCardClick() {
+  if (isMenuOpen.value) return
+  console.log('[Point] card clicked, emitting click')
+  emit('click')
 }
 
 function handleEdit() {

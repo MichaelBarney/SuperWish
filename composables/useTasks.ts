@@ -61,6 +61,8 @@ export function useTasks() {
             subQuestId: data.subQuestId || null,
             tripId: data.tripId || null,
             destinationId: data.destinationId || null,
+            accommodationId: data.accommodationId || null,
+            experienceId: data.experienceId || null,
             wishId: data.wishId || null,
             timeHorizon: data.timeHorizon || null,
             estimatedTime: data.estimatedTime || null,
@@ -107,6 +109,8 @@ export function useTasks() {
         subQuestId: data.subQuestId || null,
         tripId: data.tripId || null,
         destinationId: data.destinationId || null,
+        accommodationId: data.accommodationId || null,
+        experienceId: data.experienceId || null,
         wishId: data.wishId || null,
         timeHorizon: data.timeHorizon || null,
         estimatedTime: data.estimatedTime || null,
@@ -138,6 +142,8 @@ export function useTasks() {
       if (data.subQuestId !== undefined) updateData.subQuestId = data.subQuestId || null
       if (data.tripId !== undefined) updateData.tripId = data.tripId || null
       if (data.destinationId !== undefined) updateData.destinationId = data.destinationId || null
+      if (data.accommodationId !== undefined) updateData.accommodationId = data.accommodationId || null
+      if (data.experienceId !== undefined) updateData.experienceId = data.experienceId || null
       if (data.wishId !== undefined) updateData.wishId = data.wishId || null
       if (data.timeHorizon !== undefined) updateData.timeHorizon = data.timeHorizon || null
       if (data.estimatedTime !== undefined) updateData.estimatedTime = data.estimatedTime || null
@@ -226,7 +232,7 @@ export function useTasks() {
 
   // Computed views
   const inboxTasks = computed(() =>
-    tasks.value.filter(t => !t.questId && !t.subQuestId && !t.tripId && !t.destinationId && !t.timeHorizon)
+    tasks.value.filter(t => !t.questId && !t.subQuestId && !t.tripId && !t.destinationId && !t.experienceId && !t.timeHorizon)
   )
 
   const todayHorizonTasks = computed(() =>
@@ -261,6 +267,15 @@ export function useTasks() {
 
   const getTasksByDestinationId = (destinationId: string) =>
     tasks.value.filter(t => t.destinationId === destinationId)
+
+  const getTasksByExperienceId = (experienceId: string) =>
+    tasks.value.filter(t => t.experienceId === experienceId)
+
+  const getTasksByAccommodationId = (accommodationId: string) =>
+    tasks.value.filter(t => t.accommodationId === accommodationId)
+
+  const getDirectDestinationTasks = (destinationId: string) =>
+    tasks.value.filter(t => t.destinationId === destinationId && !t.experienceId && !t.accommodationId)
 
   const getDirectQuestTasks = (questId: string) =>
     tasks.value.filter(t => t.questId === questId && !t.subQuestId)
@@ -310,6 +325,9 @@ export function useTasks() {
     getTasksBySubQuestId,
     getTasksByTripId,
     getTasksByDestinationId,
+    getTasksByAccommodationId,
+    getTasksByExperienceId,
+    getDirectDestinationTasks,
     getDirectQuestTasks,
     getDirectTripTasks,
     subscribeToTasks,

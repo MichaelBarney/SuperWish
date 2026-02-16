@@ -794,6 +794,7 @@ async function handleCreateDestination(data: DestinationForm) {
 }
 
 function editDestination(destination: Destination) {
+  console.log('[editDestination] navigating to destination:', destination.id, destination.name)
   navigateTo(`/trip/${tripId.value}/destination/${destination.id}`)
 }
 

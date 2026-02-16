@@ -219,7 +219,7 @@ export function createEmptyPriceSource(): PriceSourceForm {
 export type TripStatus = 'planning' | 'upcoming' | 'active' | 'completed'
 export type TransportType = 'flight' | 'train' | 'bus' | 'car' | 'ferry' | 'other'
 export type BookingStatus = 'planned' | 'booked' | 'confirmed' | 'cancelled'
-export type AccommodationType = 'hotel' | 'hostel' | 'airbnb' | 'apartment' | 'resort' | 'other'
+export type AccommodationType = 'hotel' | 'hostel' | 'airbnb' | 'apartment' | 'resort' | 'friend_house' | 'other'
 export type ExperienceCategory = 'restaurant' | 'attraction' | 'museum' | 'outdoor' | 'activity' | 'nightlife' | 'shopping' | 'other'
 export type ExperienceStatus = 'wishlist' | 'booked' | 'completed' | 'skipped'
 export type BudgetCategory = 'transportation' | 'accommodation' | 'food' | 'activities' | 'shopping' | 'other'
@@ -370,6 +370,31 @@ export function createEmptyTransportationDocument(): TransportationDocument {
   }
 }
 
+export function createEmptyAccommodationForm(destinationId: string = '', currency: string = 'USD'): AccommodationForm {
+  return {
+    destinationId,
+    type: 'hotel',
+    name: '',
+    address: '',
+    checkIn: '',
+    checkOut: '',
+    checkInTime: '',
+    checkOutTime: '',
+    bookingStatus: 'planned',
+    bookingReference: '',
+    bookingUrl: '',
+    pricePerNight: '',
+    totalPrice: '',
+    currency,
+    roomType: '',
+    amenities: [],
+    notes: '',
+    imageUrl: '',
+    documents: [],
+    links: [],
+  }
+}
+
 // Accommodation
 export interface Accommodation {
   id: string
@@ -381,6 +406,8 @@ export interface Accommodation {
   address?: string
   checkIn: Date
   checkOut: Date
+  checkInTime?: string
+  checkOutTime?: string
   bookingStatus: BookingStatus
   bookingReference?: string
   bookingUrl?: string
@@ -392,6 +419,8 @@ export interface Accommodation {
   amenities?: string[]
   notes?: string
   imageUrl?: string
+  documents?: TransportationDocument[]
+  links?: TransportationLink[]
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -403,6 +432,8 @@ export interface AccommodationForm {
   address: string
   checkIn: string
   checkOut: string
+  checkInTime: string
+  checkOutTime: string
   bookingStatus: BookingStatus
   bookingReference: string
   bookingUrl: string
@@ -413,6 +444,8 @@ export interface AccommodationForm {
   amenities: string[]
   notes: string
   imageUrl: string
+  documents: TransportationDocument[]
+  links: TransportationLink[]
 }
 
 // Experience
@@ -567,6 +600,7 @@ export const ACCOMMODATION_TYPES: { value: AccommodationType; label: string }[] 
   { value: 'airbnb', label: 'Airbnb' },
   { value: 'apartment', label: 'Apartment' },
   { value: 'resort', label: 'Resort' },
+  { value: 'friend_house', label: "Friend's House" },
   { value: 'other', label: 'Other' },
 ]
 
@@ -702,6 +736,8 @@ export interface Task {
   subQuestId?: string | null
   tripId?: string | null
   destinationId?: string | null
+  accommodationId?: string | null
+  experienceId?: string | null
   wishId?: string | null
   timeHorizon?: TaskTimeHorizon | null
   estimatedTime?: TaskEstimatedTime | null
@@ -717,6 +753,8 @@ export interface TaskForm {
   subQuestId: string
   tripId: string
   destinationId: string
+  accommodationId: string
+  experienceId: string
   wishId: string
   timeHorizon: string
   estimatedTime: string

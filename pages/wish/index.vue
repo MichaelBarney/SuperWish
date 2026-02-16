@@ -290,6 +290,25 @@ watch(shippingWishes, () => {
   nextTick(updateShippingScrollButtons)
 })
 
+// Handle editWishId query param (from task wish badge navigation)
+const route = useRoute()
+watch(
+  () => [route.query.editWishId, unassignedWishes.value, shippingWishes.value] as const,
+  ([editWishId, loadedUnassigned, loadedShipping]) => {
+    if (!editWishId) return
+    const wish = loadedUnassigned.find(w => w.id === editWishId)
+      || loadedShipping.find(w => w.id === editWishId)
+    if (wish) {
+      openEditWishModal(wish)
+      // Clear the query param to keep URL clean
+      const query = { ...route.query }
+      delete query.editWishId
+      navigateTo({ path: route.path, query }, { replace: true })
+    }
+  },
+  { immediate: true }
+)
+
 // List modals
 const showCreateModal = ref(false)
 

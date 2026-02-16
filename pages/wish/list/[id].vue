@@ -256,6 +256,23 @@ const selectedWish = ref<Wish | null>(null)
 const deleting = ref(false)
 const deletingList = ref(false)
 
+// Handle editWishId query param (from task wish badge navigation)
+watch(
+  () => [route.query.editWishId, wishes.value] as const,
+  ([editWishId, loadedWishes]) => {
+    if (!editWishId || !loadedWishes.length) return
+    const wish = loadedWishes.find(w => w.id === editWishId)
+    if (wish) {
+      openEditWishModal(wish)
+      // Clear the query param to keep URL clean
+      const query = { ...route.query }
+      delete query.editWishId
+      navigateTo({ path: route.path, query }, { replace: true })
+    }
+  },
+  { immediate: true }
+)
+
 // Computed
 const isOverdue = computed(() => {
   if (!list.value?.deadline) return false
