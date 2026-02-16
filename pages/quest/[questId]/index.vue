@@ -137,8 +137,15 @@
         <QuestSubQuestList
           :subquests="subquests"
           :loading="subquestsLoading"
+          :get-tasks-by-sub-quest-id="getTasksBySubQuestId"
+          :quest-id="questId"
           @create="showCreateSubQuestModal = true"
           @edit="openEditSubQuestModal"
+          @toggle-task="handleToggleTask"
+          @edit-task="openEditTaskModal"
+          @delete-task="handleDeleteTask"
+          @add-task="handleSubQuestQuickAddTask"
+          @inline-update-task="handleInlineUpdateTask"
         />
       </div>
 
@@ -225,8 +232,8 @@ const quest = computed(() => getQuestById(questId.value))
 const { subquests, loading: subquestsLoading, createSubQuest, updateSubQuest, deleteSubQuest } = useSubquests(questId)
 
 // Tasks
-const { getTasksByQuestId, createTask, updateTask, toggleTaskComplete, deleteTask } = useTasks()
-const questTasks = computed(() => getTasksByQuestId(questId.value))
+const { getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask } = useTasks()
+const questTasks = computed(() => getDirectQuestTasks(questId.value))
 
 // Progress
 const completedCount = computed(() => subquests.value.filter(s => s.status === 'completed').length)
@@ -354,6 +361,22 @@ async function handleQuickAddTask(data: { title: string; description: string; qu
     description: data.description || '',
     questId: questId.value,
     subQuestId: '',
+    tripId: '',
+    destinationId: '',
+    accommodationId: '',
+    experienceId: '',
+    wishId: data.wishId || '',
+    timeHorizon: '',
+    estimatedTime: '',
+  })
+}
+
+async function handleSubQuestQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+  await createTask({
+    title: data.title,
+    description: data.description || '',
+    questId: questId.value,
+    subQuestId: data.subQuestId || '',
     tripId: '',
     destinationId: '',
     accommodationId: '',

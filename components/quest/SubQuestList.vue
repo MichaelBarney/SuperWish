@@ -32,26 +32,41 @@
         v-for="subquest in subquests"
         :key="subquest.id"
         :subquest="subquest"
-        @click="$emit('edit', subquest)"
+        :tasks="getTasksBySubQuestId ? getTasksBySubQuestId(subquest.id) : []"
+        :quest-id="questId"
+        @edit="$emit('edit', subquest)"
+        @toggle-task="(id, completed) => $emit('toggleTask', id, completed)"
+        @edit-task="(task) => $emit('editTask', task)"
+        @delete-task="(id) => $emit('deleteTask', id)"
+        @add-task="(data) => $emit('addTask', data)"
+        @inline-update-task="(id, data) => $emit('inlineUpdateTask', id, data)"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { SubQuest } from '~/types'
+import type { SubQuest, Task } from '~/types'
 
 interface Props {
   subquests: readonly SubQuest[]
   loading?: boolean
+  getTasksBySubQuestId?: (subQuestId: string) => Task[]
+  questId?: string
 }
 
 withDefaults(defineProps<Props>(), {
   loading: false,
+  questId: '',
 })
 
 defineEmits<{
   create: []
   edit: [subquest: SubQuest]
+  toggleTask: [id: string, completed: boolean]
+  editTask: [task: Task]
+  deleteTask: [id: string]
+  addTask: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }]
+  inlineUpdateTask: [id: string, data: { title: string; description: string }]
 }>()
 </script>
