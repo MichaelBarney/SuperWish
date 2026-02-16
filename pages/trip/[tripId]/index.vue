@@ -114,7 +114,7 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-soft p-4 opacity-60 cursor-not-allowed" :title="$t('common.comingSoon')">
+        <div class="bg-white rounded-xl shadow-soft p-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
               <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -122,18 +122,16 @@
               </svg>
             </div>
             <div>
-              <p class="text-2xl font-bold text-gray-900">-</p>
+              <p class="text-2xl font-bold text-gray-900">{{ accommodations.length }}</p>
               <p class="text-sm text-gray-500">{{ $t('travel.nav.accommodations') }}</p>
             </div>
           </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-soft p-4 opacity-60 cursor-not-allowed" :title="$t('common.comingSoon')">
+        <div class="bg-white rounded-xl shadow-soft p-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-              <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Icon name="lucide:sparkles" class="w-5 h-5 text-green-600" />
             </div>
             <div>
               <p class="text-2xl font-bold text-gray-900">-</p>
@@ -156,6 +154,7 @@
             @edit="() => {}"
             @delete="handleDeleteTask"
             @add="handleQuickAddTask"
+            @inline-update="handleInlineUpdateTask"
           />
         </div>
       </div>
@@ -220,7 +219,17 @@
                     :departure-date="getDestinationDepartureDate(destination, index)"
                     :order="index + 1"
                     :is-confirmed="isDestinationConfirmed(destination.id, index)"
+                    :pending-task-count="getPendingTaskCount(destination.id)"
                     @click="editDestination(destination)"
+                    @show-tasks="openDestinationTasks(destination.id)"
+                  />
+
+                  <!-- Accommodations for this destination -->
+                  <TripAccommodationsDestinationList
+                    :accommodations="getAccommodationsByDestinationId(destination.id)"
+                    :destination-id="destination.id"
+                    @click="openAccommodationModal($event)"
+                    @add="openNewAccommodationModal($event)"
                   />
 
                   <!-- Transportation to next destination (if not last) -->
@@ -405,6 +414,23 @@
       />
     </UiModal>
 
+    <!-- Destination Tasks Modal -->
+    <UiModal
+      v-model="showDestinationTasksModal"
+      :title="$t('travel.destinations.destinationTasks', { name: selectedTaskDestinationName })"
+    >
+      <TaskList
+        :tasks="destinationTasks"
+        :trip-id="tripId"
+        :destination-id="selectedTaskDestinationId"
+        @toggle="handleToggleTask"
+        @edit="() => {}"
+        @delete="handleDeleteTask"
+        @add="handleQuickAddDestinationTask"
+        @inline-update="handleInlineUpdateTask"
+      />
+    </UiModal>
+
     <!-- Transportation Modal -->
     <UiModal
       v-model="showTransportationModal"
@@ -423,11 +449,28 @@
         @delete="handleTransportationDelete"
       />
     </UiModal>
+
+    <!-- Accommodation Modal -->
+    <UiModal
+      v-model="showAccommodationModal"
+      :title="selectedAccommodation ? $t('common.edit') : $t('travel.accommodations.addAccommodation')"
+      size="lg"
+    >
+      <TripAccommodationsForm
+        :initial-data="selectedAccommodation"
+        :destinations="destinations"
+        :default-destination-id="accommodationDestinationId"
+        :trip-currency="trip?.baseCurrency || 'USD'"
+        @submit="handleAccommodationSubmit"
+        @cancel="showAccommodationModal = false"
+        @delete="handleAccommodationDelete"
+      />
+    </UiModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { TripForm, Destination, DestinationForm, TransportationForm, Transportation, Task } from '~/types'
+import type { TripForm, Destination, DestinationForm, TransportationForm, Transportation, AccommodationForm, Accommodation, Task } from '~/types'
 import { getCurrencySymbol } from '~/types'
 
 definePageMeta({
@@ -464,9 +507,18 @@ const {
   getOrphanTransportations,
 } = useTransportation(tripId)
 
+// Accommodations
+const {
+  accommodations,
+  createAccommodation,
+  updateAccommodation,
+  deleteAccommodation,
+  getAccommodationsByDestinationId,
+} = useAccommodations(tripId)
+
 // Tasks
-const { getTasksByTripId, createTask, toggleTaskComplete, deleteTask: deleteTaskById } = useTasks()
-const tripTasks = computed(() => getTasksByTripId(tripId.value))
+const { getDirectTripTasks, getTasksByDestinationId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById } = useTasks()
+const tripTasks = computed(() => getDirectTripTasks(tripId.value))
 
 // Modals
 const showEditModal = ref(false)
@@ -474,13 +526,40 @@ const showDeleteModal = ref(false)
 const showAddDestinationModal = ref(false)
 const showEditDestinationModal = ref(false)
 const showTransportationModal = ref(false)
+const showAccommodationModal = ref(false)
+const showDestinationTasksModal = ref(false)
 
 // State
 const deleting = ref(false)
 const selectedDestination = ref<Destination | null>(null)
 const selectedTransportation = ref<Transportation | null>(null)
+const selectedAccommodation = ref<Accommodation | null>(null)
+const accommodationDestinationId = ref<string>('')
 const transportFromId = ref<string | null>(null)
 const transportToId = ref<string | null>(null)
+const selectedTaskDestinationId = ref<string>('')
+
+// Pending task count per destination
+const getPendingTaskCount = (destinationId: string): number => {
+  return getTasksByDestinationId(destinationId).filter(t => !t.completed).length
+}
+
+// Destination tasks for modal
+const destinationTasks = computed(() => {
+  if (!selectedTaskDestinationId.value) return []
+  return getTasksByDestinationId(selectedTaskDestinationId.value)
+})
+
+const selectedTaskDestinationName = computed(() => {
+  if (!selectedTaskDestinationId.value) return ''
+  const dest = destinations.value.find(d => d.id === selectedTaskDestinationId.value)
+  return dest?.name || ''
+})
+
+function openDestinationTasks(destinationId: string) {
+  selectedTaskDestinationId.value = destinationId
+  showDestinationTasksModal.value = true
+}
 
 // Local destinations state
 const localDestinations = ref<Destination[]>([])
@@ -715,8 +794,7 @@ async function handleCreateDestination(data: DestinationForm) {
 }
 
 function editDestination(destination: Destination) {
-  selectedDestination.value = destination
-  showEditDestinationModal.value = true
+  navigateTo(`/trip/${tripId.value}/destination/${destination.id}`)
 }
 
 async function handleUpdateDestination(data: DestinationForm) {
@@ -807,6 +885,43 @@ async function handleTransportationDelete() {
   }
 }
 
+// Accommodation handlers
+function openAccommodationModal(accommodation: Accommodation) {
+  selectedAccommodation.value = accommodation
+  accommodationDestinationId.value = accommodation.destinationId
+  showAccommodationModal.value = true
+}
+
+function openNewAccommodationModal(destinationId: string) {
+  selectedAccommodation.value = null
+  accommodationDestinationId.value = destinationId
+  showAccommodationModal.value = true
+}
+
+async function handleAccommodationSubmit(data: AccommodationForm) {
+  if (selectedAccommodation.value) {
+    const result = await updateAccommodation(selectedAccommodation.value.id, data)
+    if (result.success) {
+      showAccommodationModal.value = false
+      selectedAccommodation.value = null
+    }
+  } else {
+    const result = await createAccommodation(tripId.value, data)
+    if (result.success) {
+      showAccommodationModal.value = false
+    }
+  }
+}
+
+async function handleAccommodationDelete() {
+  if (!selectedAccommodation.value) return
+  const result = await deleteAccommodation(selectedAccommodation.value.id)
+  if (result.success) {
+    showAccommodationModal.value = false
+    selectedAccommodation.value = null
+  }
+}
+
 // Task handlers
 async function handleToggleTask(id: string, completed: boolean) {
   await toggleTaskComplete(id, completed)
@@ -816,16 +931,39 @@ async function handleDeleteTask(id: string) {
   await deleteTaskById(id)
 }
 
-async function handleQuickAddTask(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }) {
+async function handleInlineUpdateTask(id: string, data: { title: string; description: string }) {
+  await updateTask(id, data)
+}
+
+async function handleQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
   await createTask({
     title: data.title,
-    description: '',
+    description: data.description || '',
     questId: '',
     subQuestId: '',
     tripId: tripId.value,
     destinationId: '',
+    accommodationId: '',
+    experienceId: '',
     wishId: data.wishId || '',
     timeHorizon: '',
+    estimatedTime: '',
+  })
+}
+
+async function handleQuickAddDestinationTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+  await createTask({
+    title: data.title,
+    description: data.description || '',
+    questId: '',
+    subQuestId: '',
+    tripId: tripId.value,
+    destinationId: data.destinationId || selectedTaskDestinationId.value,
+    accommodationId: '',
+    experienceId: '',
+    wishId: data.wishId || '',
+    timeHorizon: '',
+    estimatedTime: '',
   })
 }
 

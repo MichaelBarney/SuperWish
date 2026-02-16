@@ -2,19 +2,27 @@
   <div>
     <!-- Active tasks -->
     <div v-if="activeTasks.length > 0" class="divide-y divide-gray-100">
-      <TaskItem
-        v-for="task in activeTasks"
-        :key="task.id"
-        :task="task"
-        :project-label="getProjectLabel(task)"
-        :project-icon="getProjectIcon(task)"
-        :linked-wish="task.wishId ? getWishById(task.wishId) || null : null"
-        @toggle="handleToggle"
-        @edit="$emit('edit', $event)"
-        @delete="$emit('delete', $event)"
-        @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
-        @update-estimated-time="(id, et) => $emit('updateEstimatedTime', id, et)"
-      />
+      <template v-for="task in activeTasks" :key="task.id">
+        <TaskQuickAdd
+          v-if="editingTaskId === task.id"
+          :edit-task="task"
+          @update="(id, data) => { $emit('inlineUpdate', id, data); cancelEdit() }"
+          @cancel-edit="cancelEdit"
+        />
+        <TaskItem
+          v-else
+          :task="task"
+          :project-label="getProjectLabel(task)"
+          :project-icon="getProjectIcon(task)"
+          :linked-wish="task.wishId ? getWishById(task.wishId) || null : null"
+          @toggle="handleToggle"
+          @edit="$emit('edit', $event)"
+          @delete="$emit('delete', $event)"
+          @start-edit="startEdit"
+          @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
+          @update-estimated-time="(id, et) => $emit('updateEstimatedTime', id, et)"
+        />
+      </template>
     </div>
 
     <!-- Quick add -->
@@ -23,6 +31,7 @@
       :sub-quest-id="subQuestId"
       :trip-id="tripId"
       :destination-id="destinationId"
+      :experience-id="experienceId"
       @add="$emit('add', $event)"
     />
 
@@ -47,18 +56,26 @@
       </button>
 
       <div v-if="showCompleted" class="divide-y divide-gray-100 mt-1">
-        <TaskItem
-          v-for="task in completedTasks"
-          :key="task.id"
-          :task="task"
-          :project-label="getProjectLabel(task)"
-          :project-icon="getProjectIcon(task)"
-          :linked-wish="task.wishId ? getWishById(task.wishId) || null : null"
-          @toggle="handleToggle"
-          @edit="$emit('edit', $event)"
-          @delete="$emit('delete', $event)"
-          @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
-        />
+        <template v-for="task in completedTasks" :key="task.id">
+          <TaskQuickAdd
+            v-if="editingTaskId === task.id"
+            :edit-task="task"
+            @update="(id, data) => { $emit('inlineUpdate', id, data); cancelEdit() }"
+            @cancel-edit="cancelEdit"
+          />
+          <TaskItem
+            v-else
+            :task="task"
+            :project-label="getProjectLabel(task)"
+            :project-icon="getProjectIcon(task)"
+            :linked-wish="task.wishId ? getWishById(task.wishId) || null : null"
+            @toggle="handleToggle"
+            @edit="$emit('edit', $event)"
+            @delete="$emit('delete', $event)"
+            @start-edit="startEdit"
+            @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
+          />
+        </template>
       </div>
     </div>
   </div>
@@ -74,6 +91,7 @@ interface Props {
   subQuestId?: string
   tripId?: string
   destinationId?: string
+  experienceId?: string
   questNames?: Record<string, string>
   questIcons?: Record<string, string>
   tripNames?: Record<string, string>
@@ -84,13 +102,15 @@ const props = withDefaults(defineProps<Props>(), {
   subQuestId: '',
   tripId: '',
   destinationId: '',
+  experienceId: '',
 })
 
 const emit = defineEmits<{
   toggle: [id: string, completed: boolean]
   edit: [task: Task]
   delete: [id: string]
-  add: [data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }]
+  add: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }]
+  inlineUpdate: [id: string, data: { title: string; description: string }]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
 }>()
@@ -98,6 +118,15 @@ const emit = defineEmits<{
 const { getWishById } = useAllWishes()
 
 const showCompleted = ref(false)
+const editingTaskId = ref<string | null>(null)
+
+function startEdit(id: string) {
+  editingTaskId.value = id
+}
+
+function cancelEdit() {
+  editingTaskId.value = null
+}
 
 function isTaskCompleted(task: Task): boolean {
   if (task.wishId) {

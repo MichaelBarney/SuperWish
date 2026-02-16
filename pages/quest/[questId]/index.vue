@@ -119,6 +119,7 @@
             @edit="openEditTaskModal"
             @delete="handleDeleteTask"
             @add="handleQuickAddTask"
+            @inline-update="handleInlineUpdateTask"
           />
         </div>
       </div>
@@ -343,16 +344,23 @@ async function handleDeleteTask(id: string) {
   await deleteTask(id)
 }
 
-async function handleQuickAddTask(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }) {
+async function handleInlineUpdateTask(id: string, data: { title: string; description: string }) {
+  await updateTask(id, data)
+}
+
+async function handleQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
   await createTask({
     title: data.title,
-    description: '',
+    description: data.description || '',
     questId: questId.value,
     subQuestId: '',
     tripId: '',
     destinationId: '',
+    accommodationId: '',
+    experienceId: '',
     wishId: data.wishId || '',
     timeHorizon: '',
+    estimatedTime: '',
   })
 }
 </script>

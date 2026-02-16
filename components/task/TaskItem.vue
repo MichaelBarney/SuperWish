@@ -28,26 +28,32 @@
     </button>
 
     <!-- Content -->
-    <div class="flex-1 min-w-0 cursor-pointer" @click="$emit('edit', task)">
-      <p
-        class="text-sm font-medium transition-all"
-        :class="effectiveCompleted ? 'text-gray-400 line-through' : 'text-gray-900'"
-      >
-        {{ task.title }}
-      </p>
-      <p
-        v-if="task.description"
-        class="text-xs text-gray-400 mt-0.5 truncate"
-      >
-        {{ task.description }}
-      </p>
-      <!-- Project badge -->
-      <div v-if="projectLabel" class="flex items-center gap-1 mt-1">
-        <Icon :name="projectIcon" class="w-3 h-3 text-gray-400" />
-        <span class="text-xs text-gray-400">{{ projectLabel }}</span>
+    <div class="flex-1 min-w-0">
+      <div class="cursor-pointer" @click="$emit('edit', task)">
+        <p
+          class="text-sm font-medium transition-all"
+          :class="effectiveCompleted ? 'text-gray-400 line-through' : 'text-gray-900'"
+        >
+          {{ task.title }}
+        </p>
+        <p
+          v-if="task.description"
+          class="text-xs text-gray-400 mt-0.5 truncate"
+        >
+          {{ task.description }}
+        </p>
+        <!-- Project badge -->
+        <div v-if="projectLabel" class="flex items-center gap-1 mt-1">
+          <Icon :name="projectIcon" class="w-3 h-3 text-gray-400" />
+          <span class="text-xs text-gray-400">{{ projectLabel }}</span>
+        </div>
       </div>
-      <!-- Wish badge -->
-      <div v-if="isWishLinked && linkedWish" class="flex items-center gap-2 mt-1">
+      <!-- Wish badge (outside content click area so it navigates to wish) -->
+      <div
+        v-if="isWishLinked && linkedWish"
+        class="flex items-center gap-2 mt-1 cursor-pointer rounded px-1 -mx-1 transition-colors hover:bg-teal-50"
+        @click.stop="navigateToWish"
+      >
         <div class="w-4 h-4 rounded bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
           <img v-if="linkedWish.imageUrl" :src="linkedWish.imageUrl" :alt="linkedWish.title" class="w-full h-full object-cover" />
           <Icon v-else name="lucide:star" class="w-2.5 h-2.5 text-teal-400" />
@@ -56,6 +62,7 @@
         <span v-if="linkedWish.targetPrice" class="text-xs text-gray-400">
           {{ getCurrencySymbol(linkedWish.currency) }}{{ linkedWish.targetPrice }}
         </span>
+        <Icon name="lucide:external-link" class="w-3 h-3 text-teal-400 opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
     </div>
 
@@ -158,6 +165,14 @@
       </div>
     </div>
 
+    <!-- Edit button (on hover) -->
+    <button
+      @click.stop="$emit('startEdit', task.id)"
+      class="mt-0.5 p-1 text-gray-300 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-all"
+    >
+      <Icon name="lucide:pencil" class="w-4 h-4" />
+    </button>
+
     <!-- Delete button (on hover) -->
     <button
       @click.stop="$emit('delete', task.id)"
@@ -191,6 +206,7 @@ const emit = defineEmits<{
   toggle: [id: string, completed: boolean]
   edit: [task: Task]
   delete: [id: string]
+  startEdit: [id: string]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
 }>()
@@ -209,6 +225,17 @@ const effectiveCompleted = computed(() => {
 function handleToggle() {
   if (isWishLinked.value) return
   emit('toggle', props.task.id, !effectiveCompleted.value)
+}
+
+function navigateToWish() {
+  if (!props.task.wishId) return
+  const wishId = props.task.wishId
+  const listId = props.linkedWish?.listId
+  if (listId) {
+    navigateTo(`/wish/list/${listId}?editWishId=${wishId}`)
+  } else {
+    navigateTo(`/wish?editWishId=${wishId}`)
+  }
 }
 
 // Time horizon dropdown

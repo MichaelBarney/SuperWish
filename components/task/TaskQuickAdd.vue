@@ -1,8 +1,8 @@
 <template>
   <div>
-    <!-- Collapsed state -->
+    <!-- Collapsed state (hidden in edit mode) -->
     <button
-      v-if="!expanded"
+      v-if="!expanded && !editTask"
       @click="expand"
       class="group w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors"
     >
@@ -15,9 +15,9 @@
     </button>
 
     <!-- Expanded state -->
-    <div v-else class="relative px-3 pb-3 pt-3">
+    <div v-if="expanded || editTask" class="relative px-3 pb-3 pt-3">
       <div class="border border-gray-300 rounded-xl shadow-sm">
-        <div class="px-3 pt-3 pb-2">
+        <div class="px-3 pt-3 pb-2 space-y-2">
           <div class="flex items-center gap-2">
             <!-- Wish indicator -->
             <Icon
@@ -31,10 +31,17 @@
               type="text"
               :placeholder="$t('task.form.titlePlaceholder')"
               class="flex-1 text-sm text-gray-900 placeholder-gray-400 bg-transparent border-none outline-none font-medium"
-              @keydown.enter="submit"
+              @keydown.enter.prevent="submit"
               @keydown.escape="collapse"
             />
           </div>
+          <textarea
+            v-model="description"
+            rows="2"
+            :placeholder="$t('task.form.descriptionPlaceholder')"
+            class="w-full text-sm text-gray-700 placeholder-gray-400 bg-transparent border-none outline-none resize-none"
+            @keydown.escape="collapse"
+          />
         </div>
         <div class="flex items-center justify-end gap-2 px-3 py-2 bg-gray-50 border-t border-gray-100 rounded-b-xl">
           <button
@@ -48,7 +55,7 @@
             :disabled="!title.trim()"
             class="px-3 py-1.5 text-xs font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {{ $t('task.task.addTask') }}
+            {{ editTask ? $t('common.save') : $t('task.task.addTask') }}
           </button>
         </div>
       </div>
@@ -62,13 +69,15 @@
 </template>
 
 <script setup lang="ts">
-import type { Wish } from '~/types'
+import type { Task, Wish } from '~/types'
 
 interface Props {
   questId?: string
   subQuestId?: string
   tripId?: string
   destinationId?: string
+  experienceId?: string
+  editTask?: Task | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -76,17 +85,32 @@ const props = withDefaults(defineProps<Props>(), {
   subQuestId: '',
   tripId: '',
   destinationId: '',
+  experienceId: '',
+  editTask: null,
 })
 
 const emit = defineEmits<{
-  add: [data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }]
+  add: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }]
+  update: [id: string, data: { title: string; description: string }]
+  cancelEdit: []
 }>()
 
 const expanded = ref(false)
 const title = ref('')
+const description = ref('')
 const wishId = ref('')
 const showWishPicker = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
+
+// When editTask is provided, pre-fill fields
+watch(() => props.editTask, (task) => {
+  if (task) {
+    title.value = task.title
+    description.value = task.description || ''
+    wishId.value = task.wishId || ''
+    nextTick(() => inputRef.value?.focus())
+  }
+}, { immediate: true })
 
 function expand() {
   expanded.value = true
@@ -94,8 +118,13 @@ function expand() {
 }
 
 function collapse() {
+  if (props.editTask) {
+    emit('cancelEdit')
+    return
+  }
   expanded.value = false
   title.value = ''
+  description.value = ''
   wishId.value = ''
   showWishPicker.value = false
 }
@@ -116,15 +145,25 @@ watch(title, (val) => {
 
 function submit() {
   if (!title.value.trim()) return
+  if (props.editTask) {
+    emit('update', props.editTask.id, {
+      title: title.value.trim(),
+      description: description.value.trim(),
+    })
+    return
+  }
   emit('add', {
     title: title.value.trim(),
+    description: description.value.trim(),
     questId: props.questId,
     subQuestId: props.subQuestId,
     tripId: props.tripId,
     destinationId: props.destinationId,
+    experienceId: props.experienceId,
     wishId: wishId.value,
   })
   title.value = ''
+  description.value = ''
   wishId.value = ''
   nextTick(() => inputRef.value?.focus())
 }

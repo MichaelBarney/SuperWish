@@ -270,6 +270,7 @@
                 @edit="openEditModal"
                 @delete="handleDelete"
                 @add="handleQuickAdd"
+                @inline-update="handleInlineUpdate"
                 @update-time-horizon="handleUpdateTimeHorizon"
                 @update-estimated-time="handleUpdateEstimatedTime"
               />
@@ -328,6 +329,7 @@
                 @edit="openEditModal"
                 @delete="handleDelete"
                 @add="handleQuickAdd"
+                @inline-update="handleInlineUpdate"
                 @update-time-horizon="handleUpdateTimeHorizon"
                 @update-estimated-time="handleUpdateEstimatedTime"
               />
@@ -888,7 +890,11 @@ async function handleCreate(data: TaskForm) {
   }
 }
 
-async function handleQuickAdd(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; wishId: string }) {
+async function handleInlineUpdate(id: string, data: { title: string; description: string }) {
+  await updateTask(id, data)
+}
+
+async function handleQuickAdd(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
   const viewToHorizon: Record<string, string> = {
     today: 'today',
     this_week: 'this_week',
@@ -897,13 +903,16 @@ async function handleQuickAdd(data: { title: string; questId: string; subQuestId
   }
   await createTask({
     title: data.title,
-    description: '',
+    description: data.description || '',
     questId: data.questId,
     subQuestId: data.subQuestId,
     tripId: data.tripId,
     destinationId: data.destinationId,
+    accommodationId: '',
+    experienceId: data.experienceId || '',
     wishId: data.wishId,
     timeHorizon: viewToHorizon[currentView.value] || '',
+    estimatedTime: '',
   })
 }
 
