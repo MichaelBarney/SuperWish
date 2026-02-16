@@ -105,57 +105,6 @@
           </div>
         </div>
 
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div class="bg-white rounded-xl shadow-soft p-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                <Icon name="lucide:sparkles" class="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p class="text-2xl font-bold text-gray-900">{{ experiences.length }}</p>
-                <p class="text-sm text-gray-500">{{ $t('travel.nav.experiences') }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-xl shadow-soft p-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                <Icon name="lucide:square-check-big" class="w-5 h-5 text-orange-600" />
-              </div>
-              <div>
-                <p class="text-2xl font-bold text-gray-900">{{ destinationDirectTasks.length }}</p>
-                <p class="text-sm text-gray-500">{{ $t('task.task.title') }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-xl shadow-soft p-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Icon name="lucide:bed-double" class="w-5 h-5 text-amber-600" />
-              </div>
-              <div>
-                <p class="text-2xl font-bold text-gray-900">{{ destinationAccommodations.length }}</p>
-                <p class="text-sm text-gray-500">{{ $t('travel.accommodations.title') }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-xl shadow-soft p-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <Icon name="lucide:plane" class="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p class="text-2xl font-bold text-gray-900">{{ destinationTransportations.length }}</p>
-                <p class="text-sm text-gray-500">{{ $t('travel.transportation.title') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Tasks Section -->
         <div class="mb-8">
           <div class="flex items-center justify-between mb-4">
