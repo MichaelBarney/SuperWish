@@ -146,6 +146,13 @@ const emit = defineEmits<{
 const submitting = ref(false)
 const countryAutoFilled = ref(false)
 
+function formatDateUTC(date: Date): string {
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(date.getUTCDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 // Unsplash images state
 interface UnsplashImage {
   thumb: string   // Small thumbnail for picker grid
@@ -215,14 +222,14 @@ const form = ref<DestinationForm>({
   country: props.initialData?.country || '',
   countryCode: props.initialData?.countryCode || '',
   arrivalDate: props.initialData?.arrivalDate
-    ? (props.initialData.arrivalDate instanceof Date
-        ? props.initialData.arrivalDate.toISOString().split('T')[0]
-        : new Date(props.initialData.arrivalDate).toISOString().split('T')[0])
+    ? formatDateUTC(props.initialData.arrivalDate instanceof Date
+        ? props.initialData.arrivalDate
+        : new Date(props.initialData.arrivalDate))
     : '',
   departureDate: props.initialData?.departureDate
-    ? (props.initialData.departureDate instanceof Date
-        ? props.initialData.departureDate.toISOString().split('T')[0]
-        : new Date(props.initialData.departureDate).toISOString().split('T')[0])
+    ? formatDateUTC(props.initialData.departureDate instanceof Date
+        ? props.initialData.departureDate
+        : new Date(props.initialData.departureDate))
     : '',
   notes: props.initialData?.notes || '',
   imageUrl: props.initialData?.imageUrl || '',
@@ -262,14 +269,14 @@ watch(() => props.initialData, (newData) => {
       country: newData.country || '',
       countryCode: newData.countryCode || '',
       arrivalDate: newData.arrivalDate
-        ? (newData.arrivalDate instanceof Date
-            ? newData.arrivalDate.toISOString().split('T')[0]
-            : new Date(newData.arrivalDate).toISOString().split('T')[0])
+        ? formatDateUTC(newData.arrivalDate instanceof Date
+            ? newData.arrivalDate
+            : new Date(newData.arrivalDate))
         : '',
       departureDate: newData.departureDate
-        ? (newData.departureDate instanceof Date
-            ? newData.departureDate.toISOString().split('T')[0]
-            : new Date(newData.departureDate).toISOString().split('T')[0])
+        ? formatDateUTC(newData.departureDate instanceof Date
+            ? newData.departureDate
+            : new Date(newData.departureDate))
         : '',
       notes: newData.notes || '',
       imageUrl: newData.imageUrl || '',

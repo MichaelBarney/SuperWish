@@ -111,7 +111,7 @@ const statusBadgeClass = computed(() => {
 
 const dateRange = computed(() => {
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+  const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', timeZone: 'UTC' }
 
   const checkIn = props.accommodation.checkIn instanceof Date
     ? props.accommodation.checkIn

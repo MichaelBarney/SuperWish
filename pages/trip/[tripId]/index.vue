@@ -679,7 +679,7 @@ interface DestinationDateInfo {
 const getDestinationDateInfo = (destination: Destination, index: number): DestinationDateInfo => {
   const { t } = useI18n()
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' }
+  const formatOptions: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }
 
   // Determinar data de chegada (fallback: transporte que chega neste destino)
   let arrivalDateRaw = destination.arrivalDate

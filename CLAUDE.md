@@ -52,6 +52,8 @@ For detailed project documentation, see `documentation/PROJECT.md`. It covers th
 
 **Types**: All shared types live in `types/index.ts`, including data models, status enums/constants, region/currency definitions, and helper functions like `normalizeStatus()` for legacy status migration.
 
+**Date-only fields (IMPORTANT)**: When storing date-only values (no time component) to Firestore, NEVER use `new Date(dateString)` directly — JS parses date-only strings as UTC midnight, causing off-by-one day errors in negative-offset timezones. Always append `'T12:00:00'` before parsing: `new Date(dateStr + 'T12:00:00')`. When displaying stored date-only values, use `timeZone: 'UTC'` in format options, or use UTC getters (`getUTCDate`, `getUTCMonth`, `getUTCFullYear`).
+
 **Component naming (IMPORTANT)**: Nuxt auto-imports deduplicate when the filename already starts with the folder name. `components/task/TaskList.vue` → `<TaskList>` (NOT `<TaskTaskList>`). `components/quest/SubQuestList.vue` → `<QuestSubQuestList>` (folder prefix added since filename doesn't start with `Quest`).
 
 ## Firebase

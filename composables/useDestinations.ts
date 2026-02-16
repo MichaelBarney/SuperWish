@@ -104,8 +104,8 @@ export function useDestinations(tripId: Ref<string | null | undefined>) {
         name: data.name,
         country: data.country,
         countryCode: data.countryCode || '',
-        arrivalDate: data.arrivalDate ? Timestamp.fromDate(new Date(data.arrivalDate)) : null,
-        departureDate: data.departureDate ? Timestamp.fromDate(new Date(data.departureDate)) : null,
+        arrivalDate: data.arrivalDate ? Timestamp.fromDate(new Date(data.arrivalDate + 'T12:00:00')) : null,
+        departureDate: data.departureDate ? Timestamp.fromDate(new Date(data.departureDate + 'T12:00:00')) : null,
         notes: data.notes || '',
         imageUrl: data.imageUrl || '',
         order: maxOrder + 1,
@@ -136,10 +136,10 @@ export function useDestinations(tripId: Ref<string | null | undefined>) {
       if (data.notes !== undefined) updateData.notes = data.notes
       if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl
       if (data.arrivalDate !== undefined) {
-        updateData.arrivalDate = data.arrivalDate ? Timestamp.fromDate(new Date(data.arrivalDate)) : null
+        updateData.arrivalDate = data.arrivalDate ? Timestamp.fromDate(new Date(data.arrivalDate + 'T12:00:00')) : null
       }
       if (data.departureDate !== undefined) {
-        updateData.departureDate = data.departureDate ? Timestamp.fromDate(new Date(data.departureDate)) : null
+        updateData.departureDate = data.departureDate ? Timestamp.fromDate(new Date(data.departureDate + 'T12:00:00')) : null
       }
 
       await updateDoc(destinationRef, updateData)

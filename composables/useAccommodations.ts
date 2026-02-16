@@ -120,10 +120,10 @@ export function useAccommodations(tripId: Ref<string | null | undefined>) {
         name: data.name || '',
         address: data.address || '',
         checkIn: data.checkIn
-          ? Timestamp.fromDate(new Date(data.checkIn))
+          ? Timestamp.fromDate(new Date(data.checkIn + 'T12:00:00'))
           : null,
         checkOut: data.checkOut
-          ? Timestamp.fromDate(new Date(data.checkOut))
+          ? Timestamp.fromDate(new Date(data.checkOut + 'T12:00:00'))
           : null,
         checkInTime: data.checkInTime || '',
         checkOutTime: data.checkOutTime || '',
@@ -185,12 +185,12 @@ export function useAccommodations(tripId: Ref<string | null | undefined>) {
       }
       if (data.checkIn !== undefined) {
         updateData.checkIn = data.checkIn
-          ? Timestamp.fromDate(new Date(data.checkIn))
+          ? Timestamp.fromDate(new Date(data.checkIn + 'T12:00:00'))
           : null
       }
       if (data.checkOut !== undefined) {
         updateData.checkOut = data.checkOut
-          ? Timestamp.fromDate(new Date(data.checkOut))
+          ? Timestamp.fromDate(new Date(data.checkOut + 'T12:00:00'))
           : null
       }
       if (data.documents !== undefined) {
