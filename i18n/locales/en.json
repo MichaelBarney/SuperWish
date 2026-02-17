@@ -192,7 +192,11 @@
     "defaultRegion": "Default Region",
     "regionHint": "Sets your currency and product search region",
     "language": "Language",
-    "languageHint": "Choose your preferred language"
+    "languageHint": "Choose your preferred language",
+    "temperatureUnit": "Temperature Unit",
+    "temperatureUnitHint": "Used for weather forecasts in trips",
+    "celsius": "Celsius (°C)",
+    "fahrenheit": "Fahrenheit (°F)"
   },
   "statuses": {
     "wanted": "Wanted",
@@ -460,6 +464,7 @@
         "activity": "Activity",
         "nightlife": "Nightlife",
         "shopping": "Shopping",
+        "day_trip": "Day Trip",
         "other": "Other"
       },
       "status": {

@@ -46,6 +46,7 @@ export interface User {
   photoURL: string | null
   createdAt: Timestamp
   defaultRegion?: string
+  temperatureUnit?: TemperatureUnit
   taskGroupBy?: TaskGroupBy
 }
 
@@ -220,7 +221,7 @@ export type TripStatus = 'planning' | 'upcoming' | 'active' | 'completed'
 export type TransportType = 'flight' | 'train' | 'bus' | 'car' | 'ferry' | 'other'
 export type BookingStatus = 'planned' | 'booked' | 'confirmed' | 'cancelled'
 export type AccommodationType = 'hotel' | 'hostel' | 'airbnb' | 'apartment' | 'resort' | 'friend_house' | 'other'
-export type ExperienceCategory = 'restaurant' | 'attraction' | 'museum' | 'outdoor' | 'activity' | 'nightlife' | 'shopping' | 'other'
+export type ExperienceCategory = 'restaurant' | 'attraction' | 'museum' | 'outdoor' | 'activity' | 'nightlife' | 'shopping' | 'day_trip' | 'other'
 export type ExperienceStatus = 'wishlist' | 'booked' | 'completed' | 'skipped'
 export type BudgetCategory = 'transportation' | 'accommodation' | 'food' | 'activities' | 'shopping' | 'other'
 
@@ -629,6 +630,7 @@ export const EXPERIENCE_CATEGORIES: { value: ExperienceCategory; label: string }
   { value: 'activity', label: 'Activity' },
   { value: 'nightlife', label: 'Nightlife' },
   { value: 'shopping', label: 'Shopping' },
+  { value: 'day_trip', label: 'Day Trip' },
   { value: 'other', label: 'Other' },
 ]
 
@@ -740,6 +742,7 @@ export interface SubQuestForm {
 
 export type TaskTimeHorizon = 'today' | 'this_week' | 'this_month' | 'long_term'
 export type TaskEstimatedTime = '5min' | '12min' | '25min' | '1h_plus'
+export type TemperatureUnit = 'celsius' | 'fahrenheit'
 export type TaskGroupBy = 'none' | 'project'
 
 export interface Task {

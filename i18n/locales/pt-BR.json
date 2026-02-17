@@ -192,7 +192,11 @@
     "defaultRegion": "Regiao Padrao",
     "regionHint": "Define sua moeda e regiao de busca de produtos",
     "language": "Idioma",
-    "languageHint": "Escolha seu idioma preferido"
+    "languageHint": "Escolha seu idioma preferido",
+    "temperatureUnit": "Unidade de Temperatura",
+    "temperatureUnitHint": "Usada nas previsões do tempo das viagens",
+    "celsius": "Celsius (°C)",
+    "fahrenheit": "Fahrenheit (°F)"
   },
   "statuses": {
     "wanted": "Desejado",
@@ -460,6 +464,7 @@
         "activity": "Atividade",
         "nightlife": "Vida Noturna",
         "shopping": "Compras",
+        "day_trip": "Passeio de Um Dia",
         "other": "Outro"
       },
       "status": {
@@ -655,7 +660,7 @@
       "subquests": "Sub-Missões",
       "destinations": "Destinos",
       "general": "Geral",
-      "addSubQuest": "Adicionar Sub-Quest",
+      "addSubQuest": "Adicionar Sub-Missão",
       "ongoing": "Em Andamento",
       "on_hold": "Pausado",
       "planning": "Planejamento",
