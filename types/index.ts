@@ -221,7 +221,7 @@ export type TripStatus = 'planning' | 'upcoming' | 'active' | 'completed'
 export type TransportType = 'flight' | 'train' | 'bus' | 'car' | 'ferry' | 'other'
 export type BookingStatus = 'planned' | 'booked' | 'confirmed' | 'cancelled'
 export type AccommodationType = 'hotel' | 'hostel' | 'airbnb' | 'apartment' | 'resort' | 'friend_house' | 'other'
-export type ExperienceCategory = 'restaurant' | 'attraction' | 'museum' | 'outdoor' | 'activity' | 'nightlife' | 'shopping' | 'day_trip' | 'other'
+export type ExperienceCategory = 'restaurant' | 'attraction' | 'museum' | 'outdoor' | 'activity' | 'nightlife' | 'shopping' | 'day_trip' | 'event' | 'other'
 export type ExperienceStatus = 'wishlist' | 'booked' | 'completed' | 'skipped'
 export type BudgetCategory = 'transportation' | 'accommodation' | 'food' | 'activities' | 'shopping' | 'other'
 
@@ -631,6 +631,7 @@ export const EXPERIENCE_CATEGORIES: { value: ExperienceCategory; label: string }
   { value: 'nightlife', label: 'Nightlife' },
   { value: 'shopping', label: 'Shopping' },
   { value: 'day_trip', label: 'Day Trip' },
+  { value: 'event', label: 'Event' },
   { value: 'other', label: 'Other' },
 ]
 

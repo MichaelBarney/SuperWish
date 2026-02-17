@@ -75,6 +75,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   nightlife: 'lucide:moon',
   shopping: 'lucide:shopping-bag',
   day_trip: 'lucide:map-pin',
+  event: 'lucide:party-popper',
   other: 'lucide:circle-dot',
 }
 
@@ -87,6 +88,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
   nightlife: { bg: 'bg-indigo-100', text: 'text-indigo-600' },
   shopping: { bg: 'bg-pink-100', text: 'text-pink-600' },
   day_trip: { bg: 'bg-teal-100', text: 'text-teal-600' },
+  event: { bg: 'bg-rose-100', text: 'text-rose-600' },
   other: { bg: 'bg-gray-100', text: 'text-gray-600' },
 }
 

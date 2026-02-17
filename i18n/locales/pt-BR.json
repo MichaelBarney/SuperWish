@@ -464,7 +464,8 @@
         "activity": "Atividade",
         "nightlife": "Vida Noturna",
         "shopping": "Compras",
-        "day_trip": "Passeio de Um Dia",
+        "day_trip": "Passeio",
+        "event": "Evento",
         "other": "Outro"
       },
       "status": {

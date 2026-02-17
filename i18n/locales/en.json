@@ -465,6 +465,7 @@
         "nightlife": "Nightlife",
         "shopping": "Shopping",
         "day_trip": "Day Trip",
+        "event": "Event",
         "other": "Other"
       },
       "status": {
