@@ -278,6 +278,8 @@
         "baseCurrencyHint": "All expenses will be converted to this currency",
         "totalBudget": "Total Budget",
         "totalBudgetPlaceholder": "Your budget for this trip",
+        "notes": "Notes",
+        "notesPlaceholder": "Any notes or observations about this trip...",
         "createTrip": "Create Trip"
       },
       "status": {
@@ -525,6 +527,21 @@
         "planned": "Planned",
         "cancelled": "Cancelled"
       }
+    },
+    "weather": {
+      "title": "Weather Forecast",
+      "historicalNote": "Based on typical weather for this period",
+      "clear": "Clear",
+      "partlyCloudy": "Partly Cloudy",
+      "cloudy": "Cloudy",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "snow": "Snow",
+      "showers": "Showers",
+      "thunderstorm": "Thunderstorm",
+      "unavailable": "Weather data unavailable",
+      "noDates": "Set dates to see weather"
     }
   },
   "quest": {

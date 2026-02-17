@@ -278,6 +278,8 @@
         "baseCurrencyHint": "Todos os gastos serao convertidos para esta moeda",
         "totalBudget": "Orcamento Total",
         "totalBudgetPlaceholder": "Seu orcamento para esta viagem",
+        "notes": "Notas",
+        "notesPlaceholder": "Notas ou observações sobre esta viagem...",
         "createTrip": "Criar Viagem"
       },
       "status": {
@@ -525,6 +527,21 @@
         "planned": "Planejado",
         "cancelled": "Cancelado"
       }
+    },
+    "weather": {
+      "title": "Previsão do Tempo",
+      "historicalNote": "Baseado no clima típico para este período",
+      "clear": "Céu Limpo",
+      "partlyCloudy": "Parcialmente Nublado",
+      "cloudy": "Nublado",
+      "fog": "Neblina",
+      "drizzle": "Garoa",
+      "rain": "Chuva",
+      "snow": "Neve",
+      "showers": "Pancadas de Chuva",
+      "thunderstorm": "Tempestade",
+      "unavailable": "Dados meteorológicos indisponíveis",
+      "noDates": "Defina datas para ver o clima"
     }
   },
   "quest": {

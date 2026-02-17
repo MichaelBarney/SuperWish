@@ -237,6 +237,7 @@ export interface Trip {
   userId: string
   name: string
   description?: string
+  notes?: string
   coverUrl?: string
   startDate?: Date | null
   endDate?: Date | null
@@ -251,6 +252,7 @@ export interface Trip {
 export interface TripForm {
   name: string
   description: string
+  notes: string
   coverUrl: string
   startDate: string
   endDate: string
@@ -549,6 +551,21 @@ export interface TimelineItem {
   sourceId: string
   sourceType: 'transportation' | 'accommodation' | 'experience' | 'destination'
   metadata?: Record<string, unknown>
+}
+
+// Weather
+export interface WeatherDay {
+  date: string              // YYYY-MM-DD
+  temperatureMax: number    // °C
+  temperatureMin: number    // °C
+  weatherCode: number       // WMO code
+  precipitationProbability?: number // 0-100, only for forecast
+}
+
+export interface LocationWeather {
+  cityName: string
+  days: WeatherDay[]
+  isHistorical: boolean     // true if using last year's data as estimate
 }
 
 // Currency Conversion

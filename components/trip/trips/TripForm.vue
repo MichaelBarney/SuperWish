@@ -80,6 +80,14 @@
         step="0.01"
       />
 
+      <!-- Notes -->
+      <UiTextarea
+        v-model="form.notes"
+        :label="$t('travel.trips.form.notes')"
+        :placeholder="$t('travel.trips.form.notesPlaceholder')"
+        :rows="3"
+      />
+
       <!-- Status (only show when editing) -->
       <UiSelect
         v-if="initialData"
@@ -124,6 +132,7 @@ const submitting = ref(false)
 const form = ref<TripForm>({
   name: props.initialData?.name || '',
   description: props.initialData?.description || '',
+  notes: props.initialData?.notes || '',
   coverUrl: props.initialData?.coverUrl || '',
   startDate: props.initialData?.startDate
     ? (props.initialData.startDate instanceof Date
@@ -175,6 +184,7 @@ watch(() => props.initialData, (newData) => {
     form.value = {
       name: newData.name || '',
       description: newData.description || '',
+      notes: newData.notes || '',
       coverUrl: newData.coverUrl || '',
       startDate: newData.startDate
         ? (newData.startDate instanceof Date

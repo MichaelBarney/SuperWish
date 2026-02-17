@@ -55,6 +55,7 @@ export function useTrips() {
             userId: data.userId,
             name: data.name,
             description: data.description || '',
+            notes: data.notes || '',
             coverUrl: data.coverUrl || '',
             startDate: data.startDate ? (data.startDate as Timestamp).toDate() : null,
             endDate: data.endDate ? (data.endDate as Timestamp).toDate() : null,
@@ -99,6 +100,7 @@ export function useTrips() {
         userId: user.value.uid,
         name: data.name,
         description: data.description || '',
+        notes: data.notes || '',
         coverUrl: data.coverUrl || '',
         startDate: data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null,
         endDate: data.endDate ? Timestamp.fromDate(new Date(data.endDate)) : null,
@@ -129,6 +131,7 @@ export function useTrips() {
 
       if (data.name !== undefined) updateData.name = data.name
       if (data.description !== undefined) updateData.description = data.description
+      if (data.notes !== undefined) updateData.notes = data.notes
       if (data.coverUrl !== undefined) updateData.coverUrl = data.coverUrl
       if (data.baseCurrency !== undefined) updateData.baseCurrency = data.baseCurrency
       if (data.status !== undefined) updateData.status = data.status
