@@ -28,6 +28,12 @@
           <h4 class="text-sm font-semibold text-gray-900">
             {{ day.label }}
           </h4>
+          <div v-if="getDayWeather(day.dateKey)" class="ml-auto flex items-center gap-1.5 text-gray-400">
+            <Icon :name="getWeatherIcon(getDayWeather(day.dateKey)!.weatherCode)" class="w-4 h-4" />
+            <span class="text-xs">
+              {{ formatTemp(getDayWeather(day.dateKey)!.temperatureMin, tempUnit) }}°–{{ formatTemp(getDayWeather(day.dateKey)!.temperatureMax, tempUnit) }}°
+            </span>
+          </div>
         </div>
 
         <!-- Items within this day -->
@@ -89,7 +95,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Experience, Accommodation, Transportation, Destination } from '~/types'
+import type { Experience, Accommodation, Transportation, Destination, WeatherDay } from '~/types'
+import { getWeatherIcon, formatTemp } from '~/composables/useWeather'
 
 interface Props {
   experiences: Experience[]
@@ -101,9 +108,17 @@ interface Props {
   arrivalDate: Date | string | null
   departureDate: Date | string | null
   loading?: boolean
+  weatherByDate?: Map<string, WeatherDay>
 }
 
 const props = defineProps<Props>()
+
+const { user } = useAuth()
+const tempUnit = computed(() => user.value?.temperatureUnit || 'celsius')
+
+function getDayWeather(dateKey: string): WeatherDay | undefined {
+  return props.weatherByDate?.get(dateKey)
+}
 
 defineEmits<{
   'edit-experience': [experience: Experience]

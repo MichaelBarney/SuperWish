@@ -149,6 +149,7 @@
               :arrival-date="effectiveArrivalDate"
               :departure-date="effectiveDepartureDate"
               :loading="experiencesLoading"
+              :weather-by-date="weatherByDate"
               @edit-experience="openEditExperience"
               @edit-accommodation="openEditAccommodationModal"
               @edit-transportation="openEditTransportationModal"
@@ -246,7 +247,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DestinationForm, ExperienceForm, Experience, Accommodation, AccommodationForm, Transportation, TransportationForm } from '~/types'
+import type { DestinationForm, ExperienceForm, Experience, Accommodation, AccommodationForm, Transportation, TransportationForm, WeatherDay } from '~/types'
 import { useCityImage, getGradientFallback } from '~/composables/useCityImage'
 
 definePageMeta({
@@ -371,6 +372,33 @@ const effectiveDepartureDate = computed(() => {
   const outgoingTransport = getTransportationBetween(destinationId.value, nextId)
   return outgoingTransport?.departureDateTime || null
 })
+
+// Weather
+const { fetchWeather } = useWeather()
+const weatherByDate = ref<Map<string, WeatherDay>>(new Map())
+
+watch(
+  [() => destination.value?.name, () => destination.value?.countryCode, effectiveArrivalDate, effectiveDepartureDate],
+  async ([name, countryCode, arrival, departure]) => {
+    if (!name || !arrival || !departure) {
+      weatherByDate.value = new Map()
+      return
+    }
+    const startStr = arrival instanceof Date ? arrival.toISOString().split('T')[0] : String(arrival).split('T')[0]
+    const endStr = departure instanceof Date ? departure.toISOString().split('T')[0] : String(departure).split('T')[0]
+    const result = await fetchWeather(name, countryCode || '', startStr, endStr)
+    if (result) {
+      const map = new Map<string, WeatherDay>()
+      for (const day of result.days) {
+        map.set(day.date, day)
+      }
+      weatherByDate.value = map
+    } else {
+      weatherByDate.value = new Map()
+    }
+  },
+  { immediate: true }
+)
 
 const formattedArrival = computed(() => formatDate(effectiveArrivalDate.value))
 const formattedDeparture = computed(() => formatDate(effectiveDepartureDate.value))
