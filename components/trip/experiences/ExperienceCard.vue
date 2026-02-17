@@ -24,8 +24,8 @@
           </span>
         </div>
 
-        <p class="text-xs text-gray-500 mt-0.5">
-          {{ $t(`travel.experiences.categories.${experience.category}`) }}
+        <p class="text-xs text-gray-500 mt-0.5 truncate">
+          {{ experience.description || $t(`travel.experiences.categories.${experience.category}`) }}
         </p>
 
         <!-- Address -->
