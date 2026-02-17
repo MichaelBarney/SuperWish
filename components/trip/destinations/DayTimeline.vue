@@ -23,7 +23,7 @@
         <!-- Date marker -->
         <div class="flex items-center gap-3 mb-3" :class="dayIndex > 0 ? 'mt-6' : ''">
           <div class="relative z-10 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-            <Icon name="lucide:calendar" class="w-4 h-4 text-purple-600" />
+            <span class="text-xs font-bold text-purple-600">{{ day.dayNum ?? '—' }}</span>
           </div>
           <h4 class="text-sm font-semibold text-gray-900">
             {{ day.label }}
@@ -126,6 +126,7 @@ interface DayItem {
 interface DayGroup {
   dateKey: string
   label: string
+  dayNum: number | null
   items: DayItem[]
 }
 
@@ -261,28 +262,29 @@ const days = computed<DayGroup[]>(() => {
   const sortedKeys = Object.keys(dateItems).sort()
 
   const dateLocale = locale.value === 'pt-BR' ? 'pt-BR' : 'en-US'
-  const formatOptions: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }
+  const datePart: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', timeZone: 'UTC' }
+  const weekdayPart: Intl.DateTimeFormatOptions = { weekday: 'long', timeZone: 'UTC' }
 
   // Build day groups
-  const groups: DayGroup[] = sortedKeys.map((key, index) => {
+  const groups: DayGroup[] = sortedKeys.map((key) => {
     // Sort items within day by sortTime
     const items = dateItems[key].sort((a, b) => a.sortTime.localeCompare(b.sortTime))
 
-    // Build label: "Day N — Monday, March 15"
-    const dateLabel = localeDateString(new Date(key + 'T00:00:00Z'), dateLocale, formatOptions)
-    let label: string
+    // Build label: "24 de Março, Terça-feira" / "March 24, Tuesday"
+    const d = new Date(key + 'T00:00:00Z')
+    const dateStr = localeDateString(d, dateLocale, datePart)
+    const weekdayStr = localeDateString(d, dateLocale, weekdayPart)
+    const label = `${dateStr}, ${weekdayStr}`
+
+    let dayNum: number | null = null
     if (hasRange) {
-      // Calculate day number relative to arrival
       const arrivalKey = arrival!.toISOString().split('T')[0]
-      const dayNum = Math.round(
-        (new Date(key + 'T00:00:00Z').getTime() - new Date(arrivalKey + 'T00:00:00Z').getTime()) / (1000 * 60 * 60 * 24)
+      dayNum = Math.round(
+        (d.getTime() - new Date(arrivalKey + 'T00:00:00Z').getTime()) / (1000 * 60 * 60 * 24)
       ) + 1
-      label = `${t('travel.destinations.detail.dayNumber', { n: dayNum })} — ${dateLabel}`
-    } else {
-      label = dateLabel
     }
 
-    return { dateKey: key, label, items }
+    return { dateKey: key, label, dayNum, items }
   })
 
   // Add unscheduled group at end
@@ -290,6 +292,7 @@ const days = computed<DayGroup[]>(() => {
     groups.push({
       dateKey: '_unscheduled',
       label: t('travel.destinations.detail.unscheduled'),
+      dayNum: null,
       items: unscheduledItems,
     })
   }
