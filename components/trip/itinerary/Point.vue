@@ -82,15 +82,14 @@
 
     <!-- Top-right actions -->
     <div class="absolute top-3 right-3 z-10 flex items-center gap-2">
-      <!-- Task Badge -->
-      <button
-        v-if="pendingTaskCount > 0"
-        @click.stop="emit('showTasks')"
-        class="flex items-center gap-1 px-2.5 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full hover:bg-white/30 transition-colors cursor-pointer"
-      >
-        <Icon name="lucide:square-check-big" class="w-3.5 h-3.5" />
-        {{ pendingTaskCount }}
-      </button>
+      <!-- Weather Badge -->
+      <TripWeatherBadge
+        v-if="!isOrigin && arrivalDate && departureDate"
+        :city-name="label"
+        :country-code="countryCode || ''"
+        :start-date="arrivalDate"
+        :end-date="departureDate"
+      />
 
       <button
         ref="menuButtonRef"
@@ -142,7 +141,6 @@ interface Props {
   isConfirmed?: boolean
   showEdit?: boolean
   compact?: boolean
-  pendingTaskCount?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -150,12 +148,10 @@ const props = withDefaults(defineProps<Props>(), {
   isConfirmed: false,
   showEdit: true,
   compact: false,
-  pendingTaskCount: 0,
 })
 
 const emit = defineEmits<{
   click: []
-  showTasks: []
 }>()
 
 const { locale } = useI18n()

@@ -872,9 +872,9 @@ function openAddSubQuestInput() {
 async function handleAddSubQuest() {
   if (!newSubQuestName.value.trim()) return
   if (currentView.value === 'quest' && selectedQuestId.value) {
-    await createSubQuestForQuest(selectedQuestId.value, newSubQuestName.value.trim())
+    await createSubQuestForQuest(selectedQuestId.value, { name: newSubQuestName.value.trim(), icon: 'lucide:target', goal: '', description: '', startDate: '', endDate: '', status: 'in_progress' })
   } else if (currentView.value === 'trip' && selectedTripId.value) {
-    await createSubQuestForTrip(selectedTripId.value, newSubQuestName.value.trim())
+    await createSubQuestForTrip(selectedTripId.value, { name: newSubQuestName.value.trim(), icon: 'lucide:target', goal: '', description: '', startDate: '', endDate: '', status: 'in_progress' })
   } else {
     return
   }

@@ -70,6 +70,7 @@
       <TaskList
         :tasks="tasks"
         :quest-id="questId"
+        :trip-id="tripId"
         :sub-quest-id="subquest.id"
         @toggle="(id, completed) => $emit('toggleTask', id, completed)"
         @edit="(task) => $emit('editTask', task)"
@@ -88,11 +89,13 @@ interface Props {
   subquest: SubQuest
   tasks?: Task[]
   questId?: string
+  tripId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   tasks: () => [],
   questId: '',
+  tripId: '',
 })
 
 defineEmits<{

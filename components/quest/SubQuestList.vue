@@ -34,6 +34,7 @@
         :subquest="subquest"
         :tasks="getTasksBySubQuestId ? getTasksBySubQuestId(subquest.id) : []"
         :quest-id="questId"
+        :trip-id="tripId"
         @edit="$emit('edit', subquest)"
         @toggle-task="(id, completed) => $emit('toggleTask', id, completed)"
         @edit-task="(task) => $emit('editTask', task)"
@@ -53,11 +54,13 @@ interface Props {
   loading?: boolean
   getTasksBySubQuestId?: (subQuestId: string) => Task[]
   questId?: string
+  tripId?: string
 }
 
 withDefaults(defineProps<Props>(), {
   loading: false,
   questId: '',
+  tripId: '',
 })
 
 defineEmits<{

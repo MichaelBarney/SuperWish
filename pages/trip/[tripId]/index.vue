@@ -97,16 +97,59 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-gray-900">{{ $t('task.task.title') }}</h2>
         </div>
-        <div class="bg-white rounded-xl shadow-soft">
-          <TaskList
-            :tasks="tripTasks"
+
+        <div class="space-y-2">
+          <!-- Direct Trip Tasks -->
+          <div class="bg-white rounded-xl shadow-soft">
+            <div class="flex items-center gap-2 px-4 pt-3 pb-1">
+              <span class="text-sm font-bold text-gray-700">{{ $t('task.sections.general') }}</span>
+            </div>
+            <TaskList
+              :tasks="tripTasks"
+              :trip-id="tripId"
+              @toggle="handleToggleTask"
+              @edit="() => {}"
+              @delete="handleDeleteTask"
+              @add="handleQuickAddTask"
+              @inline-update="handleInlineUpdateTask"
+            />
+          </div>
+
+          <!-- Sub-Quests -->
+          <QuestSubQuestList
+            v-if="tripSubquests.length > 0"
+            :subquests="tripSubquests"
+            :get-tasks-by-sub-quest-id="getTasksBySubQuestId"
             :trip-id="tripId"
-            @toggle="handleToggleTask"
-            @edit="() => {}"
-            @delete="handleDeleteTask"
-            @add="handleQuickAddTask"
-            @inline-update="handleInlineUpdateTask"
+            @edit="openEditSubQuestModal"
+            @toggle-task="handleToggleTask"
+            @delete-task="handleDeleteTask"
+            @add-task="handleQuickAddSubQuestTask"
+            @inline-update-task="handleInlineUpdateTask"
           />
+
+          <!-- Add Sub-Quest button -->
+          <button
+            @click="showCreateSubQuestModal = true"
+            class="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-purple-600 transition-colors"
+          >
+            <Icon name="lucide:plus" class="w-4 h-4" />
+            {{ $t('task.sections.addSubQuest') }}
+          </button>
+
+          <!-- Destination Task Groups -->
+          <template v-for="destination in destinations" :key="'task-' + destination.id">
+            <TripDestinationTaskGroup
+              v-if="getTasksByDestinationId(destination.id).length > 0 || true"
+              :destination="destination"
+              :tasks="getTasksByDestinationId(destination.id)"
+              :trip-id="tripId"
+              @toggle-task="handleToggleTask"
+              @delete-task="handleDeleteTask"
+              @add-task="handleQuickAddDestinationTask"
+              @inline-update-task="handleInlineUpdateTask"
+            />
+          </template>
         </div>
       </div>
 
@@ -172,9 +215,7 @@
                     :departure-date="getDestinationDepartureDate(destination, index)"
                     :order="index + 1"
                     :is-confirmed="isDestinationConfirmed(destination.id, index)"
-                    :pending-task-count="getPendingTaskCount(destination.id)"
                     @click="editDestination(destination)"
-                    @show-tasks="openDestinationTasks(destination.id)"
                   />
 
                   <!-- Accommodations for this destination -->
@@ -370,20 +411,27 @@
       />
     </UiModal>
 
-    <!-- Destination Tasks Modal -->
+    <!-- Create Sub-Quest Modal -->
     <UiModal
-      v-model="showDestinationTasksModal"
-      :title="$t('travel.destinations.destinationTasks', { name: selectedTaskDestinationName })"
+      v-model="showCreateSubQuestModal"
+      :title="$t('quest.subquests.newSubQuest')"
     >
-      <TaskList
-        :tasks="destinationTasks"
-        :trip-id="tripId"
-        :destination-id="selectedTaskDestinationId"
-        @toggle="handleToggleTask"
-        @edit="() => {}"
-        @delete="handleDeleteTask"
-        @add="handleQuickAddDestinationTask"
-        @inline-update="handleInlineUpdateTask"
+      <QuestSubQuestForm
+        @submit="handleCreateSubQuest"
+        @cancel="showCreateSubQuestModal = false"
+      />
+    </UiModal>
+
+    <!-- Edit Sub-Quest Modal -->
+    <UiModal
+      v-model="showEditSubQuestModal"
+      :title="$t('quest.subquests.editSubQuest')"
+    >
+      <QuestSubQuestForm
+        :initial-data="selectedSubQuest || undefined"
+        @submit="handleUpdateSubQuest"
+        @cancel="showEditSubQuestModal = false"
+        @delete="handleDeleteSubQuest"
       />
     </UiModal>
 
@@ -426,7 +474,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TripForm, Destination, DestinationForm, TransportationForm, Transportation, AccommodationForm, Accommodation, Task } from '~/types'
+import type { TripForm, Destination, DestinationForm, TransportationForm, Transportation, AccommodationForm, Accommodation, Task, SubQuest, SubQuestForm } from '~/types'
 import { getCurrencySymbol } from '~/types'
 
 definePageMeta({
@@ -473,8 +521,12 @@ const {
 } = useAccommodations(tripId)
 
 // Tasks
-const { getDirectTripTasks, getTasksByDestinationId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById } = useTasks()
+const { getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById } = useTasks()
 const tripTasks = computed(() => getDirectTripTasks(tripId.value))
+
+// Sub-Quests
+const { getSubquestsByTripId, createSubQuestForTrip, updateSubQuest, deleteSubQuest } = useAllSubquests()
+const tripSubquests = computed(() => getSubquestsByTripId(tripId.value))
 
 // Modals
 const showEditModal = ref(false)
@@ -483,7 +535,8 @@ const showAddDestinationModal = ref(false)
 const showEditDestinationModal = ref(false)
 const showTransportationModal = ref(false)
 const showAccommodationModal = ref(false)
-const showDestinationTasksModal = ref(false)
+const showCreateSubQuestModal = ref(false)
+const showEditSubQuestModal = ref(false)
 
 // State
 const deleting = ref(false)
@@ -493,29 +546,7 @@ const selectedAccommodation = ref<Accommodation | null>(null)
 const accommodationDestinationId = ref<string>('')
 const transportFromId = ref<string | null>(null)
 const transportToId = ref<string | null>(null)
-const selectedTaskDestinationId = ref<string>('')
-
-// Pending task count per destination
-const getPendingTaskCount = (destinationId: string): number => {
-  return getTasksByDestinationId(destinationId).filter(t => !t.completed).length
-}
-
-// Destination tasks for modal
-const destinationTasks = computed(() => {
-  if (!selectedTaskDestinationId.value) return []
-  return getTasksByDestinationId(selectedTaskDestinationId.value)
-})
-
-const selectedTaskDestinationName = computed(() => {
-  if (!selectedTaskDestinationId.value) return ''
-  const dest = destinations.value.find(d => d.id === selectedTaskDestinationId.value)
-  return dest?.name || ''
-})
-
-function openDestinationTasks(destinationId: string) {
-  selectedTaskDestinationId.value = destinationId
-  showDestinationTasksModal.value = true
-}
+const selectedSubQuest = ref<SubQuest | null>(null)
 
 // Local destinations state
 const localDestinations = ref<Destination[]>([])
@@ -915,13 +946,60 @@ async function handleQuickAddDestinationTask(data: { title: string; description:
     questId: '',
     subQuestId: '',
     tripId: tripId.value,
-    destinationId: data.destinationId || selectedTaskDestinationId.value,
+    destinationId: data.destinationId,
     accommodationId: '',
     experienceId: '',
     wishId: data.wishId || '',
     timeHorizon: '',
     estimatedTime: '',
   })
+}
+
+async function handleQuickAddSubQuestTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+  await createTask({
+    title: data.title,
+    description: data.description || '',
+    questId: '',
+    subQuestId: data.subQuestId,
+    tripId: tripId.value,
+    destinationId: '',
+    accommodationId: '',
+    experienceId: '',
+    wishId: data.wishId || '',
+    timeHorizon: '',
+    estimatedTime: '',
+  })
+}
+
+// Sub-Quest handlers
+function openEditSubQuestModal(subquest: SubQuest) {
+  selectedSubQuest.value = subquest
+  showEditSubQuestModal.value = true
+}
+
+async function handleCreateSubQuest(data: SubQuestForm) {
+  const result = await createSubQuestForTrip(tripId.value, data)
+  if (result?.success) {
+    showCreateSubQuestModal.value = false
+  }
+}
+
+async function handleUpdateSubQuest(data: SubQuestForm) {
+  if (!selectedSubQuest.value) return
+  const result = await updateSubQuest(selectedSubQuest.value.id, data)
+  if (result.success) {
+    showEditSubQuestModal.value = false
+    selectedSubQuest.value = null
+  }
+}
+
+async function handleDeleteSubQuest() {
+  if (!selectedSubQuest.value) return
+  const result = await deleteSubQuest(selectedSubQuest.value.id)
+  if (result.success) {
+    showEditSubQuestModal.value = false
+    selectedSubQuest.value = null
+  }
 }
 
 // Helper to get origin label
