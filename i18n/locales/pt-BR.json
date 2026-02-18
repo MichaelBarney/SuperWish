@@ -708,6 +708,15 @@
       "noResults": "Nenhum desejo encontrado",
       "title": "Selecione um Desejo"
     },
+    "blockerPicker": {
+      "searchPlaceholder": "Buscar tarefas...",
+      "noResults": "Nenhuma tarefa encontrada"
+    },
+    "blockedBy": {
+      "currentBlockers": "Bloqueada por",
+      "addBlocker": "Adicionar bloqueador",
+      "clearAll": "Limpar todos"
+    },
     "empty": {
       "title": "Nenhuma tarefa ainda",
       "description": "Adicione sua primeira tarefa para começar",

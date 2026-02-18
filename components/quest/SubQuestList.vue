@@ -33,6 +33,7 @@
         :key="subquest.id"
         :subquest="subquest"
         :tasks="getTasksBySubQuestId ? getTasksBySubQuestId(subquest.id) : []"
+        :all-tasks="allTasks"
         :quest-id="questId"
         :trip-id="tripId"
         @edit="$emit('edit', subquest)"
@@ -41,6 +42,9 @@
         @delete-task="(id) => $emit('deleteTask', id)"
         @add-task="(data) => $emit('addTask', data)"
         @inline-update-task="(id, data) => $emit('inlineUpdateTask', id, data)"
+        @update-time-horizon-task="(id, th) => $emit('updateTimeHorizonTask', id, th)"
+        @update-estimated-time-task="(id, et) => $emit('updateEstimatedTimeTask', id, et)"
+        @update-blocked-by-task="(id, ids) => $emit('updateBlockedByTask', id, ids)"
       />
     </div>
   </div>
@@ -51,6 +55,7 @@ import type { SubQuest, Task } from '~/types'
 
 interface Props {
   subquests: readonly SubQuest[]
+  allTasks?: Task[]
   loading?: boolean
   getTasksBySubQuestId?: (subQuestId: string) => Task[]
   questId?: string
@@ -58,6 +63,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
+  allTasks: () => [],
   loading: false,
   questId: '',
   tripId: '',
@@ -69,7 +75,10 @@ defineEmits<{
   toggleTask: [id: string, completed: boolean]
   editTask: [task: Task]
   deleteTask: [id: string]
-  addTask: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }]
+  addTask: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
   inlineUpdateTask: [id: string, data: { title: string; description: string }]
+  updateTimeHorizonTask: [id: string, timeHorizon: string | null]
+  updateEstimatedTimeTask: [id: string, estimatedTime: string | null]
+  updateBlockedByTask: [id: string, blockedByTaskIds: string[]]
 }>()
 </script>

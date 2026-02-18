@@ -106,12 +106,16 @@
             </div>
             <TaskList
               :tasks="tripTasks"
+              :all-tasks="allTasks"
               :trip-id="tripId"
               @toggle="handleToggleTask"
               @edit="() => {}"
               @delete="handleDeleteTask"
               @add="handleQuickAddTask"
               @inline-update="handleInlineUpdateTask"
+              @update-time-horizon="handleUpdateTaskTimeHorizon"
+              @update-estimated-time="handleUpdateTaskEstimatedTime"
+              @update-blocked-by="handleUpdateBlockedBy"
             />
           </div>
 
@@ -119,6 +123,7 @@
           <QuestSubQuestList
             v-if="tripSubquests.length > 0"
             :subquests="tripSubquests"
+            :all-tasks="allTasks"
             :get-tasks-by-sub-quest-id="getTasksBySubQuestId"
             :trip-id="tripId"
             @edit="openEditSubQuestModal"
@@ -126,6 +131,9 @@
             @delete-task="handleDeleteTask"
             @add-task="handleQuickAddSubQuestTask"
             @inline-update-task="handleInlineUpdateTask"
+            @update-time-horizon-task="handleUpdateTaskTimeHorizon"
+            @update-estimated-time-task="handleUpdateTaskEstimatedTime"
+            @update-blocked-by-task="handleUpdateBlockedBy"
           />
 
           <!-- Add Sub-Quest button -->
@@ -143,11 +151,15 @@
               v-if="getTasksByDestinationId(destination.id).length > 0 || true"
               :destination="destination"
               :tasks="getTasksByDestinationId(destination.id)"
+              :all-tasks="allTasks"
               :trip-id="tripId"
               @toggle-task="handleToggleTask"
               @delete-task="handleDeleteTask"
               @add-task="handleQuickAddDestinationTask"
               @inline-update-task="handleInlineUpdateTask"
+              @update-time-horizon-task="handleUpdateTaskTimeHorizon"
+              @update-estimated-time-task="handleUpdateTaskEstimatedTime"
+              @update-blocked-by-task="handleUpdateBlockedBy"
             />
           </template>
         </div>
@@ -521,7 +533,7 @@ const {
 } = useAccommodations(tripId)
 
 // Tasks
-const { getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById } = useTasks()
+const { tasks: allTasks, getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskBlockedBy } = useTasks()
 const tripTasks = computed(() => getDirectTripTasks(tripId.value))
 
 // Sub-Quests
@@ -923,7 +935,19 @@ async function handleInlineUpdateTask(id: string, data: { title: string; descrip
   await updateTask(id, data)
 }
 
-async function handleQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+async function handleUpdateTaskTimeHorizon(id: string, timeHorizon: string | null) {
+  await updateTaskTimeHorizon(id, timeHorizon as any)
+}
+
+async function handleUpdateTaskEstimatedTime(id: string, estimatedTime: string | null) {
+  await updateTaskEstimatedTime(id, estimatedTime as any)
+}
+
+async function handleUpdateBlockedBy(id: string, blockedByTaskIds: string[]) {
+  await updateTaskBlockedBy(id, blockedByTaskIds)
+}
+
+async function handleQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -936,10 +960,11 @@ async function handleQuickAddTask(data: { title: string; description: string; qu
     wishId: data.wishId || '',
     timeHorizon: '',
     estimatedTime: '',
+    blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 
-async function handleQuickAddDestinationTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+async function handleQuickAddDestinationTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -952,10 +977,11 @@ async function handleQuickAddDestinationTask(data: { title: string; description:
     wishId: data.wishId || '',
     timeHorizon: '',
     estimatedTime: '',
+    blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 
-async function handleQuickAddSubQuestTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+async function handleQuickAddSubQuestTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -968,6 +994,7 @@ async function handleQuickAddSubQuestTask(data: { title: string; description: st
     wishId: data.wishId || '',
     timeHorizon: '',
     estimatedTime: '',
+    blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 

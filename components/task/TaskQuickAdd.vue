@@ -43,6 +43,20 @@
             @keydown.escape="collapse"
           />
         </div>
+        <!-- Blocker pills -->
+        <div v-if="blockedByTaskIds.length > 0" class="flex flex-wrap gap-1.5 px-3 pb-2">
+          <span
+            v-for="bid in blockedByTaskIds"
+            :key="bid"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700"
+          >
+            <Icon name="lucide:lock" class="w-3 h-3" />
+            <span class="truncate max-w-[120px]">{{ getBlockerTitle(bid) }}</span>
+            <button @click="removeBlocker(bid)" class="ml-0.5 hover:text-red-900">
+              <Icon name="lucide:x" class="w-3 h-3" />
+            </button>
+          </span>
+        </div>
         <div class="flex items-center justify-end gap-2 px-3 py-2 bg-gray-50 border-t border-gray-100 rounded-b-xl">
           <button
             @click="collapse"
@@ -63,6 +77,12 @@
       <TaskWishPicker
         v-model="showWishPicker"
         @select="handleWishSelect"
+      />
+      <!-- Blocker Picker -->
+      <TaskBlockerPicker
+        v-model="showBlockerPicker"
+        :exclude-task-ids="blockedByTaskIds"
+        @select="handleBlockerSelect"
       />
     </div>
   </div>
@@ -90,7 +110,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  add: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }]
+  add: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
   update: [id: string, data: { title: string; description: string }]
   cancelEdit: []
 }>()
@@ -99,8 +119,12 @@ const expanded = ref(false)
 const title = ref('')
 const description = ref('')
 const wishId = ref('')
+const blockedByTaskIds = ref<string[]>([])
 const showWishPicker = ref(false)
+const showBlockerPicker = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
+
+const { tasks: allTasks } = useTasks()
 
 // When editTask is provided, pre-fill fields
 watch(() => props.editTask, (task) => {
@@ -108,6 +132,7 @@ watch(() => props.editTask, (task) => {
     title.value = task.title
     description.value = task.description || ''
     wishId.value = task.wishId || ''
+    blockedByTaskIds.value = task.blockedByTaskIds ? [...task.blockedByTaskIds] : []
     nextTick(() => inputRef.value?.focus())
   }
 }, { immediate: true })
@@ -126,7 +151,9 @@ function collapse() {
   title.value = ''
   description.value = ''
   wishId.value = ''
+  blockedByTaskIds.value = []
   showWishPicker.value = false
+  showBlockerPicker.value = false
 }
 
 function handleWishSelect(wish: Wish) {
@@ -141,7 +168,27 @@ watch(title, (val) => {
     title.value = ''
     showWishPicker.value = true
   }
+  if (val === '/block') {
+    title.value = ''
+    showBlockerPicker.value = true
+  }
 })
+
+function handleBlockerSelect(task: Task) {
+  if (!blockedByTaskIds.value.includes(task.id)) {
+    blockedByTaskIds.value.push(task.id)
+  }
+  showBlockerPicker.value = false
+}
+
+function removeBlocker(id: string) {
+  blockedByTaskIds.value = blockedByTaskIds.value.filter(bid => bid !== id)
+}
+
+function getBlockerTitle(id: string): string {
+  const task = allTasks.value.find(t => t.id === id)
+  return task?.title || id
+}
 
 function submit() {
   if (!title.value.trim()) return
@@ -161,10 +208,12 @@ function submit() {
     destinationId: props.destinationId,
     experienceId: props.experienceId,
     wishId: wishId.value,
+    blockedByTaskIds: [...blockedByTaskIds.value],
   })
   title.value = ''
   description.value = ''
   wishId.value = ''
+  blockedByTaskIds.value = []
   nextTick(() => inputRef.value?.focus())
 }
 </script>

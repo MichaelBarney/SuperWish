@@ -708,6 +708,15 @@
       "noResults": "No wishes found",
       "title": "Select a Wish"
     },
+    "blockerPicker": {
+      "searchPlaceholder": "Search tasks...",
+      "noResults": "No tasks found"
+    },
+    "blockedBy": {
+      "currentBlockers": "Blocked by",
+      "addBlocker": "Add blocker",
+      "clearAll": "Clear all"
+    },
     "empty": {
       "title": "No tasks yet",
       "description": "Add your first task to get started",

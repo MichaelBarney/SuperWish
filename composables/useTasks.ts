@@ -66,6 +66,7 @@ export function useTasks() {
             wishId: data.wishId || null,
             timeHorizon: data.timeHorizon || null,
             estimatedTime: data.estimatedTime || null,
+            blockedByTaskIds: data.blockedByTaskIds || [],
             order: data.order || 0,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
@@ -114,6 +115,7 @@ export function useTasks() {
         wishId: data.wishId || null,
         timeHorizon: data.timeHorizon || null,
         estimatedTime: data.estimatedTime || null,
+        blockedByTaskIds: data.blockedByTaskIds || [],
         order: maxOrder,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -147,6 +149,7 @@ export function useTasks() {
       if (data.wishId !== undefined) updateData.wishId = data.wishId || null
       if (data.timeHorizon !== undefined) updateData.timeHorizon = data.timeHorizon || null
       if (data.estimatedTime !== undefined) updateData.estimatedTime = data.estimatedTime || null
+      if (data.blockedByTaskIds !== undefined) updateData.blockedByTaskIds = data.blockedByTaskIds
 
       await updateDoc(taskRef, updateData)
       return { success: true }
@@ -164,6 +167,15 @@ export function useTasks() {
     // Wish-linked tasks can't be manually toggled
     const task = tasks.value.find(t => t.id === id)
     if (task?.wishId) return { success: false, error: 'Wish-linked tasks cannot be manually toggled' }
+
+    // Blocked tasks can't be manually completed
+    if (completed) {
+      const hasIncompleteBlockers = (task?.blockedByTaskIds || []).some(blockerId => {
+        const blocker = tasks.value.find(t => t.id === blockerId)
+        return blocker && !blocker.completed
+      })
+      if (hasIncompleteBlockers) return { success: false, error: 'Task is blocked' }
+    }
 
     try {
       const taskRef = doc(db, 'tasks', id)
@@ -187,6 +199,16 @@ export function useTasks() {
     try {
       const taskRef = doc(db, 'tasks', id)
       await deleteDoc(taskRef)
+
+      // Clean up references in other tasks that were blocked by this one
+      const referencingTasks = tasks.value.filter(t => t.blockedByTaskIds?.includes(id))
+      for (const t of referencingTasks) {
+        await updateDoc(doc(db, 'tasks', t.id), {
+          blockedByTaskIds: t.blockedByTaskIds!.filter(bid => bid !== id),
+          updatedAt: serverTimestamp(),
+        })
+      }
+
       return { success: true }
     } catch (err) {
       console.error('Error deleting task:', err)
@@ -227,6 +249,24 @@ export function useTasks() {
     } catch (err) {
       console.error('Error updating task estimated time:', err)
       return { success: false, error: 'Failed to update estimated time' }
+    }
+  }
+
+  const updateTaskBlockedBy = async (id: string, blockedByTaskIds: string[]) => {
+    const db = getDb()
+    if (!user.value) return { success: false, error: 'Not authenticated' }
+    if (!db) return { success: false, error: 'Database not initialized' }
+
+    try {
+      const taskRef = doc(db, 'tasks', id)
+      await updateDoc(taskRef, {
+        blockedByTaskIds,
+        updatedAt: serverTimestamp(),
+      })
+      return { success: true }
+    } catch (err) {
+      console.error('Error updating task blocked by:', err)
+      return { success: false, error: 'Failed to update blocked by' }
     }
   }
 
@@ -318,6 +358,7 @@ export function useTasks() {
     updateTask,
     updateTaskTimeHorizon,
     updateTaskEstimatedTime,
+    updateTaskBlockedBy,
     toggleTaskComplete,
     deleteTask,
     getTaskById,

@@ -114,6 +114,7 @@
         <div class="bg-white rounded-xl shadow-soft">
           <TaskList
             :tasks="questTasks"
+            :all-tasks="allTasks"
             :quest-id="questId"
             @toggle="handleToggleTask"
             @edit="openEditTaskModal"
@@ -122,6 +123,7 @@
             @inline-update="handleInlineUpdateTask"
             @update-time-horizon="handleUpdateTaskTimeHorizon"
             @update-estimated-time="handleUpdateTaskEstimatedTime"
+            @update-blocked-by="handleUpdateBlockedBy"
           />
         </div>
       </div>
@@ -138,6 +140,7 @@
 
         <QuestSubQuestList
           :subquests="subquests"
+          :all-tasks="allTasks"
           :loading="subquestsLoading"
           :get-tasks-by-sub-quest-id="getTasksBySubQuestId"
           :quest-id="questId"
@@ -150,6 +153,7 @@
           @inline-update-task="handleInlineUpdateTask"
           @update-time-horizon-task="handleUpdateTaskTimeHorizon"
           @update-estimated-time-task="handleUpdateTaskEstimatedTime"
+          @update-blocked-by-task="handleUpdateBlockedBy"
         />
       </div>
 
@@ -236,7 +240,7 @@ const quest = computed(() => getQuestById(questId.value))
 const { subquests, loading: subquestsLoading, createSubQuest, updateSubQuest, deleteSubQuest } = useSubquests(questId)
 
 // Tasks
-const { getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask, updateTaskTimeHorizon, updateTaskEstimatedTime } = useTasks()
+const { tasks: allTasks, getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskBlockedBy } = useTasks()
 const questTasks = computed(() => getDirectQuestTasks(questId.value))
 
 // Progress
@@ -359,7 +363,7 @@ async function handleInlineUpdateTask(id: string, data: { title: string; descrip
   await updateTask(id, data)
 }
 
-async function handleQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+async function handleQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -372,6 +376,7 @@ async function handleQuickAddTask(data: { title: string; description: string; qu
     wishId: data.wishId || '',
     timeHorizon: '',
     estimatedTime: '',
+    blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 
@@ -383,7 +388,11 @@ async function handleUpdateTaskEstimatedTime(id: string, estimatedTime: string |
   await updateTaskEstimatedTime(id, estimatedTime as any)
 }
 
-async function handleSubQuestQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+async function handleUpdateBlockedBy(id: string, blockedByTaskIds: string[]) {
+  await updateTaskBlockedBy(id, blockedByTaskIds)
+}
+
+async function handleSubQuestQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -396,6 +405,7 @@ async function handleSubQuestQuickAddTask(data: { title: string; description: st
     wishId: data.wishId || '',
     timeHorizon: '',
     estimatedTime: '',
+    blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 </script>

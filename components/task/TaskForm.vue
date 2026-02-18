@@ -188,6 +188,7 @@ const form = reactive<TaskForm>({
   wishId: props.initialData?.wishId || '',
   timeHorizon: props.initialData?.timeHorizon || '',
   estimatedTime: props.initialData?.estimatedTime || '',
+  blockedByTaskIds: props.initialData?.blockedByTaskIds || [],
 })
 
 const linkType = ref<'none' | 'quest' | 'trip' | 'wish'>(

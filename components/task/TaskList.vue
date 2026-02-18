@@ -12,6 +12,7 @@
         <TaskItem
           v-else
           :task="task"
+          :all-tasks="props.allTasks || []"
           :project-label="getProjectLabel(task)"
           :project-icon="getProjectIcon(task)"
           :linked-wish="task.wishId ? getWishById(task.wishId) || null : null"
@@ -21,6 +22,7 @@
           @start-edit="startEdit"
           @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
           @update-estimated-time="(id, et) => $emit('updateEstimatedTime', id, et)"
+          @update-blocked-by="(id, ids) => $emit('updateBlockedBy', id, ids)"
         />
       </template>
     </div>
@@ -66,6 +68,7 @@
           <TaskItem
             v-else
             :task="task"
+            :all-tasks="props.allTasks || []"
             :project-label="getProjectLabel(task)"
             :project-icon="getProjectIcon(task)"
             :linked-wish="task.wishId ? getWishById(task.wishId) || null : null"
@@ -74,6 +77,8 @@
             @delete="$emit('delete', $event)"
             @start-edit="startEdit"
             @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
+            @update-estimated-time="(id, et) => $emit('updateEstimatedTime', id, et)"
+            @update-blocked-by="(id, ids) => $emit('updateBlockedBy', id, ids)"
           />
         </template>
       </div>
@@ -87,6 +92,7 @@ import { isOwnedStatus } from '~/types'
 
 interface Props {
   tasks: Task[]
+  allTasks?: Task[]
   questId?: string
   subQuestId?: string
   tripId?: string
@@ -109,10 +115,11 @@ const emit = defineEmits<{
   toggle: [id: string, completed: boolean]
   edit: [task: Task]
   delete: [id: string]
-  add: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }]
+  add: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
   inlineUpdate: [id: string, data: { title: string; description: string }]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
+  updateBlockedBy: [id: string, blockedByTaskIds: string[]]
 }>()
 
 const { getWishById } = useAllWishes()

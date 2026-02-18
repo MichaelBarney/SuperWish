@@ -10,10 +10,12 @@
         ? (effectiveCompleted
           ? 'bg-teal-500 border-teal-500 cursor-not-allowed'
           : 'border-teal-300 cursor-not-allowed')
-        : (effectiveCompleted
-          ? 'bg-orange-500 border-orange-500'
-          : 'border-gray-300 hover:border-orange-400')"
-      :disabled="isWishLinked"
+        : isBlocked
+          ? 'border-red-300 cursor-not-allowed'
+          : (effectiveCompleted
+            ? 'bg-orange-500 border-orange-500'
+            : 'border-gray-300 hover:border-orange-400')"
+      :disabled="isWishLinked || isBlocked"
     >
       <svg
         v-if="effectiveCompleted"
@@ -116,6 +118,80 @@
         </div>
       </div>
 
+      <!-- Blocker pill -->
+      <div class="relative min-w-[2rem] flex justify-center" ref="blockerDropdownRef">
+        <button
+          v-if="props.task.blockedByTaskIds?.length"
+          @click.stop="toggleBlockerDropdown"
+          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+          :class="isBlocked
+            ? 'bg-red-50 text-red-700 hover:bg-red-100'
+            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+        >
+          <Icon name="lucide:lock" class="w-3 h-3 shrink-0" />
+          <span>{{ props.task.blockedByTaskIds.length }}</span>
+        </button>
+        <button
+          v-else
+          @click.stop="toggleBlockerDropdown"
+          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+        >
+          <Icon name="lucide:lock" class="w-4 h-4" />
+        </button>
+
+        <!-- Blocker Dropdown -->
+        <div
+          v-if="showBlockerDropdown"
+          class="absolute right-0 top-full mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+        >
+          <!-- Current blockers list -->
+          <div v-if="currentBlockers.length > 0" class="px-3 py-2">
+            <p class="text-xs font-medium text-gray-500 mb-1.5">{{ $t('task.blockedBy.currentBlockers') }}</p>
+            <div v-for="blocker in currentBlockers" :key="blocker.id" class="flex items-center gap-2 py-1">
+              <div
+                class="w-3 h-3 rounded-full border-2 shrink-0"
+                :class="blocker.completed ? 'bg-green-500 border-green-500' : 'border-gray-300'"
+              />
+              <span class="text-sm text-gray-700 flex-1 truncate">{{ blocker.title }}</span>
+              <button
+                @click.stop="removeBlocker(blocker.id)"
+                class="p-0.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+              >
+                <Icon name="lucide:x" class="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+          <div v-if="currentBlockers.length > 0" class="border-t border-gray-100" />
+          <!-- Add blocker -->
+          <button
+            @click.stop="openBlockerPicker"
+            class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Icon name="lucide:plus" class="w-3.5 h-3.5" />
+            <span>{{ $t('task.blockedBy.addBlocker') }}</span>
+          </button>
+          <!-- Clear all -->
+          <button
+            v-if="currentBlockers.length > 0"
+            @click.stop="clearAllBlockers"
+            class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <Icon name="lucide:trash-2" class="w-3.5 h-3.5" />
+            <span>{{ $t('task.blockedBy.clearAll') }}</span>
+          </button>
+        </div>
+
+        <!-- Blocker Picker (positioned below dropdown) -->
+        <div v-if="showBlockerPicker" class="absolute right-0 top-full mt-1 w-72 z-[60]">
+          <TaskBlockerPicker
+            :model-value="showBlockerPicker"
+            :exclude-task-ids="[props.task.id, ...(props.task.blockedByTaskIds || [])]"
+            @update:model-value="showBlockerPicker = $event"
+            @select="addBlocker"
+          />
+        </div>
+      </div>
+
       <!-- Estimated time pill -->
       <div class="relative min-w-[4rem] flex justify-center" ref="estimateDropdownRef">
         <button
@@ -191,12 +267,14 @@ import { isOwnedStatus, getCurrencySymbol } from '~/types'
 
 interface Props {
   task: Task
+  allTasks?: Task[]
   projectLabel?: string
   projectIcon?: string
   linkedWish?: Wish | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  allTasks: () => [],
   projectLabel: '',
   projectIcon: 'lucide:hash',
   linkedWish: null,
@@ -209,6 +287,7 @@ const emit = defineEmits<{
   startEdit: [id: string]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
+  updateBlockedBy: [id: string, blockedByTaskIds: string[]]
 }>()
 
 const { t } = useI18n()
@@ -222,8 +301,22 @@ const effectiveCompleted = computed(() => {
   return props.task.completed
 })
 
+// Blocked state
+const currentBlockers = computed(() => {
+  if (!props.task.blockedByTaskIds?.length) return []
+  return props.task.blockedByTaskIds
+    .map(id => props.allTasks.find(t => t.id === id))
+    .filter((t): t is Task => !!t)
+})
+
+const incompleteBlockerCount = computed(() =>
+  currentBlockers.value.filter(t => !t.completed).length
+)
+
+const isBlocked = computed(() => incompleteBlockerCount.value > 0)
+
 function handleToggle() {
-  if (isWishLinked.value) return
+  if (isWishLinked.value || isBlocked.value) return
   emit('toggle', props.task.id, !effectiveCompleted.value)
 }
 
@@ -278,6 +371,39 @@ function selectHorizon(value: TaskTimeHorizon | null) {
   showHorizonDropdown.value = false
 }
 
+// Blocker dropdown
+const showBlockerDropdown = ref(false)
+const showBlockerPicker = ref(false)
+const blockerDropdownRef = ref<HTMLElement | null>(null)
+
+function toggleBlockerDropdown() {
+  showBlockerDropdown.value = !showBlockerDropdown.value
+  showBlockerPicker.value = false
+}
+
+function openBlockerPicker() {
+  showBlockerDropdown.value = false
+  showBlockerPicker.value = true
+}
+
+function addBlocker(task: Task) {
+  const current = props.task.blockedByTaskIds || []
+  if (!current.includes(task.id)) {
+    emit('updateBlockedBy', props.task.id, [...current, task.id])
+  }
+  showBlockerPicker.value = false
+}
+
+function removeBlocker(blockerId: string) {
+  const current = props.task.blockedByTaskIds || []
+  emit('updateBlockedBy', props.task.id, current.filter(id => id !== blockerId))
+}
+
+function clearAllBlockers() {
+  emit('updateBlockedBy', props.task.id, [])
+  showBlockerDropdown.value = false
+}
+
 // Estimated time dropdown
 const showEstimateDropdown = ref(false)
 const estimateDropdownRef = ref<HTMLElement | null>(null)
@@ -325,6 +451,10 @@ function handleClickOutside(e: MouseEvent) {
   }
   if (estimateDropdownRef.value && !estimateDropdownRef.value.contains(e.target as Node)) {
     showEstimateDropdown.value = false
+  }
+  if (blockerDropdownRef.value && !blockerDropdownRef.value.contains(e.target as Node)) {
+    showBlockerDropdown.value = false
+    showBlockerPicker.value = false
   }
 }
 

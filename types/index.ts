@@ -762,6 +762,7 @@ export interface Task {
   wishId?: string | null
   timeHorizon?: TaskTimeHorizon | null
   estimatedTime?: TaskEstimatedTime | null
+  blockedByTaskIds?: string[]
   order: number
   createdAt: Timestamp
   updatedAt: Timestamp
@@ -779,4 +780,5 @@ export interface TaskForm {
   wishId: string
   timeHorizon: string
   estimatedTime: string
+  blockedByTaskIds: string[]
 }

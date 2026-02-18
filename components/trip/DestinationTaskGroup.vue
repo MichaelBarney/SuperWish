@@ -48,6 +48,7 @@
     <div v-if="expanded" class="border-t border-gray-100 px-4 pb-3">
       <TaskList
         :tasks="tasks"
+        :all-tasks="allTasks"
         :trip-id="tripId"
         :destination-id="destination.id"
         @toggle="(id, completed) => $emit('toggleTask', id, completed)"
@@ -55,6 +56,9 @@
         @delete="(id) => $emit('deleteTask', id)"
         @add="(data) => $emit('addTask', data)"
         @inline-update="(id, data) => $emit('inlineUpdateTask', id, data)"
+        @update-time-horizon="(id, th) => $emit('updateTimeHorizonTask', id, th)"
+        @update-estimated-time="(id, et) => $emit('updateEstimatedTimeTask', id, et)"
+        @update-blocked-by="(id, ids) => $emit('updateBlockedByTask', id, ids)"
       />
     </div>
   </div>
@@ -66,19 +70,24 @@ import type { Destination, Task } from '~/types'
 interface Props {
   destination: Destination
   tasks?: Task[]
+  allTasks?: Task[]
   tripId: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   tasks: () => [],
+  allTasks: () => [],
 })
 
 defineEmits<{
   toggleTask: [id: string, completed: boolean]
   editTask: [task: Task]
   deleteTask: [id: string]
-  addTask: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }]
+  addTask: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
   inlineUpdateTask: [id: string, data: { title: string; description: string }]
+  updateTimeHorizonTask: [id: string, timeHorizon: string | null]
+  updateEstimatedTimeTask: [id: string, estimatedTime: string | null]
+  updateBlockedByTask: [id: string, blockedByTaskIds: string[]]
 }>()
 
 const expanded = ref(false)

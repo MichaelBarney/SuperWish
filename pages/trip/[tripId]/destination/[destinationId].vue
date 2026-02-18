@@ -599,6 +599,7 @@ async function handleQuickAddTask(data: { title: string; questId: string; subQue
     wishId: data.wishId || '',
     timeHorizon: '',
     estimatedTime: '',
+    blockedByTaskIds: (data as any).blockedByTaskIds || [],
   })
 }
 </script>
