@@ -56,6 +56,8 @@ For detailed project documentation, see `documentation/PROJECT.md`. It covers th
 
 **Component naming (IMPORTANT)**: Nuxt auto-imports deduplicate when the filename already starts with the folder name. `components/task/TaskList.vue` → `<TaskList>` (NOT `<TaskTaskList>`). `components/quest/SubQuestList.vue` → `<QuestSubQuestList>` (folder prefix added since filename doesn't start with `Quest`).
 
+**TaskList event forwarding (IMPORTANT)**: `TaskList` emits several events (`toggle`, `edit`, `delete`, `add`, `inlineUpdate`, `updateTimeHorizon`, `updateEstimatedTime`). When `TaskList` is rendered inside a wrapper component (e.g., `DestinationTaskGroup`, `SubQuestCard`), the wrapper MUST forward ALL TaskList events upward via `$emit` and declare them in `defineEmits`. When adding new events to `TaskList`, update every wrapper component in the chain and every page that consumes tasks. Wrapper components rename events with a `Task` suffix (e.g., `updateTimeHorizon` → `updateTimeHorizonTask`) to avoid collisions.
+
 ## Firebase
 
 - **Auth**: Google Sign-In only

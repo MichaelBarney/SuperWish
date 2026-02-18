@@ -119,6 +119,9 @@
               @edit="() => {}"
               @delete="handleDeleteTask"
               @add="handleQuickAddTask"
+              @inline-update="handleInlineUpdateTask"
+              @update-time-horizon="handleUpdateTaskTimeHorizon"
+              @update-estimated-time="handleUpdateTaskEstimatedTime"
             />
           </div>
         </div>
@@ -278,7 +281,7 @@ const destination = computed(() => destinations.value.find(d => d.id === destina
 const { experiences, loading: experiencesLoading, createExperience, updateExperience, deleteExperience } = useExperiences(destinationId)
 
 // Tasks
-const { getDirectDestinationTasks, createTask, toggleTaskComplete, deleteTask: deleteTaskById } = useTasks()
+const { getDirectDestinationTasks, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime } = useTasks()
 const destinationDirectTasks = computed(() => getDirectDestinationTasks(destinationId.value))
 
 // Accommodations
@@ -569,6 +572,18 @@ async function handleToggleTask(id: string, completed: boolean) {
 
 async function handleDeleteTask(id: string) {
   await deleteTaskById(id)
+}
+
+async function handleInlineUpdateTask(id: string, data: { title: string; description: string }) {
+  await updateTask(id, data)
+}
+
+async function handleUpdateTaskTimeHorizon(id: string, timeHorizon: string | null) {
+  await updateTaskTimeHorizon(id, timeHorizon as any)
+}
+
+async function handleUpdateTaskEstimatedTime(id: string, estimatedTime: string | null) {
+  await updateTaskEstimatedTime(id, estimatedTime as any)
 }
 
 async function handleQuickAddTask(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {

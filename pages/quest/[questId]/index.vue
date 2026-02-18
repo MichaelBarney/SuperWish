@@ -120,6 +120,8 @@
             @delete="handleDeleteTask"
             @add="handleQuickAddTask"
             @inline-update="handleInlineUpdateTask"
+            @update-time-horizon="handleUpdateTaskTimeHorizon"
+            @update-estimated-time="handleUpdateTaskEstimatedTime"
           />
         </div>
       </div>
@@ -146,6 +148,8 @@
           @delete-task="handleDeleteTask"
           @add-task="handleSubQuestQuickAddTask"
           @inline-update-task="handleInlineUpdateTask"
+          @update-time-horizon-task="handleUpdateTaskTimeHorizon"
+          @update-estimated-time-task="handleUpdateTaskEstimatedTime"
         />
       </div>
 
@@ -232,7 +236,7 @@ const quest = computed(() => getQuestById(questId.value))
 const { subquests, loading: subquestsLoading, createSubQuest, updateSubQuest, deleteSubQuest } = useSubquests(questId)
 
 // Tasks
-const { getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask } = useTasks()
+const { getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask, updateTaskTimeHorizon, updateTaskEstimatedTime } = useTasks()
 const questTasks = computed(() => getDirectQuestTasks(questId.value))
 
 // Progress
@@ -369,6 +373,14 @@ async function handleQuickAddTask(data: { title: string; description: string; qu
     timeHorizon: '',
     estimatedTime: '',
   })
+}
+
+async function handleUpdateTaskTimeHorizon(id: string, timeHorizon: string | null) {
+  await updateTaskTimeHorizon(id, timeHorizon as any)
+}
+
+async function handleUpdateTaskEstimatedTime(id: string, estimatedTime: string | null) {
+  await updateTaskEstimatedTime(id, estimatedTime as any)
 }
 
 async function handleSubQuestQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
