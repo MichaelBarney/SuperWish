@@ -2,7 +2,7 @@
   <div class="min-h-screen flex flex-col bg-gray-50">
     <!-- Hero Section -->
     <div class="flex-1 flex items-center justify-center px-4">
-      <div class="w-full max-w-2xl">
+      <div class="w-full max-w-4xl">
         <!-- Logo & Title -->
         <div class="text-center mb-10">
           <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-900 shadow-soft mb-6">
@@ -24,49 +24,49 @@
             <!-- SuperWish Card -->
             <NuxtLink
               to="/wish"
-              class="group bg-white rounded-2xl shadow-soft p-8 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-accent-200"
+              class="group flex flex-col bg-white rounded-2xl shadow-soft p-6 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-accent-200"
             >
               <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center mx-auto mb-4 transition-transform group-hover:scale-110">
                 <Icon name="lucide:star" class="w-8 h-8 text-white" />
               </div>
               <h2 class="text-xl font-bold text-gray-900 mb-2">SuperWish</h2>
-              <p class="text-gray-500 text-sm">{{ $t('landing.superWishDescription') }}</p>
+              <p class="text-gray-500 text-sm flex-1">{{ $t('landing.superWishDescription') }}</p>
             </NuxtLink>
 
             <!-- SuperTrip Card -->
             <NuxtLink
               to="/trip"
-              class="group bg-white rounded-2xl shadow-soft p-8 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-purple-200"
+              class="group flex flex-col bg-white rounded-2xl shadow-soft p-6 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-purple-200"
             >
               <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center mx-auto mb-4 transition-transform group-hover:scale-110">
                 <Icon name="lucide:plane" class="w-8 h-8 text-white" />
               </div>
               <h2 class="text-xl font-bold text-gray-900 mb-2">SuperTrip</h2>
-              <p class="text-gray-500 text-sm">{{ $t('landing.superTripDescription') }}</p>
+              <p class="text-gray-500 text-sm flex-1">{{ $t('landing.superTripDescription') }}</p>
             </NuxtLink>
 
             <!-- SuperQuest Card -->
             <NuxtLink
               to="/quest"
-              class="group bg-white rounded-2xl shadow-soft p-8 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-green-200"
+              class="group flex flex-col bg-white rounded-2xl shadow-soft p-6 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-green-200"
             >
               <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mx-auto mb-4 transition-transform group-hover:scale-110">
                 <Icon name="lucide:target" class="w-8 h-8 text-white" />
               </div>
               <h2 class="text-xl font-bold text-gray-900 mb-2">SuperQuest</h2>
-              <p class="text-gray-500 text-sm">{{ $t('landing.superQuestDescription') }}</p>
+              <p class="text-gray-500 text-sm flex-1">{{ $t('landing.superQuestDescription') }}</p>
             </NuxtLink>
 
             <!-- SuperTask Card -->
             <NuxtLink
               to="/task"
-              class="group bg-white rounded-2xl shadow-soft p-8 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-orange-200"
+              class="group flex flex-col bg-white rounded-2xl shadow-soft p-6 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-orange-200"
             >
               <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center mx-auto mb-4 transition-transform group-hover:scale-110">
                 <Icon name="lucide:square-check-big" class="w-8 h-8 text-white" />
               </div>
               <h2 class="text-xl font-bold text-gray-900 mb-2">SuperTask</h2>
-              <p class="text-gray-500 text-sm">{{ $t('landing.superTaskDescription') }}</p>
+              <p class="text-gray-500 text-sm flex-1">{{ $t('landing.superTaskDescription') }}</p>
             </NuxtLink>
           </div>
 
