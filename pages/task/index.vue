@@ -246,8 +246,47 @@
 
         <!-- Task list -->
         <div v-else>
+          <!-- Hierarchical project grouping for time horizon views -->
+          <div v-if="isTimeHorizonView && taskGroupBy === 'project' && groupedByProjectSections.length > 0" class="space-y-6">
+            <div v-for="project in groupedByProjectSections" :key="project.id">
+              <!-- Project header -->
+              <div class="flex items-center gap-2 px-1 mb-2">
+                <Icon :name="project.icon" class="w-4 h-4 text-gray-500" />
+                <span class="text-sm font-bold text-gray-800">{{ project.label }}</span>
+              </div>
+              <!-- Sub-sections -->
+              <div class="space-y-2">
+                <div v-for="child in project.children" :key="child.id" class="bg-white rounded-xl shadow-soft">
+                  <div v-if="child.label" class="flex items-center gap-2 px-4 pt-3 pb-1">
+                    <Icon v-if="child.icon" :name="child.icon" class="w-3.5 h-3.5 text-gray-400" />
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ child.label }}</span>
+                  </div>
+                  <TaskList
+                    :tasks="child.tasks"
+                    :all-tasks="tasks"
+                    :quest-names="questNameMap"
+                    :quest-icons="questIconMap"
+                    :trip-names="tripNameMap"
+                    :quest-id="child.questId"
+                    :sub-quest-id="child.subQuestId"
+                    :trip-id="child.tripId"
+                    :destination-id="child.destinationId"
+                    @toggle="handleToggle"
+                    @edit="openEditModal"
+                    @delete="handleDelete"
+                    @add="handleQuickAdd"
+                    @inline-update="handleInlineUpdate"
+                    @update-time-horizon="handleUpdateTimeHorizon"
+                    @update-estimated-time="handleUpdateEstimatedTime"
+                    @update-blocked-by="handleUpdateBlockedBy"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Sectioned view for quest/trip with subquests/destinations -->
-          <div v-if="showSectionedView && activeSections.length > 0" class="space-y-2">
+          <div v-else-if="showSectionedView && activeSections.length > 0" class="space-y-2">
             <div
               v-for="(section, idx) in activeSections"
               :key="section.id"
@@ -259,6 +298,7 @@
               </div>
               <TaskList
                 :tasks="section.tasks"
+                :all-tasks="tasks"
                 :quest-names="questNameMap"
                 :quest-icons="questIconMap"
                 :trip-names="tripNameMap"
@@ -273,6 +313,7 @@
                 @inline-update="handleInlineUpdate"
                 @update-time-horizon="handleUpdateTimeHorizon"
                 @update-estimated-time="handleUpdateEstimatedTime"
+                @update-blocked-by="handleUpdateBlockedBy"
               />
             </div>
             <!-- Add Sub-Quest button for trips and quests -->
@@ -317,6 +358,7 @@
             <div class="bg-white rounded-xl shadow-soft">
               <TaskList
                 :tasks="filteredTasks"
+                :all-tasks="tasks"
                 :quest-names="questNameMap"
                 :quest-icons="questIconMap"
                 :trip-names="tripNameMap"
@@ -332,6 +374,7 @@
                 @inline-update="handleInlineUpdate"
                 @update-time-horizon="handleUpdateTimeHorizon"
                 @update-estimated-time="handleUpdateEstimatedTime"
+                @update-blocked-by="handleUpdateBlockedBy"
               />
             </div>
             <!-- Add Sub-Quest button for trips and quests (flat view) -->
@@ -416,11 +459,11 @@ onMounted(() => {
 })
 
 // Data
-const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
+const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskBlockedBy, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
 const { quests } = useQuests()
 const { trips } = useTrips()
-const { getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip, createSubQuestForQuest } = useAllSubquests()
-const { getDestinationsByTripId } = useAllDestinations()
+const { subquests: allSubquests, getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip, createSubQuestForQuest } = useAllSubquests()
+const { destinations: allDestinations, getDestinationsByTripId } = useAllDestinations()
 const { user: authUser, updateUserPreferences } = useAuth()
 
 // Group By state
@@ -493,6 +536,18 @@ const questIconMap = computed(() => {
 const tripNameMap = computed(() => {
   const map: Record<string, string> = {}
   trips.value.forEach(t => { map[t.id] = t.name })
+  return map
+})
+
+const subquestNameMap = computed(() => {
+  const map: Record<string, string> = {}
+  for (const sq of allSubquests.value) map[sq.id] = sq.name
+  return map
+})
+
+const destinationNameMap = computed(() => {
+  const map: Record<string, string> = {}
+  for (const dest of allDestinations.value) map[dest.id] = dest.name
   return map
 })
 
@@ -632,7 +687,27 @@ const isTimeHorizonView = computed(() =>
   ['inbox', 'today', 'this_week', 'this_month', 'long_term', 'no_horizon'].includes(currentView.value)
 )
 
-const groupedByProjectSections = computed(() => {
+interface ProjectChild {
+  id: string
+  label: string
+  icon: string
+  tasks: Task[]
+  questId: string
+  subQuestId: string
+  tripId: string
+  destinationId: string
+}
+
+interface ProjectGroup {
+  id: string
+  label: string
+  icon: string
+  questId: string
+  tripId: string
+  children: ProjectChild[]
+}
+
+const groupedByProjectSections = computed((): ProjectGroup[] => {
   const taskList = filteredTasks.value
   const projectMap = new Map<string, { id: string; label: string; icon: string; tasks: Task[]; questId: string; tripId: string }>()
   const noProjectTasks: Task[] = []
@@ -658,14 +733,86 @@ const groupedByProjectSections = computed(() => {
     }
   }
 
-  const sections: Array<{ id: string; label: string; icon: string; tasks: Task[]; questId: string; subQuestId: string; tripId: string; destinationId: string }> = []
+  const projects: ProjectGroup[] = []
 
   for (const group of projectMap.values()) {
-    if (group.tasks.some(t => !t.completed)) {
-      sections.push({
-        id: group.id,
-        label: group.label,
-        icon: group.icon,
+    // Skip projects with no uncompleted tasks
+    if (!group.tasks.some(tk => !tk.completed)) continue
+
+    // Group tasks by sub-project
+    const directTasks: Task[] = []
+    const subBuckets = new Map<string, Task[]>()
+
+    for (const tk of group.tasks) {
+      if (group.questId && tk.subQuestId) {
+        const key = `sq:${tk.subQuestId}`
+        if (!subBuckets.has(key)) subBuckets.set(key, [])
+        subBuckets.get(key)!.push(tk)
+      } else if (group.tripId && tk.destinationId) {
+        const key = `dest:${tk.destinationId}`
+        if (!subBuckets.has(key)) subBuckets.set(key, [])
+        subBuckets.get(key)!.push(tk)
+      } else if (group.tripId && tk.subQuestId) {
+        const key = `sq:${tk.subQuestId}`
+        if (!subBuckets.has(key)) subBuckets.set(key, [])
+        subBuckets.get(key)!.push(tk)
+      } else {
+        directTasks.push(tk)
+      }
+    }
+
+    const children: ProjectChild[] = []
+
+    if (subBuckets.size > 0) {
+      // Multi-bucket: show General + sub-sections
+      if (directTasks.some(tk => !tk.completed)) {
+        children.push({
+          id: `${group.id}:general`,
+          label: t('task.sections.general'),
+          icon: '',
+          tasks: directTasks,
+          questId: group.questId,
+          subQuestId: '',
+          tripId: group.tripId,
+          destinationId: '',
+        })
+      }
+
+      for (const [bucketKey, bucketTasks] of subBuckets) {
+        if (!bucketTasks.some(tk => !tk.completed)) continue
+
+        if (bucketKey.startsWith('sq:')) {
+          const sqId = bucketKey.slice(3)
+          children.push({
+            id: `${group.id}:${bucketKey}`,
+            label: subquestNameMap.value[sqId] || sqId,
+            icon: 'lucide:circle-dot',
+            tasks: bucketTasks,
+            questId: group.questId,
+            subQuestId: sqId,
+            tripId: group.tripId,
+            destinationId: '',
+          })
+        } else if (bucketKey.startsWith('dest:')) {
+          const destId = bucketKey.slice(5)
+          children.push({
+            id: `${group.id}:${bucketKey}`,
+            label: destinationNameMap.value[destId] || destId,
+            icon: 'lucide:map-pin',
+            tasks: bucketTasks,
+            questId: '',
+            subQuestId: '',
+            tripId: group.tripId,
+            destinationId: destId,
+          })
+        }
+      }
+    } else {
+      // Single bucket: all tasks are direct — no sub-header
+      children.push({
+        id: `${group.id}:all`,
+        label: '',
+        icon: '',
         tasks: group.tasks,
         questId: group.questId,
         subQuestId: '',
@@ -673,26 +820,45 @@ const groupedByProjectSections = computed(() => {
         destinationId: '',
       })
     }
+
+    if (children.length > 0) {
+      projects.push({
+        id: group.id,
+        label: group.label,
+        icon: group.icon,
+        questId: group.questId,
+        tripId: group.tripId,
+        children,
+      })
+    }
   }
 
-  if (noProjectTasks.some(t => !t.completed)) {
-    sections.push({
+  // No Project group
+  if (noProjectTasks.some(tk => !tk.completed)) {
+    projects.push({
       id: 'no-project',
       label: t('task.groupBy.noProject'),
       icon: 'lucide:inbox',
-      tasks: noProjectTasks,
       questId: '',
-      subQuestId: '',
       tripId: '',
-      destinationId: '',
+      children: [{
+        id: 'no-project:all',
+        label: '',
+        icon: '',
+        tasks: noProjectTasks,
+        questId: '',
+        subQuestId: '',
+        tripId: '',
+        destinationId: '',
+      }],
     })
   }
 
-  return sections
+  return projects
 })
 
 // Sectioned view
-const showSectionedView = computed(() => currentView.value === 'quest' || currentView.value === 'trip' || (isTimeHorizonView.value && taskGroupBy.value === 'project'))
+const showSectionedView = computed(() => currentView.value === 'quest' || currentView.value === 'trip')
 
 const questSections = computed(() => {
   if (currentView.value !== 'quest' || !selectedQuestId.value) return []
@@ -775,7 +941,6 @@ const tripSections = computed(() => {
 })
 
 const activeSections = computed(() => {
-  if (isTimeHorizonView.value && taskGroupBy.value === 'project') return groupedByProjectSections.value
   if (currentView.value === 'quest') return questSections.value
   if (currentView.value === 'trip') return tripSections.value
   return []
@@ -894,7 +1059,7 @@ async function handleInlineUpdate(id: string, data: { title: string; description
   await updateTask(id, data)
 }
 
-async function handleQuickAdd(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+async function handleQuickAdd(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   const viewToHorizon: Record<string, string> = {
     today: 'today',
     this_week: 'this_week',
@@ -913,6 +1078,7 @@ async function handleQuickAdd(data: { title: string; description: string; questI
     wishId: data.wishId,
     timeHorizon: viewToHorizon[currentView.value] || '',
     estimatedTime: '',
+    blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 
@@ -940,6 +1106,10 @@ async function handleUpdateTimeHorizon(id: string, timeHorizon: TaskTimeHorizon 
 
 async function handleUpdateEstimatedTime(id: string, estimatedTime: TaskEstimatedTime | null) {
   await updateTaskEstimatedTime(id, estimatedTime)
+}
+
+async function handleUpdateBlockedBy(id: string, blockedByTaskIds: string[]) {
+  await updateTaskBlockedBy(id, blockedByTaskIds)
 }
 
 async function handleDelete(id: string) {
