@@ -13,6 +13,7 @@ import {
   type Firestore,
 } from 'firebase/firestore'
 import type { Task, TaskForm, TaskTimeHorizon, TaskEstimatedTime } from '~/types'
+import { computeTimeHorizonFromDate } from '~/utils/taskDueDate'
 
 export function useTasks() {
   const nuxtApp = useNuxtApp()
@@ -57,6 +58,7 @@ export function useTasks() {
             description: data.description || '',
             completed: data.completed || false,
             completedAt: data.completedAt ? (data.completedAt as Timestamp).toDate() : null,
+            dueDate: data.dueDate ? (data.dueDate as Timestamp).toDate() : null,
             questId: data.questId || null,
             subQuestId: data.subQuestId || null,
             tripId: data.tripId || null,
@@ -106,6 +108,7 @@ export function useTasks() {
         description: data.description || '',
         completed: false,
         completedAt: null,
+        dueDate: data.dueDate ? Timestamp.fromDate(new Date(data.dueDate)) : null,
         questId: data.questId || null,
         subQuestId: data.subQuestId || null,
         tripId: data.tripId || null,
@@ -140,6 +143,13 @@ export function useTasks() {
 
       if (data.title !== undefined) updateData.title = data.title
       if (data.description !== undefined) updateData.description = data.description
+      if (data.dueDate !== undefined) {
+        updateData.dueDate = data.dueDate ? Timestamp.fromDate(new Date(data.dueDate)) : null
+        // Auto-compute timeHorizon from dueDate
+        if (data.dueDate) {
+          updateData.timeHorizon = computeTimeHorizonFromDate(new Date(data.dueDate))
+        }
+      }
       if (data.questId !== undefined) updateData.questId = data.questId || null
       if (data.subQuestId !== undefined) updateData.subQuestId = data.subQuestId || null
       if (data.tripId !== undefined) updateData.tripId = data.tripId || null
@@ -252,6 +262,28 @@ export function useTasks() {
     }
   }
 
+  const updateTaskDueDate = async (id: string, dueDate: Date | null) => {
+    const db = getDb()
+    if (!user.value) return { success: false, error: 'Not authenticated' }
+    if (!db) return { success: false, error: 'Database not initialized' }
+
+    try {
+      const taskRef = doc(db, 'tasks', id)
+      const updateData: Record<string, unknown> = {
+        dueDate: dueDate ? Timestamp.fromDate(dueDate) : null,
+        updatedAt: serverTimestamp(),
+      }
+      if (dueDate) {
+        updateData.timeHorizon = computeTimeHorizonFromDate(dueDate)
+      }
+      await updateDoc(taskRef, updateData)
+      return { success: true }
+    } catch (err) {
+      console.error('Error updating task due date:', err)
+      return { success: false, error: 'Failed to update due date' }
+    }
+  }
+
   const updateTaskBlockedBy = async (id: string, blockedByTaskIds: string[]) => {
     const db = getDb()
     if (!user.value) return { success: false, error: 'Not authenticated' }
@@ -358,6 +390,7 @@ export function useTasks() {
     updateTask,
     updateTaskTimeHorizon,
     updateTaskEstimatedTime,
+    updateTaskDueDate,
     updateTaskBlockedBy,
     toggleTaskComplete,
     deleteTask,

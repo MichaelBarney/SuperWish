@@ -43,6 +43,16 @@
         <Icon name="lucide:dollar-sign" class="w-4 h-4" />
         <span>{{ formattedBudget }}</span>
       </div>
+
+      <!-- Weather badge -->
+      <TripWeatherBadge
+        v-if="trip.origin?.name && trip.startDate && trip.endDate"
+        :city-name="trip.origin.name"
+        :country-code="trip.origin.countryCode || ''"
+        :start-date="trip.startDate"
+        :end-date="trip.endDate"
+        class="!bg-purple-100 !text-purple-700 !backdrop-blur-none mt-2"
+      />
     </div>
   </NuxtLink>
 </template>

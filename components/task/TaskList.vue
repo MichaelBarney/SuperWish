@@ -23,6 +23,7 @@
           @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
           @update-estimated-time="(id, et) => $emit('updateEstimatedTime', id, et)"
           @update-blocked-by="(id, ids) => $emit('updateBlockedBy', id, ids)"
+          @update-due-date="(id, d) => $emit('updateDueDate', id, d)"
         />
       </template>
     </div>
@@ -79,6 +80,7 @@
             @update-time-horizon="(id, th) => $emit('updateTimeHorizon', id, th)"
             @update-estimated-time="(id, et) => $emit('updateEstimatedTime', id, et)"
             @update-blocked-by="(id, ids) => $emit('updateBlockedBy', id, ids)"
+            @update-due-date="(id, d) => $emit('updateDueDate', id, d)"
           />
         </template>
       </div>
@@ -115,11 +117,12 @@ const emit = defineEmits<{
   toggle: [id: string, completed: boolean]
   edit: [task: Task]
   delete: [id: string]
-  add: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
-  inlineUpdate: [id: string, data: { title: string; description: string }]
+  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
+  inlineUpdate: [id: string, data: { title: string; description: string; dueDate?: string }]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
   updateBlockedBy: [id: string, blockedByTaskIds: string[]]
+  updateDueDate: [id: string, dueDate: Date | null]
 }>()
 
 const { getWishById } = useAllWishes()

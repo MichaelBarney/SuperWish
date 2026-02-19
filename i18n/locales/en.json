@@ -701,6 +701,7 @@
       "linkWish": "Wish",
       "selectWish": "Select a wish",
       "linkedToWish": "Linked to wish",
+      "dueDate": "Due Date",
       "createTask": "Create Task"
     },
     "wishPicker": {
@@ -711,6 +712,16 @@
     "blockerPicker": {
       "searchPlaceholder": "Search tasks...",
       "noResults": "No tasks found"
+    },
+    "dueDate": {
+      "date": "Date",
+      "time": "Time (optional)",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "nextWeek": "Next Week",
+      "set": "Set Date",
+      "clear": "Remove",
+      "overdue": "Overdue"
     },
     "blockedBy": {
       "currentBlockers": "Blocked by",

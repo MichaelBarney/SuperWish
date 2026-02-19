@@ -122,6 +122,7 @@
               @inline-update="handleInlineUpdateTask"
               @update-time-horizon="handleUpdateTaskTimeHorizon"
               @update-estimated-time="handleUpdateTaskEstimatedTime"
+              @update-due-date="handleUpdateDueDate"
             />
           </div>
         </div>
@@ -252,6 +253,7 @@
 <script setup lang="ts">
 import type { DestinationForm, ExperienceForm, Experience, Accommodation, AccommodationForm, Transportation, TransportationForm, WeatherDay } from '~/types'
 import { useCityImage, getGradientFallback } from '~/composables/useCityImage'
+import { computeTimeHorizonFromDate } from '~/utils/taskDueDate'
 
 definePageMeta({
   layout: 'app-with-sidebar',
@@ -281,7 +283,7 @@ const destination = computed(() => destinations.value.find(d => d.id === destina
 const { experiences, loading: experiencesLoading, createExperience, updateExperience, deleteExperience } = useExperiences(destinationId)
 
 // Tasks
-const { getDirectDestinationTasks, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime } = useTasks()
+const { getDirectDestinationTasks, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate } = useTasks()
 const destinationDirectTasks = computed(() => getDirectDestinationTasks(destinationId.value))
 
 // Accommodations
@@ -574,7 +576,7 @@ async function handleDeleteTask(id: string) {
   await deleteTaskById(id)
 }
 
-async function handleInlineUpdateTask(id: string, data: { title: string; description: string }) {
+async function handleInlineUpdateTask(id: string, data: { title: string; description: string; dueDate?: string }) {
   await updateTask(id, data)
 }
 
@@ -586,10 +588,15 @@ async function handleUpdateTaskEstimatedTime(id: string, estimatedTime: string |
   await updateTaskEstimatedTime(id, estimatedTime as any)
 }
 
-async function handleQuickAddTask(data: { title: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+async function handleUpdateDueDate(id: string, dueDate: Date | null) {
+  await updateTaskDueDate(id, dueDate)
+}
+
+async function handleQuickAddTask(data: { title: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
   await createTask({
     title: data.title,
     description: '',
+    dueDate: data.dueDate || '',
     questId: '',
     subQuestId: '',
     tripId: tripId.value,
@@ -597,7 +604,7 @@ async function handleQuickAddTask(data: { title: string; questId: string; subQue
     accommodationId: '',
     experienceId: '',
     wishId: data.wishId || '',
-    timeHorizon: '',
+    timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     blockedByTaskIds: (data as any).blockedByTaskIds || [],
   })

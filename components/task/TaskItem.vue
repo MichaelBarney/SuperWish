@@ -70,13 +70,40 @@
 
     <!-- Badge group -->
     <div class="flex items-start gap-1 mt-0.5 shrink-0">
+      <!-- Due date pill -->
+      <div class="relative min-w-[4rem] flex justify-center" ref="dueDateDropdownRef">
+        <button
+          v-if="task.dueDate"
+          @click.stop="toggleDueDateDropdown"
+          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+          :class="dueDatePillClass"
+        >
+          <Icon name="lucide:calendar" class="w-3 h-3 shrink-0" />
+          <span>{{ formattedDueDate }}</span>
+        </button>
+        <button
+          v-else
+          @click.stop="toggleDueDateDropdown"
+          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+        >
+          <Icon name="lucide:calendar" class="w-4 h-4" />
+        </button>
+
+        <!-- Date Picker Dropdown -->
+        <TaskDatePicker
+          v-model="showDueDateDropdown"
+          :current-date="task.dueDate || null"
+          @select="handleDueDateSelect"
+        />
+      </div>
+
       <!-- Time horizon pill -->
       <div class="relative min-w-[4rem] flex justify-center" ref="horizonDropdownRef">
         <button
           v-if="task.timeHorizon"
           @click.stop="toggleHorizonDropdown"
           class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
-          :class="horizonPillClass"
+          :class="[horizonPillClass, task.dueDate ? 'opacity-60 cursor-default' : '']"
         >
           <Icon :name="horizonIcon" class="w-3 h-3 shrink-0" />
           <span>{{ horizonLabel }}</span>
@@ -85,13 +112,14 @@
           v-else
           @click.stop="toggleHorizonDropdown"
           class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+          :class="task.dueDate ? 'opacity-40 cursor-default' : ''"
         >
           <Icon name="lucide:calendar-clock" class="w-4 h-4" />
         </button>
 
-        <!-- Dropdown -->
+        <!-- Dropdown (only when no dueDate) -->
         <div
-          v-if="showHorizonDropdown"
+          v-if="showHorizonDropdown && !task.dueDate"
           class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
         >
           <button
@@ -264,6 +292,7 @@
 <script setup lang="ts">
 import type { Task, Wish, TaskTimeHorizon, TaskEstimatedTime } from '~/types'
 import { isOwnedStatus, getCurrencySymbol } from '~/types'
+import { formatDueDate, isDueDateOverdue } from '~/utils/taskDueDate'
 
 interface Props {
   task: Task
@@ -288,9 +317,10 @@ const emit = defineEmits<{
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
   updateBlockedBy: [id: string, blockedByTaskIds: string[]]
+  updateDueDate: [id: string, dueDate: Date | null]
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const isWishLinked = computed(() => !!props.task.wishId)
 
@@ -300,6 +330,36 @@ const effectiveCompleted = computed(() => {
   }
   return props.task.completed
 })
+
+// Due date
+const formattedDueDate = computed(() => {
+  if (!props.task.dueDate) return ''
+  return formatDueDate(props.task.dueDate, locale.value, t)
+})
+
+const dueDatePillClass = computed(() => {
+  if (!props.task.dueDate) return ''
+  if (isDueDateOverdue(props.task.dueDate)) return 'bg-red-50 text-red-700 hover:bg-red-100'
+  // Today
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const target = new Date(props.task.dueDate.getFullYear(), props.task.dueDate.getMonth(), props.task.dueDate.getDate())
+  if (target.getTime() === today.getTime()) return 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+  return 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+})
+
+// Due date dropdown
+const showDueDateDropdown = ref(false)
+const dueDateDropdownRef = ref<HTMLElement | null>(null)
+
+function toggleDueDateDropdown() {
+  showDueDateDropdown.value = !showDueDateDropdown.value
+}
+
+function handleDueDateSelect(date: Date | null) {
+  emit('updateDueDate', props.task.id, date)
+  showDueDateDropdown.value = false
+}
 
 // Blocked state
 const currentBlockers = computed(() => {
@@ -363,6 +423,8 @@ const horizonPillClass = computed(() => {
 })
 
 function toggleHorizonDropdown() {
+  // Don't open dropdown when dueDate exists (horizon is auto-computed)
+  if (props.task.dueDate) return
   showHorizonDropdown.value = !showHorizonDropdown.value
 }
 
@@ -455,6 +517,9 @@ function handleClickOutside(e: MouseEvent) {
   if (blockerDropdownRef.value && !blockerDropdownRef.value.contains(e.target as Node)) {
     showBlockerDropdown.value = false
     showBlockerPicker.value = false
+  }
+  if (dueDateDropdownRef.value && !dueDateDropdownRef.value.contains(e.target as Node)) {
+    showDueDateDropdown.value = false
   }
 }
 

@@ -39,6 +39,34 @@
       />
     </div>
 
+    <!-- Due Date -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        {{ $t('task.form.dueDate') }}
+      </label>
+      <div class="flex gap-2">
+        <input
+          v-model="dueDateValue"
+          type="date"
+          class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400"
+        />
+        <input
+          v-model="dueTimeValue"
+          type="time"
+          :placeholder="$t('task.dueDate.time')"
+          class="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400"
+        />
+        <button
+          v-if="dueDateValue"
+          type="button"
+          @click="clearDueDate"
+          class="p-2 text-gray-400 hover:text-red-500 transition-colors"
+        >
+          <Icon name="lucide:x" class="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+
     <!-- Time Horizon -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -46,7 +74,8 @@
       </label>
       <select
         v-model="form.timeHorizon"
-        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400"
+        :disabled="!!dueDateValue"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 disabled:bg-gray-100 disabled:text-gray-500"
       >
         <option value="">{{ $t('task.timeHorizon.none') }}</option>
         <option value="today">{{ $t('task.timeHorizon.today') }}</option>
@@ -157,6 +186,7 @@
 <script setup lang="ts">
 import type { TaskForm, Quest, Trip, Wish } from '~/types'
 import { getCurrencySymbol } from '~/types'
+import { computeTimeHorizonFromDate } from '~/utils/taskDueDate'
 
 interface Props {
   initialData?: Partial<TaskForm>
@@ -179,6 +209,7 @@ const { getWishById } = useAllWishes()
 const form = reactive<TaskForm>({
   title: props.initialData?.title || '',
   description: props.initialData?.description || '',
+  dueDate: props.initialData?.dueDate || '',
   questId: props.initialData?.questId || '',
   subQuestId: props.initialData?.subQuestId || '',
   tripId: props.initialData?.tripId || '',
@@ -190,6 +221,41 @@ const form = reactive<TaskForm>({
   estimatedTime: props.initialData?.estimatedTime || '',
   blockedByTaskIds: props.initialData?.blockedByTaskIds || [],
 })
+
+// Due date local state for the two inputs
+const dueDateValue = ref('')
+const dueTimeValue = ref('')
+
+// Initialize from form.dueDate
+if (form.dueDate) {
+  const d = new Date(form.dueDate)
+  dueDateValue.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const hasTime = d.getHours() !== 12 || d.getMinutes() !== 0
+  if (hasTime) {
+    dueTimeValue.value = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  }
+}
+
+// Sync local date/time inputs to form.dueDate and auto-compute timeHorizon
+watch([dueDateValue, dueTimeValue], ([dateVal, timeVal]) => {
+  if (!dateVal) {
+    form.dueDate = ''
+    return
+  }
+  // Use T12:00:00 per CLAUDE.md date-only rule when no time specified
+  const isoStr = timeVal
+    ? `${dateVal}T${timeVal}:00`
+    : `${dateVal}T12:00:00`
+  form.dueDate = new Date(isoStr).toISOString()
+  // Auto-compute timeHorizon
+  form.timeHorizon = computeTimeHorizonFromDate(new Date(isoStr))
+})
+
+function clearDueDate() {
+  dueDateValue.value = ''
+  dueTimeValue.value = ''
+  form.dueDate = ''
+}
 
 const linkType = ref<'none' | 'quest' | 'trip' | 'wish'>(
   props.initialData?.wishId ? 'wish' :

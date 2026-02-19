@@ -59,6 +59,7 @@
         @update-time-horizon="(id, th) => $emit('updateTimeHorizonTask', id, th)"
         @update-estimated-time="(id, et) => $emit('updateEstimatedTimeTask', id, et)"
         @update-blocked-by="(id, ids) => $emit('updateBlockedByTask', id, ids)"
+        @update-due-date="(id, d) => $emit('updateDueDateTask', id, d)"
       />
     </div>
   </div>
@@ -83,11 +84,12 @@ defineEmits<{
   toggleTask: [id: string, completed: boolean]
   editTask: [task: Task]
   deleteTask: [id: string]
-  addTask: [data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
-  inlineUpdateTask: [id: string, data: { title: string; description: string }]
+  addTask: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
+  inlineUpdateTask: [id: string, data: { title: string; description: string; dueDate?: string }]
   updateTimeHorizonTask: [id: string, timeHorizon: string | null]
   updateEstimatedTimeTask: [id: string, estimatedTime: string | null]
   updateBlockedByTask: [id: string, blockedByTaskIds: string[]]
+  updateDueDateTask: [id: string, dueDate: Date | null]
 }>()
 
 const expanded = ref(false)

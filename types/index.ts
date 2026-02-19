@@ -753,6 +753,7 @@ export interface Task {
   description?: string
   completed: boolean
   completedAt?: Date | null
+  dueDate?: Date | null
   questId?: string | null
   subQuestId?: string | null
   tripId?: string | null
@@ -771,6 +772,7 @@ export interface Task {
 export interface TaskForm {
   title: string
   description: string
+  dueDate: string
   questId: string
   subQuestId: string
   tripId: string

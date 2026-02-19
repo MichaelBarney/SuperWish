@@ -116,6 +116,7 @@
               @update-time-horizon="handleUpdateTaskTimeHorizon"
               @update-estimated-time="handleUpdateTaskEstimatedTime"
               @update-blocked-by="handleUpdateBlockedBy"
+              @update-due-date="handleUpdateDueDate"
             />
           </div>
 
@@ -134,6 +135,7 @@
             @update-time-horizon-task="handleUpdateTaskTimeHorizon"
             @update-estimated-time-task="handleUpdateTaskEstimatedTime"
             @update-blocked-by-task="handleUpdateBlockedBy"
+            @update-due-date-task="handleUpdateDueDate"
           />
 
           <!-- Add Sub-Quest button -->
@@ -160,6 +162,7 @@
               @update-time-horizon-task="handleUpdateTaskTimeHorizon"
               @update-estimated-time-task="handleUpdateTaskEstimatedTime"
               @update-blocked-by-task="handleUpdateBlockedBy"
+              @update-due-date-task="handleUpdateDueDate"
             />
           </template>
         </div>
@@ -488,6 +491,7 @@
 <script setup lang="ts">
 import type { TripForm, Destination, DestinationForm, TransportationForm, Transportation, AccommodationForm, Accommodation, Task, SubQuest, SubQuestForm } from '~/types'
 import { getCurrencySymbol } from '~/types'
+import { computeTimeHorizonFromDate } from '~/utils/taskDueDate'
 
 definePageMeta({
   layout: 'app-with-sidebar',
@@ -533,7 +537,7 @@ const {
 } = useAccommodations(tripId)
 
 // Tasks
-const { tasks: allTasks, getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskBlockedBy } = useTasks()
+const { tasks: allTasks, getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy } = useTasks()
 const tripTasks = computed(() => getDirectTripTasks(tripId.value))
 
 // Sub-Quests
@@ -931,7 +935,7 @@ async function handleDeleteTask(id: string) {
   await deleteTaskById(id)
 }
 
-async function handleInlineUpdateTask(id: string, data: { title: string; description: string }) {
+async function handleInlineUpdateTask(id: string, data: { title: string; description: string; dueDate?: string }) {
   await updateTask(id, data)
 }
 
@@ -947,10 +951,15 @@ async function handleUpdateBlockedBy(id: string, blockedByTaskIds: string[]) {
   await updateTaskBlockedBy(id, blockedByTaskIds)
 }
 
-async function handleQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleUpdateDueDate(id: string, dueDate: Date | null) {
+  await updateTaskDueDate(id, dueDate)
+}
+
+async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
+    dueDate: data.dueDate || '',
     questId: '',
     subQuestId: '',
     tripId: tripId.value,
@@ -958,16 +967,17 @@ async function handleQuickAddTask(data: { title: string; description: string; qu
     accommodationId: '',
     experienceId: '',
     wishId: data.wishId || '',
-    timeHorizon: '',
+    timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 
-async function handleQuickAddDestinationTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleQuickAddDestinationTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
+    dueDate: data.dueDate || '',
     questId: '',
     subQuestId: '',
     tripId: tripId.value,
@@ -975,16 +985,17 @@ async function handleQuickAddDestinationTask(data: { title: string; description:
     accommodationId: '',
     experienceId: '',
     wishId: data.wishId || '',
-    timeHorizon: '',
+    timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 
-async function handleQuickAddSubQuestTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleQuickAddSubQuestTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
+    dueDate: data.dueDate || '',
     questId: '',
     subQuestId: data.subQuestId,
     tripId: tripId.value,
@@ -992,7 +1003,7 @@ async function handleQuickAddSubQuestTask(data: { title: string; description: st
     accommodationId: '',
     experienceId: '',
     wishId: data.wishId || '',
-    timeHorizon: '',
+    timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })

@@ -33,6 +33,16 @@
           </option>
         </UiSelect>
 
+        <!-- Temperature Unit -->
+        <UiSelect
+          v-model="selectedTempUnit"
+          :label="$t('settings.temperatureUnit')"
+          :hint="$t('settings.temperatureUnitHint')"
+        >
+          <option value="celsius">{{ $t('settings.celsius') }}</option>
+          <option value="fahrenheit">{{ $t('settings.fahrenheit') }}</option>
+        </UiSelect>
+
         <div class="flex justify-end pt-4">
           <UiButton
             :loading="saving"
@@ -60,6 +70,7 @@ const { locale, locales, setLocale } = useI18n()
 
 const selectedRegion = ref(user.value?.defaultRegion || 'US')
 const selectedLocale = ref(locale.value)
+const selectedTempUnit = ref(user.value?.temperatureUnit || 'celsius')
 const saving = ref(false)
 
 const availableLocales = computed(() => {
@@ -71,7 +82,8 @@ const availableLocales = computed(() => {
 
 const hasChanges = computed(() => {
   return selectedRegion.value !== (user.value?.defaultRegion || 'US') ||
-         selectedLocale.value !== locale.value
+         selectedLocale.value !== locale.value ||
+         selectedTempUnit.value !== (user.value?.temperatureUnit || 'celsius')
 })
 
 async function savePreferences() {
@@ -82,12 +94,16 @@ async function savePreferences() {
     await setLocale(selectedLocale.value)
   }
 
-  // Update region if changed
+  // Update user preferences if changed
+  const prefs: Record<string, string> = {}
   if (selectedRegion.value !== (user.value?.defaultRegion || 'US')) {
-    const result = await updateUserPreferences({
-      defaultRegion: selectedRegion.value,
-    })
-
+    prefs.defaultRegion = selectedRegion.value
+  }
+  if (selectedTempUnit.value !== (user.value?.temperatureUnit || 'celsius')) {
+    prefs.temperatureUnit = selectedTempUnit.value
+  }
+  if (Object.keys(prefs).length > 0) {
+    const result = await updateUserPreferences(prefs)
     if (!result.success) {
       console.error('Failed to save preferences:', result.error)
     }
@@ -99,6 +115,12 @@ async function savePreferences() {
 watch(() => user.value?.defaultRegion, (newRegion) => {
   if (newRegion) {
     selectedRegion.value = newRegion
+  }
+})
+
+watch(() => user.value?.temperatureUnit, (newUnit) => {
+  if (newUnit) {
+    selectedTempUnit.value = newUnit
   }
 })
 </script>

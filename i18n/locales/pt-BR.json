@@ -701,6 +701,7 @@
       "linkWish": "Desejo",
       "selectWish": "Selecione um desejo",
       "linkedToWish": "Vinculado a desejo",
+      "dueDate": "Data de Vencimento",
       "createTask": "Criar Tarefa"
     },
     "wishPicker": {
@@ -711,6 +712,16 @@
     "blockerPicker": {
       "searchPlaceholder": "Buscar tarefas...",
       "noResults": "Nenhuma tarefa encontrada"
+    },
+    "dueDate": {
+      "date": "Data",
+      "time": "Hora (opcional)",
+      "today": "Hoje",
+      "tomorrow": "Amanhã",
+      "nextWeek": "Semana que Vem",
+      "set": "Definir Data",
+      "clear": "Remover",
+      "overdue": "Atrasada"
     },
     "blockedBy": {
       "currentBlockers": "Bloqueada por",

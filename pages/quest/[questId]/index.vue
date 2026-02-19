@@ -124,6 +124,7 @@
             @update-time-horizon="handleUpdateTaskTimeHorizon"
             @update-estimated-time="handleUpdateTaskEstimatedTime"
             @update-blocked-by="handleUpdateBlockedBy"
+            @update-due-date="handleUpdateDueDate"
           />
         </div>
       </div>
@@ -154,6 +155,7 @@
           @update-time-horizon-task="handleUpdateTaskTimeHorizon"
           @update-estimated-time-task="handleUpdateTaskEstimatedTime"
           @update-blocked-by-task="handleUpdateBlockedBy"
+          @update-due-date-task="handleUpdateDueDate"
         />
       </div>
 
@@ -216,6 +218,7 @@
 
 <script setup lang="ts">
 import type { QuestForm, SubQuestForm, SubQuest, Task, TaskForm } from '~/types'
+import { computeTimeHorizonFromDate } from '~/utils/taskDueDate'
 
 definePageMeta({
   layout: 'app-with-sidebar',
@@ -240,7 +243,7 @@ const quest = computed(() => getQuestById(questId.value))
 const { subquests, loading: subquestsLoading, createSubQuest, updateSubQuest, deleteSubQuest } = useSubquests(questId)
 
 // Tasks
-const { tasks: allTasks, getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskBlockedBy } = useTasks()
+const { tasks: allTasks, getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy } = useTasks()
 const questTasks = computed(() => getDirectQuestTasks(questId.value))
 
 // Progress
@@ -359,14 +362,15 @@ async function handleDeleteTask(id: string) {
   await deleteTask(id)
 }
 
-async function handleInlineUpdateTask(id: string, data: { title: string; description: string }) {
+async function handleInlineUpdateTask(id: string, data: { title: string; description: string; dueDate?: string }) {
   await updateTask(id, data)
 }
 
-async function handleQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
+    dueDate: data.dueDate || '',
     questId: questId.value,
     subQuestId: '',
     tripId: '',
@@ -374,7 +378,7 @@ async function handleQuickAddTask(data: { title: string; description: string; qu
     accommodationId: '',
     experienceId: '',
     wishId: data.wishId || '',
-    timeHorizon: '',
+    timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
@@ -392,10 +396,15 @@ async function handleUpdateBlockedBy(id: string, blockedByTaskIds: string[]) {
   await updateTaskBlockedBy(id, blockedByTaskIds)
 }
 
-async function handleSubQuestQuickAddTask(data: { title: string; description: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleUpdateDueDate(id: string, dueDate: Date | null) {
+  await updateTaskDueDate(id, dueDate)
+}
+
+async function handleSubQuestQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
   await createTask({
     title: data.title,
     description: data.description || '',
+    dueDate: data.dueDate || '',
     questId: questId.value,
     subQuestId: data.subQuestId || '',
     tripId: '',
@@ -403,7 +412,7 @@ async function handleSubQuestQuickAddTask(data: { title: string; description: st
     accommodationId: '',
     experienceId: '',
     wishId: data.wishId || '',
-    timeHorizon: '',
+    timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
