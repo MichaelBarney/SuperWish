@@ -194,7 +194,56 @@
       <div class="flex-1 min-w-0">
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">
-          <h1 class="text-xl font-bold text-gray-900">{{ currentViewTitle }}</h1>
+          <div class="flex items-center gap-2 min-w-0">
+            <!-- Inline name editing for quest/trip views -->
+            <template v-if="editingEntityName">
+              <input
+                ref="entityNameInput"
+                v-model="editEntityNameValue"
+                class="text-xl font-bold text-gray-900 border-b-2 border-orange-400 bg-transparent outline-none px-0 py-0 min-w-0"
+                @keydown.enter="saveEntityName"
+                @keydown.escape="cancelEditEntityName"
+                @blur="saveEntityName"
+              />
+              <button @click="saveEntityName" class="text-gray-400 hover:text-green-600 transition-colors">
+                <Icon name="lucide:check" class="w-4 h-4" />
+              </button>
+              <button @mousedown.prevent="cancelEditEntityName" class="text-gray-400 hover:text-red-500 transition-colors">
+                <Icon name="lucide:x" class="w-4 h-4" />
+              </button>
+            </template>
+            <template v-else>
+              <h1 class="text-xl font-bold text-gray-900 truncate">{{ currentViewTitle }}</h1>
+              <button
+                v-if="currentView === 'quest' && selectedQuestId"
+                @click="startEditEntityName"
+                class="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+              >
+                <Icon name="lucide:pencil" class="w-4 h-4" />
+              </button>
+              <NuxtLink
+                v-if="currentView === 'quest' && selectedQuestId"
+                :to="'/quest/' + selectedQuestId"
+                class="text-gray-400 hover:text-orange-600 transition-colors shrink-0"
+              >
+                <Icon name="lucide:external-link" class="w-4 h-4" />
+              </NuxtLink>
+              <button
+                v-if="currentView === 'trip' && selectedTripId"
+                @click="startEditEntityName"
+                class="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+              >
+                <Icon name="lucide:pencil" class="w-4 h-4" />
+              </button>
+              <NuxtLink
+                v-if="currentView === 'trip' && selectedTripId"
+                :to="'/trip/' + selectedTripId"
+                class="text-gray-400 hover:text-orange-600 transition-colors shrink-0"
+              >
+                <Icon name="lucide:external-link" class="w-4 h-4" />
+              </NuxtLink>
+            </template>
+          </div>
           <div class="flex items-center gap-2">
             <!-- Group By dropdown (desktop) -->
             <div v-if="isTimeHorizonView" class="relative hidden md:block">
@@ -464,8 +513,8 @@ onMounted(() => {
 
 // Data
 const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
-const { quests } = useQuests()
-const { trips } = useTrips()
+const { quests, updateQuest } = useQuests()
+const { trips, updateTrip } = useTrips()
 const { subquests: allSubquests, getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip, createSubQuestForQuest } = useAllSubquests()
 const { destinations: allDestinations, getDestinationsByTripId } = useAllDestinations()
 const { user: authUser, updateUserPreferences } = useAuth()
@@ -500,29 +549,123 @@ function setTaskGroupBy(value: TaskGroupBy) {
 // View state
 type ViewType = 'inbox' | 'today' | 'this_week' | 'this_month' | 'long_term' | 'no_horizon' | 'quest' | 'trip' | 'subquest' | 'destination'
 const validViews: ViewType[] = ['inbox', 'today', 'this_week', 'this_month', 'long_term', 'no_horizon']
-const initialView: ViewType = validViews.includes(route.query.view as ViewType)
-  ? (route.query.view as ViewType)
-  : 'inbox'
-const currentView = ref<ViewType>(initialView)
-const selectedQuestId = ref('')
-const selectedTripId = ref('')
-const selectedSubQuestId = ref('')
-const selectedDestinationId = ref('')
-const mobileView = ref(initialView as string)
 
-// Sync currentView to URL query parameter
-watch(currentView, (val) => {
-  router.replace({ query: { ...route.query, view: val } })
+// Parse initial view from entity-based query params
+function parseInitialView(): { view: ViewType; questId: string; tripId: string; subQuestId: string; destinationId: string } {
+  const q = route.query
+  if (q.subquest && q.quest) {
+    return { view: 'subquest', questId: q.quest as string, tripId: '', subQuestId: q.subquest as string, destinationId: '' }
+  }
+  if (q.subquest && q.trip) {
+    return { view: 'subquest', questId: '', tripId: q.trip as string, subQuestId: q.subquest as string, destinationId: '' }
+  }
+  if (q.destination && q.trip) {
+    return { view: 'destination', questId: '', tripId: q.trip as string, subQuestId: '', destinationId: q.destination as string }
+  }
+  if (q.quest) {
+    return { view: 'quest', questId: q.quest as string, tripId: '', subQuestId: '', destinationId: '' }
+  }
+  if (q.trip) {
+    return { view: 'trip', questId: '', tripId: q.trip as string, subQuestId: '', destinationId: '' }
+  }
+  const viewParam = q.view as ViewType
+  if (validViews.includes(viewParam)) {
+    return { view: viewParam, questId: '', tripId: '', subQuestId: '', destinationId: '' }
+  }
+  return { view: 'inbox', questId: '', tripId: '', subQuestId: '', destinationId: '' }
+}
+
+const initialState = parseInitialView()
+const currentView = ref<ViewType>(initialState.view)
+const selectedQuestId = ref(initialState.questId)
+const selectedTripId = ref(initialState.tripId)
+const selectedSubQuestId = ref(initialState.subQuestId)
+const selectedDestinationId = ref(initialState.destinationId)
+const mobileView = ref(
+  initialState.view === 'quest' ? `quest:${initialState.questId}`
+  : initialState.view === 'trip' ? `trip:${initialState.tripId}`
+  : initialState.view === 'subquest' && initialState.questId ? `subquest:${initialState.questId}:${initialState.subQuestId}`
+  : initialState.view === 'subquest' && initialState.tripId ? `tripsubquest:${initialState.tripId}:${initialState.subQuestId}`
+  : initialState.view === 'destination' ? `destination:${initialState.tripId}:${initialState.destinationId}`
+  : initialState.view as string
+)
+
+// Sync view state to URL query params
+const isUpdatingUrl = ref(false)
+watch([currentView, selectedQuestId, selectedTripId, selectedSubQuestId, selectedDestinationId], () => {
+  if (isUpdatingUrl.value) return
+  isUpdatingUrl.value = true
+  const v = currentView.value
+  let query: Record<string, string> = {}
+  if (v === 'quest' && selectedQuestId.value) {
+    query = { quest: selectedQuestId.value }
+  } else if (v === 'trip' && selectedTripId.value) {
+    query = { trip: selectedTripId.value }
+  } else if (v === 'subquest' && selectedSubQuestId.value && selectedQuestId.value) {
+    query = { subquest: selectedSubQuestId.value, quest: selectedQuestId.value }
+  } else if (v === 'subquest' && selectedSubQuestId.value && selectedTripId.value) {
+    query = { subquest: selectedSubQuestId.value, trip: selectedTripId.value }
+  } else if (v === 'destination' && selectedDestinationId.value && selectedTripId.value) {
+    query = { destination: selectedDestinationId.value, trip: selectedTripId.value }
+  } else if (validViews.includes(v)) {
+    query = v === 'inbox' ? {} : { view: v }
+  }
+  router.replace({ query }).finally(() => {
+    isUpdatingUrl.value = false
+  })
 })
 
 // Expand state for sidebar tree
 const expandedQuestIds = ref<Record<string, boolean>>({})
 const expandedTripIds = ref<Record<string, boolean>>({})
 
+// Expand sidebar tree for restored entity selections from URL
+if (initialState.questId && initialState.view === 'subquest') {
+  expandedQuestIds.value[initialState.questId] = true
+}
+if (initialState.tripId && (initialState.view === 'subquest' || initialState.view === 'destination')) {
+  expandedTripIds.value[initialState.tripId] = true
+}
+
 // Modals
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const selectedTask = ref<Task | null>(null)
+
+// Inline entity name editing
+const editingEntityName = ref(false)
+const editEntityNameValue = ref('')
+const entityNameInput = ref<HTMLInputElement | null>(null)
+
+function startEditEntityName() {
+  editEntityNameValue.value = currentViewTitle.value
+  editingEntityName.value = true
+  nextTick(() => {
+    entityNameInput.value?.focus()
+    entityNameInput.value?.select()
+  })
+}
+
+function cancelEditEntityName() {
+  editingEntityName.value = false
+  editEntityNameValue.value = ''
+}
+
+async function saveEntityName() {
+  if (!editingEntityName.value) return
+  const newName = editEntityNameValue.value.trim()
+  if (!newName) {
+    cancelEditEntityName()
+    return
+  }
+  if (currentView.value === 'quest' && selectedQuestId.value) {
+    await updateQuest(selectedQuestId.value, { name: newName })
+  } else if (currentView.value === 'trip' && selectedTripId.value) {
+    await updateTrip(selectedTripId.value, { name: newName })
+  }
+  editingEntityName.value = false
+  editEntityNameValue.value = ''
+}
 
 // Name maps for project labels
 const questNameMap = computed(() => {

@@ -70,32 +70,7 @@
 
     <!-- Badge group -->
     <div class="flex items-start gap-1 mt-0.5 shrink-0">
-      <!-- Due date pill -->
-      <div class="relative min-w-[4rem] flex justify-center" ref="dueDateDropdownRef">
-        <button
-          v-if="task.dueDate"
-          @click.stop="toggleDueDateDropdown"
-          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
-          :class="dueDatePillClass"
-        >
-          <Icon name="lucide:calendar" class="w-3 h-3 shrink-0" />
-          <span>{{ formattedDueDate }}</span>
-        </button>
-        <button
-          v-else
-          @click.stop="toggleDueDateDropdown"
-          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
-        >
-          <Icon name="lucide:calendar" class="w-4 h-4" />
-        </button>
-
-        <!-- Date Picker Dropdown -->
-        <TaskDatePicker
-          v-model="showDueDateDropdown"
-          :current-date="task.dueDate || null"
-          @select="handleDueDateSelect"
-        />
-      </div>
+     
 
       <!-- Time horizon pill -->
       <div class="relative min-w-[4rem] flex justify-center" ref="horizonDropdownRef">
@@ -146,8 +121,56 @@
         </div>
       </div>
 
-      <!-- Blocker pill -->
-      <div class="relative min-w-[2rem] flex justify-center" ref="blockerDropdownRef">
+      <!-- Estimated time pill -->
+      <div class="relative min-w-[4rem] flex justify-center" ref="estimateDropdownRef">
+        <button
+          v-if="task.estimatedTime"
+          @click.stop="toggleEstimateDropdown"
+          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+          :class="estimatePillClass"
+        >
+          <Icon :name="estimateIcon" class="w-3 h-3 shrink-0" />
+          <span>{{ estimateLabel }}</span>
+        </button>
+        <button
+          v-else
+          @click.stop="toggleEstimateDropdown"
+          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+        >
+          <Icon name="lucide:timer" class="w-4 h-4" />
+        </button>
+
+        <!-- Dropdown -->
+        <div
+          v-if="showEstimateDropdown"
+          class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+        >
+          <button
+            v-for="option in estimateOptions"
+            :key="option.value"
+            @click.stop="selectEstimate(option.value)"
+            class="w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors"
+            :class="task.estimatedTime === option.value
+              ? option.activeClass
+              : 'text-gray-700 hover:bg-gray-50'"
+          >
+            <Icon :name="option.icon" class="w-3.5 h-3.5" />
+            <span>{{ option.label }}</span>
+          </button>
+          <div v-if="task.estimatedTime" class="border-t border-gray-100 mt-1 pt-1">
+            <button
+              @click.stop="selectEstimate(null)"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <Icon name="lucide:x" class="w-3.5 h-3.5" />
+              <span>{{ $t('task.estimatedTime.none') }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+       <!-- Blocker pill -->
+       <div class="relative min-w-[2rem] flex justify-center" ref="blockerDropdownRef">
         <button
           v-if="props.task.blockedByTaskIds?.length"
           @click.stop="toggleBlockerDropdown"
@@ -217,54 +240,6 @@
             @update:model-value="showBlockerPicker = $event"
             @select="addBlocker"
           />
-        </div>
-      </div>
-
-      <!-- Estimated time pill -->
-      <div class="relative min-w-[4rem] flex justify-center" ref="estimateDropdownRef">
-        <button
-          v-if="task.estimatedTime"
-          @click.stop="toggleEstimateDropdown"
-          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
-          :class="estimatePillClass"
-        >
-          <Icon :name="estimateIcon" class="w-3 h-3 shrink-0" />
-          <span>{{ estimateLabel }}</span>
-        </button>
-        <button
-          v-else
-          @click.stop="toggleEstimateDropdown"
-          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
-        >
-          <Icon name="lucide:timer" class="w-4 h-4" />
-        </button>
-
-        <!-- Dropdown -->
-        <div
-          v-if="showEstimateDropdown"
-          class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
-        >
-          <button
-            v-for="option in estimateOptions"
-            :key="option.value"
-            @click.stop="selectEstimate(option.value)"
-            class="w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors"
-            :class="task.estimatedTime === option.value
-              ? option.activeClass
-              : 'text-gray-700 hover:bg-gray-50'"
-          >
-            <Icon :name="option.icon" class="w-3.5 h-3.5" />
-            <span>{{ option.label }}</span>
-          </button>
-          <div v-if="task.estimatedTime" class="border-t border-gray-100 mt-1 pt-1">
-            <button
-              @click.stop="selectEstimate(null)"
-              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
-            >
-              <Icon name="lucide:x" class="w-3.5 h-3.5" />
-              <span>{{ $t('task.estimatedTime.none') }}</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>
