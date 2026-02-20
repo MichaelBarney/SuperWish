@@ -96,7 +96,19 @@
           >
             <Icon name="lucide:target" class="w-3 h-3" />
             <span class="truncate max-w-[160px]">{{ questPillLabel }}</span>
-            <button v-if="localQuestId" @click="removeQuestLink" class="ml-0.5 hover:text-green-900">
+            <button v-if="localQuestId" @click="removeProjectLink" class="ml-0.5 hover:text-green-900">
+              <Icon name="lucide:x" class="w-3 h-3" />
+            </button>
+          </span>
+        </div>
+        <!-- Trip pill -->
+        <div v-if="effectiveTripId" class="flex flex-wrap gap-1.5 px-3 pb-2">
+          <span
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700"
+          >
+            <Icon name="lucide:plane" class="w-3 h-3" />
+            <span class="truncate max-w-[160px]">{{ tripPillLabel }}</span>
+            <button v-if="localTripId" @click="removeProjectLink" class="ml-0.5 hover:text-purple-900">
               <Icon name="lucide:x" class="w-3 h-3" />
             </button>
           </span>
@@ -183,7 +195,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string }]
-  update: [id: string, data: { title: string; description: string; dueDate: string }]
+  update: [id: string, data: Record<string, any>]
   cancelEdit: []
 }>()
 
@@ -205,6 +217,8 @@ const showMentionPicker = ref(false)
 const mentionQuery = ref('')
 const localQuestId = ref('')
 const localSubQuestId = ref('')
+const localTripId = ref('')
+const localDestinationId = ref('')
 const inputRef = ref<HTMLDivElement | null>(null)
 
 let _suppressRender = false
@@ -331,7 +345,9 @@ function onCompositionEnd() {
 
 const { tasks: allTasks } = useTasks()
 const { quests } = useQuests()
+const { trips } = useTrips()
 const { getSubquestsByQuestId } = useAllSubquests()
+const { getDestinationsByTripId } = useAllDestinations()
 
 const formattedDueDate = computed(() => {
   if (!dueDate.value) return ''
@@ -348,9 +364,24 @@ const formattedRecurrence = computed(() => {
   return formatRecurrence(nlpRecurrenceMatch.value.recurrence, locale.value, t)
 })
 
-// Effective quest ID (local override or prop)
-const effectiveQuestId = computed(() => localQuestId.value || props.questId)
-const effectiveSubQuestId = computed(() => localSubQuestId.value || props.subQuestId)
+// Effective quest/trip IDs (local override or prop, mutually exclusive)
+// If user locally picked a trip, hide any quest from props (and vice versa)
+const effectiveQuestId = computed(() => {
+  if (localTripId.value) return '' // trip overrides quest
+  return localQuestId.value || props.questId
+})
+const effectiveSubQuestId = computed(() => {
+  if (localTripId.value) return ''
+  return localSubQuestId.value || props.subQuestId
+})
+const effectiveTripId = computed(() => {
+  if (localQuestId.value) return '' // quest overrides trip
+  return localTripId.value || props.tripId
+})
+const effectiveDestinationId = computed(() => {
+  if (localQuestId.value) return ''
+  return localDestinationId.value || props.destinationId
+})
 
 const questPillLabel = computed(() => {
   const qId = effectiveQuestId.value
@@ -364,6 +395,20 @@ const questPillLabel = computed(() => {
     if (sub) return `${quest.name} / ${sub.name}`
   }
   return quest.name
+})
+
+const tripPillLabel = computed(() => {
+  const tId = effectiveTripId.value
+  if (!tId) return ''
+  const trip = trips.value.find(t => t.id === tId)
+  if (!trip) return tId
+  const dId = effectiveDestinationId.value
+  if (dId) {
+    const dests = getDestinationsByTripId(tId)
+    const dest = dests.find(d => d.id === dId)
+    if (dest) return `${trip.name} / ${dest.name}`
+  }
+  return trip.name
 })
 
 // When editTask is provided, pre-fill fields
@@ -401,6 +446,8 @@ function collapse() {
   nlpRecurrenceMatch.value = null
   localQuestId.value = ''
   localSubQuestId.value = ''
+  localTripId.value = ''
+  localDestinationId.value = ''
   showWishPicker.value = false
   showBlockerPicker.value = false
   showDatePicker.value = false
@@ -544,15 +591,28 @@ function clearRecurrence() {
   nlpRecurrenceMatch.value = null
 }
 
-function handleQuestSelect(questId: string, subQuestId: string) {
-  localQuestId.value = questId
-  localSubQuestId.value = subQuestId
+function handleQuestSelect(data: { questId?: string; subQuestId?: string; tripId?: string; destinationId?: string }) {
+  // Clear both so they're mutually exclusive
+  localQuestId.value = ''
+  localSubQuestId.value = ''
+  localTripId.value = ''
+  localDestinationId.value = ''
+
+  if (data.questId) {
+    localQuestId.value = data.questId
+    localSubQuestId.value = data.subQuestId || ''
+  } else if (data.tripId) {
+    localTripId.value = data.tripId
+    localDestinationId.value = data.destinationId || ''
+  }
   showQuestPicker.value = false
 }
 
-function removeQuestLink() {
+function removeProjectLink() {
   localQuestId.value = ''
   localSubQuestId.value = ''
+  localTripId.value = ''
+  localDestinationId.value = ''
 }
 
 function handleMentionSelect(type: string) {
@@ -583,11 +643,25 @@ function submit() {
       editTitle = stripDateTextFromTitle(title.value, nlpMatch.value.matchedText, nlpMatch.value.index).trim()
       if (!editTitle) editTitle = title.value.trim()
     }
-    emit('update', props.editTask.id, {
+    const updateData: Record<string, any> = {
       title: editTitle,
       description: description.value.trim(),
       dueDate: dueDate.value ? dueDate.value.toISOString() : '',
-    })
+    }
+    // Include quest/trip link if user changed it via # picker
+    if (localQuestId.value) {
+      updateData.questId = localQuestId.value
+      updateData.subQuestId = localSubQuestId.value
+      updateData.tripId = ''
+      updateData.destinationId = ''
+    }
+    if (localTripId.value) {
+      updateData.tripId = localTripId.value
+      updateData.destinationId = localDestinationId.value
+      updateData.questId = ''
+      updateData.subQuestId = ''
+    }
+    emit('update', props.editTask.id, updateData)
     return
   }
 
@@ -617,8 +691,8 @@ function submit() {
     dueDate: dueDate.value ? dueDate.value.toISOString() : '',
     questId: localQuestId.value || props.questId,
     subQuestId: localSubQuestId.value || props.subQuestId,
-    tripId: props.tripId,
-    destinationId: props.destinationId,
+    tripId: localTripId.value || props.tripId,
+    destinationId: localDestinationId.value || props.destinationId,
     experienceId: props.experienceId,
     wishId: wishId.value,
     blockedByTaskIds: [...blockedByTaskIds.value],
@@ -633,6 +707,8 @@ function submit() {
   nlpRecurrenceMatch.value = null
   localQuestId.value = ''
   localSubQuestId.value = ''
+  localTripId.value = ''
+  localDestinationId.value = ''
   nextTick(() => focusAtEnd())
 }
 </script>

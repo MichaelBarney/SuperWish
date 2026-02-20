@@ -734,11 +734,14 @@
       "clearAll": "Limpar todos"
     },
     "questPicker": {
-      "searchPlaceholder": "Buscar missões...",
-      "noResults": "Nenhuma missão encontrada",
+      "searchPlaceholder": "Buscar missões e viagens...",
+      "noResults": "Nenhuma missão ou viagem encontrada",
       "searchSubQuestPlaceholder": "Buscar sub-missões...",
       "noSubQuests": "Nenhuma sub-missão encontrada",
-      "skipSubQuest": "Sem sub-missão específica"
+      "skipSubQuest": "Sem sub-missão específica",
+      "searchDestinationPlaceholder": "Buscar destinos...",
+      "noDestinations": "Nenhum destino encontrado",
+      "skipDestination": "Sem destino específico"
     },
     "mentions": {
       "wish": "Desejo"

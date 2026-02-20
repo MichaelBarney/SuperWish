@@ -1140,6 +1140,23 @@ const groupedByProjectSections = computed((): ProjectGroup[] => {
     }
   }
 
+  // Sort project groups by sidebar order
+  const sidebarPosition = new Map<string, number>()
+  let pos = 0
+  for (const group of sidebarGroups.value) {
+    for (const item of group.items) {
+      sidebarPosition.set(`${item.type}:${item.id}`, pos++)
+    }
+  }
+  projects.sort((a, b) => {
+    const posA = sidebarPosition.get(a.id)
+    const posB = sidebarPosition.get(b.id)
+    if (posA != null && posB != null) return posA - posB
+    if (posA != null) return -1
+    if (posB != null) return 1
+    return 0
+  })
+
   // No Project group
   if (noProjectTasks.some(tk => !tk.completed)) {
     projects.push({
@@ -1364,7 +1381,7 @@ async function handleCreate(data: TaskForm) {
   }
 }
 
-async function handleInlineUpdate(id: string, data: { title: string; description: string; dueDate?: string }) {
+async function handleInlineUpdate(id: string, data: Record<string, any>) {
   await updateTask(id, data)
 }
 

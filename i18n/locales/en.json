@@ -734,11 +734,14 @@
       "clearAll": "Clear all"
     },
     "questPicker": {
-      "searchPlaceholder": "Search quests...",
-      "noResults": "No quests found",
+      "searchPlaceholder": "Search quests and trips...",
+      "noResults": "No quests or trips found",
       "searchSubQuestPlaceholder": "Search sub-quests...",
       "noSubQuests": "No sub-quests found",
-      "skipSubQuest": "No specific sub-quest"
+      "skipSubQuest": "No specific sub-quest",
+      "searchDestinationPlaceholder": "Search destinations...",
+      "noDestinations": "No destinations found",
+      "skipDestination": "No specific destination"
     },
     "mentions": {
       "wish": "Wish"

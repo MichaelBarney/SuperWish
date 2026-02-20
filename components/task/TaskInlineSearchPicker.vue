@@ -40,7 +40,7 @@ interface Props {
   items: readonly Record<string, any>[]
   searchPlaceholder?: string
   noResultsText?: string
-  accentColor?: 'teal' | 'orange' | 'green' | 'red'
+  accentColor?: 'teal' | 'orange' | 'green' | 'red' | 'purple'
   searchField?: string
   excludeIds?: string[]
 }
@@ -68,6 +68,7 @@ const ringClass = computed(() => {
     case 'orange': return 'focus:ring-orange-300 focus:border-orange-400'
     case 'green': return 'focus:ring-green-300 focus:border-green-400'
     case 'red': return 'focus:ring-red-300 focus:border-red-400'
+    case 'purple': return 'focus:ring-purple-300 focus:border-purple-400'
     default: return 'focus:ring-teal-300 focus:border-teal-400'
   }
 })
@@ -78,6 +79,7 @@ const hoverClass = computed(() => {
     case 'orange': return 'hover:bg-orange-50'
     case 'green': return 'hover:bg-green-50'
     case 'red': return 'hover:bg-red-50'
+    case 'purple': return 'hover:bg-purple-50'
     default: return 'hover:bg-teal-50'
   }
 })

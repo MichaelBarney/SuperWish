@@ -120,7 +120,7 @@ const emit = defineEmits<{
   edit: [task: Task]
   delete: [id: string]
   add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string }]
-  inlineUpdate: [id: string, data: { title: string; description: string; dueDate?: string }]
+  inlineUpdate: [id: string, data: Record<string, any>]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
   updateBlockedBy: [id: string, blockedByTaskIds: string[]]

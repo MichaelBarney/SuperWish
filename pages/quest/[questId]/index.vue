@@ -375,7 +375,7 @@ async function handleDeleteTask(id: string) {
   await deleteTask(id)
 }
 
-async function handleInlineUpdateTask(id: string, data: { title: string; description: string; dueDate?: string }) {
+async function handleInlineUpdateTask(id: string, data: Record<string, any>) {
   await updateTask(id, data)
 }
 
