@@ -5,7 +5,7 @@
     <!-- Checkbox -->
     <button
       @click="handleToggle"
-      class="mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+      class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
       :class="isWishLinked
         ? (effectiveCompleted
           ? 'bg-teal-500 border-teal-500 cursor-not-allowed'
@@ -69,7 +69,7 @@
     </div>
 
     <!-- Badge group -->
-    <div class="flex items-center gap-3 mt-0.5 shrink-0">
+    <div class="flex items-center gap-3 shrink-0">
       <!-- Time horizon pill -->
       <div class="relative min-w-[2rem] flex justify-center" ref="horizonDropdownRef">
         <button
@@ -241,6 +241,53 @@
         </div>
       </div>
 
+      <!-- Recurrence pill -->
+      <div class="relative min-w-[2rem] flex justify-center" ref="recurrenceDropdownRef">
+        <button
+          v-if="task.recurrence"
+          @click.stop="toggleRecurrenceDropdown"
+          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap bg-violet-50 text-violet-700 hover:bg-violet-100"
+        >
+          <Icon name="lucide:repeat" class="w-3 h-3 shrink-0" />
+          <span>{{ recurrenceLabel }}</span>
+        </button>
+        <button
+          v-else
+          @click.stop="toggleRecurrenceDropdown"
+          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+        >
+          <Icon name="lucide:repeat" class="w-4 h-4" />
+        </button>
+
+        <!-- Recurrence Dropdown -->
+        <div
+          v-if="showRecurrenceDropdown"
+          class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+        >
+          <button
+            v-for="option in recurrenceOptions"
+            :key="option.value"
+            @click.stop="selectRecurrence(option.value)"
+            class="w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors"
+            :class="task.recurrence?.frequency === option.value
+              ? 'bg-violet-50 text-violet-700 font-medium'
+              : 'text-gray-700 hover:bg-gray-50'"
+          >
+            <Icon name="lucide:repeat" class="w-3.5 h-3.5" />
+            <span>{{ option.label }}</span>
+          </button>
+          <div v-if="task.recurrence" class="border-t border-gray-100 mt-1 pt-1">
+            <button
+              @click.stop="selectRecurrence(null)"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <Icon name="lucide:x" class="w-3.5 h-3.5" />
+              <span>{{ $t('task.recurrence.none') }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Due date pill -->
       <div class="relative min-w-[2rem] flex justify-center" ref="dueDateDropdownRef">
         <button
@@ -274,7 +321,7 @@
     <!-- Edit button (on hover) -->
     <button
       @click.stop="$emit('startEdit', task.id)"
-      class="mt-0.5 p-1 text-gray-300 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-all"
+      class="p-1 text-gray-300 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-all"
     >
       <Icon name="lucide:pencil" class="w-4 h-4" />
     </button>
@@ -282,7 +329,7 @@
     <!-- Delete button (on hover) -->
     <button
       @click.stop="$emit('delete', task.id)"
-      class="mt-0.5 p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+      class="p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
     >
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -292,9 +339,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Task, Wish, TaskTimeHorizon, TaskEstimatedTime } from '~/types'
+import type { Task, Wish, TaskTimeHorizon, TaskEstimatedTime, TaskRecurrence, TaskRecurrenceFrequency } from '~/types'
 import { isOwnedStatus, getCurrencySymbol } from '~/types'
 import { formatDueDate, isDueDateOverdue } from '~/utils/taskDueDate'
+import { formatRecurrence } from '~/utils/taskRecurrence'
 
 interface Props {
   task: Task
@@ -320,6 +368,7 @@ const emit = defineEmits<{
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
   updateBlockedBy: [id: string, blockedByTaskIds: string[]]
   updateDueDate: [id: string, dueDate: Date | null]
+  updateRecurrence: [id: string, recurrence: TaskRecurrence | null]
 }>()
 
 const { t, locale } = useI18n()
@@ -468,6 +517,35 @@ function clearAllBlockers() {
   showBlockerDropdown.value = false
 }
 
+// Recurrence dropdown
+const showRecurrenceDropdown = ref(false)
+const recurrenceDropdownRef = ref<HTMLElement | null>(null)
+
+const recurrenceLabel = computed(() => {
+  if (!props.task.recurrence) return ''
+  return formatRecurrence(props.task.recurrence, locale.value, t)
+})
+
+const recurrenceOptions = computed(() => [
+  { value: 'daily' as const, label: t('task.recurrence.daily') },
+  { value: 'weekly' as const, label: t('task.recurrence.weekly') },
+  { value: 'monthly' as const, label: t('task.recurrence.monthly') },
+  { value: 'yearly' as const, label: t('task.recurrence.yearly') },
+])
+
+function toggleRecurrenceDropdown() {
+  showRecurrenceDropdown.value = !showRecurrenceDropdown.value
+}
+
+function selectRecurrence(value: TaskRecurrenceFrequency | null) {
+  if (value) {
+    emit('updateRecurrence', props.task.id, { frequency: value, interval: 1 })
+  } else {
+    emit('updateRecurrence', props.task.id, null)
+  }
+  showRecurrenceDropdown.value = false
+}
+
 // Estimated time dropdown
 const showEstimateDropdown = ref(false)
 const estimateDropdownRef = ref<HTMLElement | null>(null)
@@ -515,6 +593,9 @@ function handleClickOutside(e: MouseEvent) {
   }
   if (estimateDropdownRef.value && !estimateDropdownRef.value.contains(e.target as Node)) {
     showEstimateDropdown.value = false
+  }
+  if (recurrenceDropdownRef.value && !recurrenceDropdownRef.value.contains(e.target as Node)) {
+    showRecurrenceDropdown.value = false
   }
   if (blockerDropdownRef.value && !blockerDropdownRef.value.contains(e.target as Node)) {
     showBlockerDropdown.value = false
