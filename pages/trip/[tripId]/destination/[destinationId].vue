@@ -123,6 +123,7 @@
               @update-time-horizon="handleUpdateTaskTimeHorizon"
               @update-estimated-time="handleUpdateTaskEstimatedTime"
               @update-due-date="handleUpdateDueDate"
+              @update-recurrence="handleUpdateRecurrence"
             />
           </div>
         </div>
@@ -283,7 +284,7 @@ const destination = computed(() => destinations.value.find(d => d.id === destina
 const { experiences, loading: experiencesLoading, createExperience, updateExperience, deleteExperience } = useExperiences(destinationId)
 
 // Tasks
-const { getDirectDestinationTasks, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate } = useTasks()
+const { getDirectDestinationTasks, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskRecurrence } = useTasks()
 const destinationDirectTasks = computed(() => getDirectDestinationTasks(destinationId.value))
 
 // Accommodations
@@ -592,7 +593,11 @@ async function handleUpdateDueDate(id: string, dueDate: Date | null) {
   await updateTaskDueDate(id, dueDate)
 }
 
-async function handleQuickAddTask(data: { title: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string }) {
+async function handleUpdateRecurrence(id: string, recurrence: import('~/types').TaskRecurrence | null) {
+  await updateTaskRecurrence(id, recurrence)
+}
+
+async function handleQuickAddTask(data: { title: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; recurrence?: string }) {
   await createTask({
     title: data.title,
     description: '',
@@ -606,6 +611,7 @@ async function handleQuickAddTask(data: { title: string; dueDate?: string; quest
     wishId: data.wishId || '',
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
+    recurrence: data.recurrence || '',
     blockedByTaskIds: (data as any).blockedByTaskIds || [],
   })
 }

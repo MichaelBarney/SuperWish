@@ -25,105 +25,130 @@
             </span>
           </button>
 
-          <!-- Status-grouped sections -->
-          <div v-for="group in sidebarGroups" :key="group.key" class="pt-4">
-            <p class="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              {{ group.label }}
+          <!-- Missions section -->
+          <div v-if="sidebarGroups.length > 0" class="pt-5">
+            <p class="px-3 py-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider">
+              {{ $t('task.sidebar.missions') }}
             </p>
-            <!-- Quests in this group -->
-            <div v-for="quest in group.quests" :key="quest.id">
-              <div class="flex items-center">
-                <button
-                  v-if="getSubquestsByQuestId(quest.id).length > 0"
-                  @click="toggleQuestExpand(quest.id)"
-                  class="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <Icon
-                    name="lucide:chevron-right"
-                    class="w-3.5 h-3.5 transition-transform"
-                    :class="expandedQuestIds[quest.id] ? 'rotate-90' : ''"
-                  />
-                </button>
-                <div v-else class="w-[22px]" />
-                <button
-                  @click="selectQuestView(quest.id)"
-                  class="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
-                  :class="currentView === 'quest' && selectedQuestId === quest.id
-                    ? 'bg-orange-50 text-orange-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
-                >
-                  <Icon :name="quest.icon || 'lucide:target'" class="w-4 h-4" />
-                  <span class="flex-1 text-left truncate">{{ quest.name }}</span>
-                </button>
-              </div>
-              <!-- SubQuests (expanded) -->
-              <div v-if="expandedQuestIds[quest.id]" class="ml-5">
-                <button
-                  v-for="subquest in getSubquestsByQuestId(quest.id)"
-                  :key="subquest.id"
-                  @click="selectSubQuestView(quest.id, subquest.id)"
-                  class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
-                  :class="currentView === 'subquest' && selectedSubQuestId === subquest.id
-                    ? 'bg-orange-50 text-orange-700 font-medium'
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-                >
-                  <Icon name="lucide:circle-dot" class="w-3.5 h-3.5" />
-                  <span class="flex-1 text-left truncate">{{ subquest.name }}</span>
-                </button>
-              </div>
-            </div>
-            <!-- Trips in this group -->
-            <div v-for="trip in group.trips" :key="trip.id">
-              <div class="flex items-center">
-                <button
-                  v-if="getDestinationsByTripId(trip.id).length > 0 || getSubquestsByTripId(trip.id).length > 0"
-                  @click="toggleTripExpand(trip.id)"
-                  class="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <Icon
-                    name="lucide:chevron-right"
-                    class="w-3.5 h-3.5 transition-transform"
-                    :class="expandedTripIds[trip.id] ? 'rotate-90' : ''"
-                  />
-                </button>
-                <div v-else class="w-[22px]" />
-                <button
-                  @click="selectTripView(trip.id)"
-                  class="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
-                  :class="currentView === 'trip' && selectedTripId === trip.id
-                    ? 'bg-orange-50 text-orange-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
-                >
-                  <Icon name="lucide:plane" class="w-4 h-4" />
-                  <span class="flex-1 text-left truncate">{{ trip.name }}</span>
-                </button>
-              </div>
-              <!-- SubQuests & Destinations (expanded) -->
-              <div v-if="expandedTripIds[trip.id]" class="ml-5">
-                <button
-                  v-for="subquest in getSubquestsByTripId(trip.id)"
-                  :key="subquest.id"
-                  @click="selectTripSubQuestView(trip.id, subquest.id)"
-                  class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
-                  :class="currentView === 'subquest' && selectedSubQuestId === subquest.id && selectedTripId === trip.id
-                    ? 'bg-orange-50 text-orange-700 font-medium'
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-                >
-                  <Icon name="lucide:circle-dot" class="w-3.5 h-3.5" />
-                  <span class="flex-1 text-left truncate">{{ subquest.name }}</span>
-                </button>
-                <button
-                  v-for="destination in getDestinationsByTripId(trip.id)"
-                  :key="destination.id"
-                  @click="selectDestinationView(trip.id, destination.id)"
-                  class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
-                  :class="currentView === 'destination' && selectedDestinationId === destination.id
-                    ? 'bg-orange-50 text-orange-700 font-medium'
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-                >
-                  <Icon name="lucide:map-pin" class="w-3.5 h-3.5" />
-                  <span class="flex-1 text-left truncate">{{ destination.name }}</span>
-                </button>
+
+            <!-- Status-grouped sub-sections -->
+            <div v-for="group in sidebarGroups" :key="group.key" class="mt-1">
+              <button
+                @click="toggleSectionExpand(group.key)"
+                class="w-full flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
+              >
+                <Icon
+                  name="lucide:chevron-right"
+                  class="w-3 h-3 transition-transform"
+                  :class="expandedSectionKeys[group.key] ? 'rotate-90' : ''"
+                />
+                <Icon
+                  :name="group.icon"
+                  class="w-3 h-3"
+                  :class="group.iconClass"
+                />
+                {{ group.label }}
+              </button>
+
+              <div v-if="expandedSectionKeys[group.key]" class="ml-4 pl-1 border-l-2" :class="group.borderClass">
+                <!-- Quests in this group -->
+                <div v-for="quest in group.quests" :key="quest.id">
+                  <div class="flex items-center">
+                    <div class="w-[22px] shrink-0 flex items-center justify-center">
+                      <button
+                        v-if="getSubquestsByQuestId(quest.id).length > 0"
+                        @click="toggleQuestExpand(quest.id)"
+                        class="text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        <Icon
+                          name="lucide:chevron-right"
+                          class="w-3.5 h-3.5 transition-transform"
+                          :class="expandedQuestIds[quest.id] ? 'rotate-90' : ''"
+                        />
+                      </button>
+                    </div>
+                    <button
+                      @click="selectQuestView(quest.id)"
+                      class="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
+                      :class="currentView === 'quest' && selectedQuestId === quest.id
+                        ? 'bg-orange-50 text-orange-700'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
+                    >
+                      <Icon :name="quest.icon || 'lucide:target'" class="w-4 h-4" />
+                      <span class="flex-1 text-left truncate">{{ quest.name }}</span>
+                    </button>
+                  </div>
+                  <!-- SubQuests (expanded) -->
+                  <div v-if="expandedQuestIds[quest.id]" class="ml-5">
+                    <button
+                      v-for="subquest in getSubquestsByQuestId(quest.id)"
+                      :key="subquest.id"
+                      @click="selectSubQuestView(quest.id, subquest.id)"
+                      class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
+                      :class="currentView === 'subquest' && selectedSubQuestId === subquest.id
+                        ? 'bg-orange-50 text-orange-700 font-medium'
+                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
+                    >
+                      <Icon name="lucide:circle-dot" class="w-3.5 h-3.5" />
+                      <span class="flex-1 text-left truncate">{{ subquest.name }}</span>
+                    </button>
+                  </div>
+                </div>
+                <!-- Trips in this group -->
+                <div v-for="trip in group.trips" :key="trip.id">
+                  <div class="flex items-center">
+                    <div class="w-[22px] shrink-0 flex items-center justify-center">
+                      <button
+                        v-if="getDestinationsByTripId(trip.id).length > 0 || getSubquestsByTripId(trip.id).length > 0"
+                        @click="toggleTripExpand(trip.id)"
+                        class="text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        <Icon
+                          name="lucide:chevron-right"
+                          class="w-3.5 h-3.5 transition-transform"
+                          :class="expandedTripIds[trip.id] ? 'rotate-90' : ''"
+                        />
+                      </button>
+                    </div>
+                    <button
+                      @click="selectTripView(trip.id)"
+                      class="flex-1 flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
+                      :class="currentView === 'trip' && selectedTripId === trip.id
+                        ? 'bg-orange-50 text-orange-700'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
+                    >
+                      <Icon name="lucide:plane" class="w-4 h-4" />
+                      <span class="flex-1 text-left truncate">{{ trip.name }}</span>
+                    </button>
+                  </div>
+                  <!-- SubQuests & Destinations (expanded) -->
+                  <div v-if="expandedTripIds[trip.id]" class="ml-5">
+                    <button
+                      v-for="subquest in getSubquestsByTripId(trip.id)"
+                      :key="subquest.id"
+                      @click="selectTripSubQuestView(trip.id, subquest.id)"
+                      class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
+                      :class="currentView === 'subquest' && selectedSubQuestId === subquest.id && selectedTripId === trip.id
+                        ? 'bg-orange-50 text-orange-700 font-medium'
+                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
+                    >
+                      <Icon name="lucide:circle-dot" class="w-3.5 h-3.5" />
+                      <span class="flex-1 text-left truncate">{{ subquest.name }}</span>
+                    </button>
+                    <button
+                      v-for="destination in getDestinationsByTripId(trip.id)"
+                      :key="destination.id"
+                      @click="selectDestinationView(trip.id, destination.id)"
+                      class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
+                      :class="currentView === 'destination' && selectedDestinationId === destination.id
+                        ? 'bg-orange-50 text-orange-700 font-medium'
+                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
+                    >
+                      <Icon name="lucide:map-pin" class="w-3.5 h-3.5" />
+                      <span class="flex-1 text-left truncate">{{ destination.name }}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -329,6 +354,7 @@
                     @update-estimated-time="handleUpdateEstimatedTime"
                     @update-blocked-by="handleUpdateBlockedBy"
                 @update-due-date="handleUpdateDueDate"
+                @update-recurrence="handleUpdateRecurrence"
                   />
                 </div>
               </div>
@@ -365,6 +391,7 @@
                 @update-estimated-time="handleUpdateEstimatedTime"
                 @update-blocked-by="handleUpdateBlockedBy"
                 @update-due-date="handleUpdateDueDate"
+                @update-recurrence="handleUpdateRecurrence"
               />
             </div>
             <!-- Add Sub-Quest button for trips and quests -->
@@ -427,6 +454,7 @@
                 @update-estimated-time="handleUpdateEstimatedTime"
                 @update-blocked-by="handleUpdateBlockedBy"
                 @update-due-date="handleUpdateDueDate"
+                @update-recurrence="handleUpdateRecurrence"
               />
             </div>
             <!-- Add Sub-Quest button for trips and quests (flat view) -->
@@ -512,7 +540,7 @@ onMounted(() => {
 })
 
 // Data
-const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
+const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
 const { quests, updateQuest } = useQuests()
 const { trips, updateTrip } = useTrips()
 const { subquests: allSubquests, getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip, createSubQuestForQuest } = useAllSubquests()
@@ -615,6 +643,18 @@ watch([currentView, selectedQuestId, selectedTripId, selectedSubQuestId, selecte
   })
 })
 
+// Expand state for sidebar section groups
+const expandedSectionKeys = ref<Record<string, boolean>>({
+  ongoing: true,
+  on_hold: true,
+  planning: true,
+  completed: false,
+})
+
+function toggleSectionExpand(key: string) {
+  expandedSectionKeys.value[key] = !expandedSectionKeys.value[key]
+}
+
 // Expand state for sidebar tree
 const expandedQuestIds = ref<Record<string, boolean>>({})
 const expandedTripIds = ref<Record<string, boolean>>({})
@@ -700,7 +740,7 @@ const destinationNameMap = computed(() => {
 
 // Sidebar groups by status
 const sidebarGroups = computed(() => {
-  const groups: Array<{ key: string; label: string; quests: typeof quests.value; trips: typeof trips.value }> = []
+  const groups: Array<{ key: string; label: string; icon: string; iconClass: string; borderClass: string; quests: typeof quests.value; trips: typeof trips.value }> = []
 
   function byDate<T extends { endDate?: Date | null; startDate?: Date | null }>(a: T, b: T): number {
     const dateA = a.endDate ?? a.startDate
@@ -712,17 +752,17 @@ const sidebarGroups = computed(() => {
   }
 
   const defs = [
-    { key: 'ongoing', questStatuses: ['in_progress'], tripStatuses: ['active', 'upcoming'] },
-    { key: 'on_hold', questStatuses: ['on_hold'], tripStatuses: ['on_hold'] },
-    { key: 'planning', questStatuses: ['planning'], tripStatuses: ['planning'] },
-    { key: 'completed', questStatuses: ['completed'], tripStatuses: ['completed'] },
+    { key: 'ongoing', questStatuses: ['in_progress'], tripStatuses: ['active', 'upcoming'], icon: 'lucide:play', iconClass: 'text-green-500', borderClass: 'border-green-300' },
+    { key: 'on_hold', questStatuses: ['on_hold'], tripStatuses: ['on_hold'], icon: 'lucide:pause', iconClass: 'text-amber-500', borderClass: 'border-amber-300' },
+    { key: 'planning', questStatuses: ['planning'], tripStatuses: ['planning'], icon: 'lucide:compass', iconClass: 'text-gray-400', borderClass: 'border-gray-300' },
+    { key: 'completed', questStatuses: ['completed'], tripStatuses: ['completed'], icon: 'lucide:circle-check', iconClass: 'text-emerald-500', borderClass: 'border-emerald-300' },
   ]
 
   for (const def of defs) {
     const q = quests.value.filter(q => def.questStatuses.includes(q.status)).sort(byDate)
     const tr = trips.value.filter(t => def.tripStatuses.includes(t.status)).sort(byDate)
     if (q.length || tr.length) {
-      groups.push({ key: def.key, label: t(`task.sections.${def.key}`), quests: q, trips: tr })
+      groups.push({ key: def.key, label: t(`task.sections.${def.key}`), icon: def.icon, iconClass: def.iconClass, borderClass: def.borderClass, quests: q, trips: tr })
     }
   }
 
@@ -1105,6 +1145,7 @@ const selectedTaskForm = computed(() => {
     destinationId: selectedTask.value.destinationId || '',
     wishId: selectedTask.value.wishId || '',
     timeHorizon: selectedTask.value.timeHorizon || '',
+    recurrence: selectedTask.value.recurrence ? JSON.stringify(selectedTask.value.recurrence) : '',
   }
 })
 
@@ -1207,7 +1248,7 @@ async function handleInlineUpdate(id: string, data: { title: string; description
   await updateTask(id, data)
 }
 
-async function handleQuickAdd(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleQuickAdd(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
   const viewToHorizon: Record<string, string> = {
     today: 'today',
     this_week: 'this_week',
@@ -1232,6 +1273,7 @@ async function handleQuickAdd(data: { title: string; description: string; dueDat
     wishId: data.wishId,
     timeHorizon,
     estimatedTime: '',
+    recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
@@ -1268,6 +1310,10 @@ async function handleUpdateBlockedBy(id: string, blockedByTaskIds: string[]) {
 
 async function handleUpdateDueDate(id: string, dueDate: Date | null) {
   await updateTaskDueDate(id, dueDate)
+}
+
+async function handleUpdateRecurrence(id: string, recurrence: import('~/types').TaskRecurrence | null) {
+  await updateTaskRecurrence(id, recurrence)
 }
 
 async function handleDelete(id: string) {

@@ -471,7 +471,7 @@
       "status": {
         "wishlist": "Lista de Desejos",
         "booked": "Reservado",
-        "completed": "Concluido",
+        "completed": "Confirmado",
         "skipped": "Pulado"
       },
       "form": {
@@ -591,7 +591,7 @@
     },
     "sections": {
       "ongoing": "Em Andamento",
-      "planning": "Planejamento",
+      "planning": "Planejando",
       "on_hold": "Pausado",
       "completed": "Concluídas"
     },
@@ -655,6 +655,9 @@
       "project": "Projeto",
       "noProject": "Sem Projeto"
     },
+    "sidebar": {
+      "missions": "Missões"
+    },
     "sections": {
       "quests": "Missões",
       "trips": "Viagens",
@@ -664,7 +667,7 @@
       "addSubQuest": "Adicionar Sub-Missão",
       "ongoing": "Em Andamento",
       "on_hold": "Pausado",
-      "planning": "Planejamento",
+      "planning": "Planejando",
       "completed": "Concluídas"
     },
     "task": {
@@ -702,6 +705,7 @@
       "selectWish": "Selecione um desejo",
       "linkedToWish": "Vinculado a desejo",
       "dueDate": "Data de Vencimento",
+      "recurrence": "Recorrência",
       "createTask": "Criar Tarefa"
     },
     "wishPicker": {
@@ -711,6 +715,7 @@
     },
     "blockerPicker": {
       "searchPlaceholder": "Buscar tarefas...",
+      "blockedByPlaceholder": "Bloqueado pela tarefa...",
       "noResults": "Nenhuma tarefa encontrada"
     },
     "dueDate": {
@@ -727,6 +732,34 @@
       "currentBlockers": "Bloqueada por",
       "addBlocker": "Adicionar bloqueador",
       "clearAll": "Limpar todos"
+    },
+    "questPicker": {
+      "searchPlaceholder": "Buscar missões...",
+      "noResults": "Nenhuma missão encontrada",
+      "searchSubQuestPlaceholder": "Buscar sub-missões...",
+      "noSubQuests": "Nenhuma sub-missão encontrada",
+      "skipSubQuest": "Sem sub-missão específica"
+    },
+    "mentions": {
+      "wish": "Desejo"
+    },
+    "tooltips": {
+      "horizon": "Horizonte de tempo",
+      "estimate": "Tempo estimado",
+      "blocker": "Digite ! para adicionar bloqueadores",
+      "dueDate": "Digite uma data para definir"
+    },
+    "recurrence": {
+      "daily": "Diário",
+      "weekly": "Semanal",
+      "monthly": "Mensal",
+      "yearly": "Anual",
+      "none": "Sem repetição",
+      "everyDay": "Todo dia",
+      "everyWeek": "Toda semana",
+      "everyMonth": "Todo mês",
+      "everyYear": "Todo ano",
+      "dayOfMonth": "Dia {day} do mês"
     },
     "empty": {
       "title": "Nenhuma tarefa ainda",

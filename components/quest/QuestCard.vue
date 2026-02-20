@@ -24,9 +24,10 @@
       <!-- Status Badge -->
       <div class="absolute top-2 right-2">
         <span
-          class="px-2 py-0.5 rounded-full text-[11px] font-medium"
+          class="px-2 py-0.5 rounded-full text-[11px] font-medium inline-flex items-center gap-1"
           :class="statusBadgeClass"
         >
+          <Icon :name="statusIcon" class="w-2.5 h-2.5" />
           {{ $t(`quest.quests.status.${quest.status}`) }}
         </span>
       </div>
@@ -77,6 +78,16 @@ const statusBadgeClass = computed(() => {
       return 'bg-amber-100 text-amber-700'
     default:
       return 'bg-gray-100 text-gray-700'
+  }
+})
+
+const statusIcon = computed(() => {
+  switch (props.quest.status) {
+    case 'planning': return 'lucide:compass'
+    case 'in_progress': return 'lucide:play'
+    case 'completed': return 'lucide:circle-check'
+    case 'on_hold': return 'lucide:pause'
+    default: return 'lucide:compass'
   }
 })
 

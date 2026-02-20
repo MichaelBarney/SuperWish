@@ -117,6 +117,7 @@
               @update-estimated-time="handleUpdateTaskEstimatedTime"
               @update-blocked-by="handleUpdateBlockedBy"
               @update-due-date="handleUpdateDueDate"
+              @update-recurrence="handleUpdateRecurrence"
             />
           </div>
 
@@ -136,6 +137,7 @@
             @update-estimated-time-task="handleUpdateTaskEstimatedTime"
             @update-blocked-by-task="handleUpdateBlockedBy"
             @update-due-date-task="handleUpdateDueDate"
+            @update-recurrence-task="handleUpdateRecurrence"
           />
 
           <!-- Add Sub-Quest button -->
@@ -163,6 +165,7 @@
               @update-estimated-time-task="handleUpdateTaskEstimatedTime"
               @update-blocked-by-task="handleUpdateBlockedBy"
               @update-due-date-task="handleUpdateDueDate"
+              @update-recurrence-task="handleUpdateRecurrence"
             />
           </template>
         </div>
@@ -537,7 +540,7 @@ const {
 } = useAccommodations(tripId)
 
 // Tasks
-const { tasks: allTasks, getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy } = useTasks()
+const { tasks: allTasks, getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence } = useTasks()
 const tripTasks = computed(() => getDirectTripTasks(tripId.value))
 
 // Sub-Quests
@@ -955,7 +958,11 @@ async function handleUpdateDueDate(id: string, dueDate: Date | null) {
   await updateTaskDueDate(id, dueDate)
 }
 
-async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleUpdateRecurrence(id: string, recurrence: import('~/types').TaskRecurrence | null) {
+  await updateTaskRecurrence(id, recurrence)
+}
+
+async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -969,11 +976,12 @@ async function handleQuickAddTask(data: { title: string; description: string; du
     wishId: data.wishId || '',
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
+    recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 
-async function handleQuickAddDestinationTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleQuickAddDestinationTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -987,11 +995,12 @@ async function handleQuickAddDestinationTask(data: { title: string; description:
     wishId: data.wishId || '',
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
+    recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
 
-async function handleQuickAddSubQuestTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleQuickAddSubQuestTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -1005,6 +1014,7 @@ async function handleQuickAddSubQuestTask(data: { title: string; description: st
     wishId: data.wishId || '',
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
+    recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }

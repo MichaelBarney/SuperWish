@@ -46,6 +46,7 @@
         @update-estimated-time-task="(id, et) => $emit('updateEstimatedTimeTask', id, et)"
         @update-blocked-by-task="(id, ids) => $emit('updateBlockedByTask', id, ids)"
         @update-due-date-task="(id, d) => $emit('updateDueDateTask', id, d)"
+        @update-recurrence-task="(id, r) => $emit('updateRecurrenceTask', id, r)"
       />
     </div>
   </div>
@@ -76,11 +77,12 @@ defineEmits<{
   toggleTask: [id: string, completed: boolean]
   editTask: [task: Task]
   deleteTask: [id: string]
-  addTask: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
+  addTask: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string }]
   inlineUpdateTask: [id: string, data: { title: string; description: string; dueDate?: string }]
   updateTimeHorizonTask: [id: string, timeHorizon: string | null]
   updateEstimatedTimeTask: [id: string, estimatedTime: string | null]
   updateBlockedByTask: [id: string, blockedByTaskIds: string[]]
   updateDueDateTask: [id: string, dueDate: Date | null]
+  updateRecurrenceTask: [id: string, recurrence: import('~/types').TaskRecurrence | null]
 }>()
 </script>

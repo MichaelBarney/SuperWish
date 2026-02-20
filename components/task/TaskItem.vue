@@ -81,14 +81,18 @@
           <Icon :name="horizonIcon" class="w-3 h-3 shrink-0" />
           <span>{{ horizonLabel }}</span>
         </button>
-        <button
-          v-else
-          @click.stop="toggleHorizonDropdown"
-          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
-          :class="task.dueDate ? 'opacity-40 cursor-default' : ''"
-        >
-          <Icon name="lucide:hourglass" class="w-4 h-4" />
-        </button>
+        <div v-else class="relative group/tip">
+          <button
+            @click.stop="toggleHorizonDropdown"
+            class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+            :class="task.dueDate ? 'opacity-40 cursor-default' : ''"
+          >
+            <Icon name="lucide:hourglass" class="w-4 h-4" />
+          </button>
+          <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-medium text-white bg-gray-800 rounded-md whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-[70]">
+            {{ $t('task.tooltips.horizon') }}
+          </span>
+        </div>
 
         <!-- Dropdown (only when no dueDate) -->
         <div
@@ -130,13 +134,17 @@
           <Icon :name="estimateIcon" class="w-3 h-3 shrink-0" />
           <span>{{ estimateLabel }}</span>
         </button>
-        <button
-          v-else
-          @click.stop="toggleEstimateDropdown"
-          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
-        >
-          <Icon name="lucide:timer" class="w-4 h-4" />
-        </button>
+        <div v-else class="relative group/tip">
+          <button
+            @click.stop="toggleEstimateDropdown"
+            class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+          >
+            <Icon name="lucide:timer" class="w-4 h-4" />
+          </button>
+          <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-medium text-white bg-gray-800 rounded-md whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-[70]">
+            {{ $t('task.tooltips.estimate') }}
+          </span>
+        </div>
 
         <!-- Dropdown -->
         <div
@@ -180,13 +188,17 @@
           <Icon name="lucide:lock" class="w-3 h-3 shrink-0" />
           <span>{{ props.task.blockedByTaskIds.length }}</span>
         </button>
-        <button
-          v-else
-          @click.stop="toggleBlockerDropdown"
-          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
-        >
-          <Icon name="lucide:lock" class="w-4 h-4" />
-        </button>
+        <div v-else class="relative group/tip">
+          <button
+            @click.stop="toggleBlockerDropdown"
+            class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+          >
+            <Icon name="lucide:lock" class="w-4 h-4" />
+          </button>
+          <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-medium text-white bg-gray-800 rounded-md whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-[70]">
+            {{ $t('task.tooltips.blocker') }}
+          </span>
+        </div>
 
         <!-- Blocker Dropdown -->
         <div
@@ -299,13 +311,17 @@
           <Icon name="lucide:calendar" class="w-3 h-3 shrink-0" />
           <span>{{ formattedDueDate }}</span>
         </button>
-        <button
-          v-else
-          @click.stop="toggleDueDateDropdown"
-          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
-        >
-          <Icon name="lucide:calendar" class="w-4 h-4" />
-        </button>
+        <div v-else class="relative group/tip">
+          <button
+            @click.stop="toggleDueDateDropdown"
+            class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+          >
+            <Icon name="lucide:calendar" class="w-4 h-4" />
+          </button>
+          <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-medium text-white bg-gray-800 rounded-md whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-[70]">
+            {{ $t('task.tooltips.dueDate') }}
+          </span>
+        </div>
 
         <div v-if="showDueDateDropdown" class="absolute right-0 top-full mt-1 w-64 z-50">
           <TaskDatePicker
@@ -403,8 +419,19 @@ const dueDatePillClass = computed(() => {
 const showDueDateDropdown = ref(false)
 const dueDateDropdownRef = ref<HTMLElement | null>(null)
 
+function closeAllDropdowns() {
+  showHorizonDropdown.value = false
+  showEstimateDropdown.value = false
+  showBlockerDropdown.value = false
+  showBlockerPicker.value = false
+  showDueDateDropdown.value = false
+  showRecurrenceDropdown.value = false
+}
+
 function toggleDueDateDropdown() {
-  showDueDateDropdown.value = !showDueDateDropdown.value
+  const wasOpen = showDueDateDropdown.value
+  closeAllDropdowns()
+  showDueDateDropdown.value = !wasOpen
 }
 
 function handleDueDateSelect(date: Date | null) {
@@ -474,9 +501,10 @@ const horizonPillClass = computed(() => {
 })
 
 function toggleHorizonDropdown() {
-  // Don't open dropdown when dueDate exists (horizon is auto-computed)
   if (props.task.dueDate) return
-  showHorizonDropdown.value = !showHorizonDropdown.value
+  const wasOpen = showHorizonDropdown.value
+  closeAllDropdowns()
+  showHorizonDropdown.value = !wasOpen
 }
 
 function selectHorizon(value: TaskTimeHorizon | null) {
@@ -490,8 +518,9 @@ const showBlockerPicker = ref(false)
 const blockerDropdownRef = ref<HTMLElement | null>(null)
 
 function toggleBlockerDropdown() {
-  showBlockerDropdown.value = !showBlockerDropdown.value
-  showBlockerPicker.value = false
+  const wasOpen = showBlockerDropdown.value
+  closeAllDropdowns()
+  showBlockerDropdown.value = !wasOpen
 }
 
 function openBlockerPicker() {
@@ -534,7 +563,9 @@ const recurrenceOptions = computed(() => [
 ])
 
 function toggleRecurrenceDropdown() {
-  showRecurrenceDropdown.value = !showRecurrenceDropdown.value
+  const wasOpen = showRecurrenceDropdown.value
+  closeAllDropdowns()
+  showRecurrenceDropdown.value = !wasOpen
 }
 
 function selectRecurrence(value: TaskRecurrenceFrequency | null) {
@@ -578,7 +609,9 @@ const estimatePillClass = computed(() => {
 })
 
 function toggleEstimateDropdown() {
-  showEstimateDropdown.value = !showEstimateDropdown.value
+  const wasOpen = showEstimateDropdown.value
+  closeAllDropdowns()
+  showEstimateDropdown.value = !wasOpen
 }
 
 function selectEstimate(value: TaskEstimatedTime | null) {

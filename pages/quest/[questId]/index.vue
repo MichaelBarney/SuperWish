@@ -41,9 +41,10 @@
             <div class="flex items-center gap-3">
               <h1 class="text-2xl font-bold text-gray-900">{{ quest.name }}</h1>
               <span
-                class="px-2.5 py-1 rounded-full text-xs font-medium"
+                class="px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1"
                 :class="statusBadgeClass"
               >
+                <Icon :name="statusIcon" class="w-3 h-3" />
                 {{ $t(`quest.quests.status.${quest.status}`) }}
               </span>
             </div>
@@ -125,6 +126,7 @@
             @update-estimated-time="handleUpdateTaskEstimatedTime"
             @update-blocked-by="handleUpdateBlockedBy"
             @update-due-date="handleUpdateDueDate"
+            @update-recurrence="handleUpdateRecurrence"
           />
         </div>
       </div>
@@ -156,6 +158,7 @@
           @update-estimated-time-task="handleUpdateTaskEstimatedTime"
           @update-blocked-by-task="handleUpdateBlockedBy"
           @update-due-date-task="handleUpdateDueDate"
+          @update-recurrence-task="handleUpdateRecurrence"
         />
       </div>
 
@@ -243,7 +246,7 @@ const quest = computed(() => getQuestById(questId.value))
 const { subquests, loading: subquestsLoading, createSubQuest, updateSubQuest, deleteSubQuest } = useSubquests(questId)
 
 // Tasks
-const { tasks: allTasks, getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy } = useTasks()
+const { tasks: allTasks, getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence } = useTasks()
 const questTasks = computed(() => getDirectQuestTasks(questId.value))
 
 // Progress
@@ -274,6 +277,16 @@ const statusBadgeClass = computed(() => {
       return 'bg-amber-100 text-amber-700'
     default:
       return 'bg-gray-100 text-gray-700'
+  }
+})
+
+const statusIcon = computed(() => {
+  switch (quest.value?.status) {
+    case 'planning': return 'lucide:compass'
+    case 'in_progress': return 'lucide:play'
+    case 'completed': return 'lucide:circle-check'
+    case 'on_hold': return 'lucide:pause'
+    default: return 'lucide:compass'
   }
 })
 
@@ -366,7 +379,7 @@ async function handleInlineUpdateTask(id: string, data: { title: string; descrip
   await updateTask(id, data)
 }
 
-async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -380,6 +393,7 @@ async function handleQuickAddTask(data: { title: string; description: string; du
     wishId: data.wishId || '',
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
+    recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }
@@ -400,7 +414,11 @@ async function handleUpdateDueDate(id: string, dueDate: Date | null) {
   await updateTaskDueDate(id, dueDate)
 }
 
-async function handleSubQuestQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[] }) {
+async function handleUpdateRecurrence(id: string, recurrence: import('~/types').TaskRecurrence | null) {
+  await updateTaskRecurrence(id, recurrence)
+}
+
+async function handleSubQuestQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -414,6 +432,7 @@ async function handleSubQuestQuickAddTask(data: { title: string; description: st
     wishId: data.wishId || '',
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
+    recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
   })
 }

@@ -746,6 +746,15 @@ export type TaskEstimatedTime = '5min' | '12min' | '25min' | '1h_plus'
 export type TemperatureUnit = 'celsius' | 'fahrenheit'
 export type TaskGroupBy = 'none' | 'project'
 
+export type TaskRecurrenceFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
+
+export interface TaskRecurrence {
+  frequency: TaskRecurrenceFrequency
+  interval: number
+  dayOfWeek?: number
+  dayOfMonth?: number
+}
+
 export interface Task {
   id: string
   userId: string
@@ -763,6 +772,7 @@ export interface Task {
   wishId?: string | null
   timeHorizon?: TaskTimeHorizon | null
   estimatedTime?: TaskEstimatedTime | null
+  recurrence?: TaskRecurrence | null
   blockedByTaskIds?: string[]
   order: number
   createdAt: Timestamp
@@ -782,5 +792,6 @@ export interface TaskForm {
   wishId: string
   timeHorizon: string
   estimatedTime: string
+  recurrence: string
   blockedByTaskIds: string[]
 }

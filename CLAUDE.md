@@ -23,7 +23,7 @@ No linter or test runner is configured.
 
 ## Documentation
 
-For detailed project documentation, see `documentation/PROJECT.md`. It covers the full tech stack, project structure, design system, deployment instructions, and links to per-module docs (`SUPERWISH.md`, `SUPERTRIP.md`, `SUPERQUEST.md`, `CREATENEWAPP.md`).
+For detailed project documentation, see `documentation/PROJECT.md`. It covers the full tech stack, project structure, design system, deployment instructions, and links to per-module docs (`SUPERWISH.md`, `SUPERTRIP.md`, `SUPERQUEST.md`, `SUPERTASK.md`, `CREATENEWAPP.md`).
 
 ## Architecture
 
@@ -57,6 +57,8 @@ For detailed project documentation, see `documentation/PROJECT.md`. It covers th
 **Component naming (IMPORTANT)**: Nuxt auto-imports deduplicate when the filename already starts with the folder name. `components/task/TaskList.vue` → `<TaskList>` (NOT `<TaskTaskList>`). `components/quest/SubQuestList.vue` → `<QuestSubQuestList>` (folder prefix added since filename doesn't start with `Quest`).
 
 **TaskList event forwarding (IMPORTANT)**: `TaskList` emits several events (`toggle`, `edit`, `delete`, `add`, `inlineUpdate`, `updateTimeHorizon`, `updateEstimatedTime`). When `TaskList` is rendered inside a wrapper component (e.g., `DestinationTaskGroup`, `SubQuestCard`), the wrapper MUST forward ALL TaskList events upward via `$emit` and declare them in `defineEmits`. When adding new events to `TaskList`, update every wrapper component in the chain and every page that consumes tasks. Wrapper components rename events with a `Task` suffix (e.g., `updateTimeHorizon` → `updateTimeHorizonTask`) to avoid collisions.
+
+**SuperTask documentation (IMPORTANT)**: When making changes to the SuperTask module (components in `components/task/`, composables like `useTasks`, pages in `pages/task/`, or task-related types), always update `documentation/SUPERTASK.md` to reflect the changes. This includes adding/removing components, changing the trigger system, modifying event forwarding chains, or updating data models.
 
 ## Firebase
 

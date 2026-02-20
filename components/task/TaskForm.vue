@@ -85,6 +85,23 @@
       </select>
     </div>
 
+    <!-- Recurrence -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        {{ $t('task.form.recurrence') }}
+      </label>
+      <select
+        v-model="recurrenceFrequency"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400"
+      >
+        <option value="">{{ $t('task.recurrence.none') }}</option>
+        <option value="daily">{{ $t('task.recurrence.daily') }}</option>
+        <option value="weekly">{{ $t('task.recurrence.weekly') }}</option>
+        <option value="monthly">{{ $t('task.recurrence.monthly') }}</option>
+        <option value="yearly">{{ $t('task.recurrence.yearly') }}</option>
+      </select>
+    </div>
+
     <!-- Link to -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -184,9 +201,10 @@
 </template>
 
 <script setup lang="ts">
-import type { TaskForm, Quest, Trip, Wish } from '~/types'
+import type { TaskForm, Quest, Trip, Wish, TaskRecurrenceFrequency } from '~/types'
 import { getCurrencySymbol } from '~/types'
 import { computeTimeHorizonFromDate } from '~/utils/taskDueDate'
+import { computeInitialDueDateFromRecurrence } from '~/utils/taskRecurrence'
 
 interface Props {
   initialData?: Partial<TaskForm>
@@ -219,7 +237,34 @@ const form = reactive<TaskForm>({
   wishId: props.initialData?.wishId || '',
   timeHorizon: props.initialData?.timeHorizon || '',
   estimatedTime: props.initialData?.estimatedTime || '',
+  recurrence: props.initialData?.recurrence || '',
   blockedByTaskIds: props.initialData?.blockedByTaskIds || [],
+})
+
+// Recurrence frequency local state
+const recurrenceFrequency = ref('')
+
+// Initialize from form.recurrence
+if (form.recurrence) {
+  try {
+    const parsed = JSON.parse(form.recurrence)
+    recurrenceFrequency.value = parsed.frequency || ''
+  } catch { /* ignore */ }
+}
+
+// Sync recurrence frequency to form.recurrence and auto-set dueDate
+watch(recurrenceFrequency, (val) => {
+  if (val) {
+    const recurrence = { frequency: val as TaskRecurrenceFrequency, interval: 1 }
+    form.recurrence = JSON.stringify(recurrence)
+    // Auto-set dueDate if not already set
+    if (!dueDateValue.value) {
+      const initialDate = computeInitialDueDateFromRecurrence(recurrence)
+      dueDateValue.value = `${initialDate.getFullYear()}-${String(initialDate.getMonth() + 1).padStart(2, '0')}-${String(initialDate.getDate()).padStart(2, '0')}`
+    }
+  } else {
+    form.recurrence = ''
+  }
 })
 
 // Due date local state for the two inputs
@@ -287,10 +332,10 @@ watch(linkType, (newType) => {
   }
 })
 
-// Detect /wish command in title
+// Detect @wish trigger in title
 watch(() => form.title, (val) => {
-  if (val === '/wish') {
-    form.title = ''
+  if (val === '@wish' || val.endsWith(' @wish')) {
+    form.title = val === '@wish' ? '' : val.slice(0, -5).trimEnd()
     linkType.value = 'wish'
     showTitleWishPicker.value = true
   }

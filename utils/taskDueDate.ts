@@ -1,5 +1,10 @@
 import * as chrono from 'chrono-node'
+import { Chrono } from 'chrono-node'
 import type { TaskTimeHorizon } from '~/types'
+import PTRelativeDateFormatParser from '~/utils/PTRelativeDateFormatParser'
+
+const ptParser = new Chrono(chrono.pt.createCasualConfiguration())
+ptParser.parsers.push(new PTRelativeDateFormatParser())
 
 export interface NlpDateMatch {
   date: Date
@@ -33,7 +38,7 @@ export function computeTimeHorizonFromDate(date: Date): TaskTimeHorizon {
 export function parseDateFromText(text: string, locale: string): NlpDateMatch | null {
   if (!text || text.length < 3) return null
 
-  const parser = locale.startsWith('pt') ? chrono.pt : chrono.en
+  const parser = locale.startsWith('pt') ? ptParser : chrono.en.casual
   const results = parser.parse(text, new Date(), { forwardDate: true })
 
   if (results.length === 0) return null

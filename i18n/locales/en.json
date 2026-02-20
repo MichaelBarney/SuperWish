@@ -655,6 +655,9 @@
       "project": "Project",
       "noProject": "No Project"
     },
+    "sidebar": {
+      "missions": "Missions"
+    },
     "sections": {
       "quests": "Quests",
       "trips": "Trips",
@@ -702,6 +705,7 @@
       "selectWish": "Select a wish",
       "linkedToWish": "Linked to wish",
       "dueDate": "Due Date",
+      "recurrence": "Recurrence",
       "createTask": "Create Task"
     },
     "wishPicker": {
@@ -711,6 +715,7 @@
     },
     "blockerPicker": {
       "searchPlaceholder": "Search tasks...",
+      "blockedByPlaceholder": "Blocked by task...",
       "noResults": "No tasks found"
     },
     "dueDate": {
@@ -727,6 +732,34 @@
       "currentBlockers": "Blocked by",
       "addBlocker": "Add blocker",
       "clearAll": "Clear all"
+    },
+    "questPicker": {
+      "searchPlaceholder": "Search quests...",
+      "noResults": "No quests found",
+      "searchSubQuestPlaceholder": "Search sub-quests...",
+      "noSubQuests": "No sub-quests found",
+      "skipSubQuest": "No specific sub-quest"
+    },
+    "mentions": {
+      "wish": "Wish"
+    },
+    "tooltips": {
+      "horizon": "Time horizon",
+      "estimate": "Estimated time",
+      "blocker": "Type ! to add blockers",
+      "dueDate": "Type a date to set"
+    },
+    "recurrence": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "none": "No repeat",
+      "everyDay": "Every day",
+      "everyWeek": "Every week",
+      "everyMonth": "Every month",
+      "everyYear": "Every year",
+      "dayOfMonth": "Day {day} of month"
     },
     "empty": {
       "title": "No tasks yet",

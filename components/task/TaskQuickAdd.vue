@@ -18,28 +18,54 @@
     <div v-if="expanded || editTask" class="relative px-3 pb-3 pt-3">
       <div class="border border-gray-300 rounded-xl shadow-sm">
         <div class="px-3 pt-3 pb-2 space-y-2">
-          <div class="flex items-center gap-2">
-            <!-- Wish indicator -->
-            <Icon
-              v-if="wishId"
-              name="lucide:star"
-              class="w-4 h-4 text-teal-500 shrink-0"
+          <div class="relative">
+            <div class="flex items-center gap-2">
+              <!-- Wish indicator -->
+              <Icon
+                v-if="wishId"
+                name="lucide:star"
+                class="w-4 h-4 text-teal-500 shrink-0"
+              />
+              <div
+                ref="inputRef"
+                contenteditable="true"
+                role="textbox"
+                :aria-placeholder="$t('task.form.titlePlaceholder')"
+                aria-multiline="false"
+                :data-placeholder="$t('task.form.titlePlaceholder')"
+                class="task-quick-add-input flex-1 text-sm text-gray-900 bg-transparent border-none outline-none font-medium whitespace-nowrap overflow-hidden"
+                @input="onInput"
+                @keydown.enter.prevent="submit"
+                @keydown.escape="collapse"
+                @paste.prevent="onPaste"
+                @compositionstart="_composing = true"
+                @compositionend="onCompositionEnd"
+              ></div>
+            </div>
+            <!-- Pickers anchored below title input -->
+            <TaskMentionPicker
+              v-model="showMentionPicker"
+              :query="mentionQuery"
+              @select="handleMentionSelect"
             />
-            <div
-              ref="inputRef"
-              contenteditable="true"
-              role="textbox"
-              :aria-placeholder="$t('task.form.titlePlaceholder')"
-              aria-multiline="false"
-              :data-placeholder="$t('task.form.titlePlaceholder')"
-              class="task-quick-add-input flex-1 text-sm text-gray-900 bg-transparent border-none outline-none font-medium whitespace-nowrap overflow-hidden"
-              @input="onInput"
-              @keydown.enter.prevent="submit"
-              @keydown.escape="collapse"
-              @paste.prevent="onPaste"
-              @compositionstart="_composing = true"
-              @compositionend="onCompositionEnd"
-            ></div>
+            <TaskWishPicker
+              v-model="showWishPicker"
+              @select="handleWishSelect"
+            />
+            <TaskBlockerPicker
+              v-model="showBlockerPicker"
+              :exclude-task-ids="blockedByTaskIds"
+              @select="handleBlockerSelect"
+            />
+            <TaskQuestPicker
+              v-model="showQuestPicker"
+              @select="handleQuestSelect"
+            />
+            <TaskDatePicker
+              v-model="showDatePicker"
+              :current-date="dueDate"
+              @select="handleDateSelect"
+            />
           </div>
           <textarea
             v-model="description"
@@ -63,6 +89,18 @@
             </button>
           </span>
         </div>
+        <!-- Quest pill -->
+        <div v-if="effectiveQuestId" class="flex flex-wrap gap-1.5 px-3 pb-2">
+          <span
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700"
+          >
+            <Icon name="lucide:target" class="w-3 h-3" />
+            <span class="truncate max-w-[160px]">{{ questPillLabel }}</span>
+            <button v-if="localQuestId" @click="removeQuestLink" class="ml-0.5 hover:text-green-900">
+              <Icon name="lucide:x" class="w-3 h-3" />
+            </button>
+          </span>
+        </div>
         <!-- Due date pill -->
         <div v-if="dueDate" class="flex flex-wrap gap-1.5 px-3 pb-2">
           <span
@@ -72,6 +110,18 @@
             <Icon name="lucide:calendar" class="w-3 h-3" />
             <span>{{ formattedDueDate }}</span>
             <button @click="clearDueDate" class="ml-0.5 hover:text-red-900">
+              <Icon name="lucide:x" class="w-3 h-3" />
+            </button>
+          </span>
+        </div>
+        <!-- Recurrence pill -->
+        <div v-if="nlpRecurrenceMatch" class="flex flex-wrap gap-1.5 px-3 pb-2">
+          <span
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-700"
+          >
+            <Icon name="lucide:repeat" class="w-3 h-3" />
+            <span>{{ formattedRecurrence }}</span>
+            <button @click="clearRecurrence" class="ml-0.5 hover:text-violet-900">
               <Icon name="lucide:x" class="w-3 h-3" />
             </button>
           </span>
@@ -101,23 +151,6 @@
           </button>
         </div>
       </div>
-      <!-- Wish Picker (outside overflow container) -->
-      <TaskWishPicker
-        v-model="showWishPicker"
-        @select="handleWishSelect"
-      />
-      <!-- Blocker Picker -->
-      <TaskBlockerPicker
-        v-model="showBlockerPicker"
-        :exclude-task-ids="blockedByTaskIds"
-        @select="handleBlockerSelect"
-      />
-      <!-- Date Picker -->
-      <TaskDatePicker
-        v-model="showDatePicker"
-        :current-date="dueDate"
-        @select="handleDateSelect"
-      />
     </div>
   </div>
 </template>
@@ -127,6 +160,8 @@ import type { Task, Wish } from '~/types'
 import { watchDebounced } from '@vueuse/core'
 import { parseDateFromText, stripDateTextFromTitle, formatDueDate, isDueDateOverdue } from '~/utils/taskDueDate'
 import type { NlpDateMatch } from '~/utils/taskDueDate'
+import { parseRecurrenceFromText, stripRecurrenceTextFromTitle, formatRecurrence, computeInitialDueDateFromRecurrence } from '~/utils/taskRecurrence'
+import type { NlpRecurrenceMatch } from '~/utils/taskRecurrence'
 
 interface Props {
   questId?: string
@@ -147,7 +182,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
+  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string }]
   update: [id: string, data: { title: string; description: string; dueDate: string }]
   cancelEdit: []
 }>()
@@ -161,9 +196,15 @@ const wishId = ref('')
 const blockedByTaskIds = ref<string[]>([])
 const dueDate = ref<Date | null>(null)
 const nlpMatch = ref<NlpDateMatch | null>(null)
+const nlpRecurrenceMatch = ref<NlpRecurrenceMatch | null>(null)
 const showWishPicker = ref(false)
 const showBlockerPicker = ref(false)
 const showDatePicker = ref(false)
+const showQuestPicker = ref(false)
+const showMentionPicker = ref(false)
+const mentionQuery = ref('')
+const localQuestId = ref('')
+const localSubQuestId = ref('')
 const inputRef = ref<HTMLDivElement | null>(null)
 
 let _suppressRender = false
@@ -223,16 +264,44 @@ function renderHighlight() {
   const el = inputRef.value
   if (!el || _composing) return
   const text = title.value
-  const match = nlpMatch.value
+  const dateMatch = nlpMatch.value
+  const recMatch = nlpRecurrenceMatch.value
 
   const caretPos = document.activeElement === el ? getCaretOffset(el) : -1
 
-  if (match && match.index >= 0 && match.end <= text.length
-      && text.slice(match.index, match.end) === match.matchedText) {
-    const before = escapeHtml(text.slice(0, match.index))
-    const highlighted = escapeHtml(text.slice(match.index, match.end))
-    const after = escapeHtml(text.slice(match.end))
-    el.innerHTML = `${before}<span class="bg-orange-100 text-orange-700 rounded px-0.5">${highlighted}</span>${after}`
+  // Collect highlight regions
+  type Region = { start: number; end: number; cls: string }
+  const regions: Region[] = []
+
+  if (dateMatch && dateMatch.index >= 0 && dateMatch.end <= text.length
+      && text.slice(dateMatch.index, dateMatch.end) === dateMatch.matchedText) {
+    regions.push({ start: dateMatch.index, end: dateMatch.end, cls: 'bg-orange-100 text-orange-700 rounded px-0.5' })
+  }
+  if (recMatch && recMatch.index >= 0 && recMatch.end <= text.length
+      && text.slice(recMatch.index, recMatch.end) === recMatch.matchedText) {
+    regions.push({ start: recMatch.index, end: recMatch.end, cls: 'bg-violet-100 text-violet-700 rounded px-0.5' })
+  }
+
+  if (regions.length > 0) {
+    // Sort by start index
+    regions.sort((a, b) => a.start - b.start)
+    // Remove overlaps: keep the first one if they overlap
+    const filtered: Region[] = [regions[0]]
+    for (let i = 1; i < regions.length; i++) {
+      if (regions[i].start >= filtered[filtered.length - 1].end) {
+        filtered.push(regions[i])
+      }
+    }
+
+    let html = ''
+    let cursor = 0
+    for (const r of filtered) {
+      html += escapeHtml(text.slice(cursor, r.start))
+      html += `<span class="${r.cls}">${escapeHtml(text.slice(r.start, r.end))}</span>`
+      cursor = r.end
+    }
+    html += escapeHtml(text.slice(cursor))
+    el.innerHTML = html
   } else {
     el.textContent = text
   }
@@ -261,6 +330,8 @@ function onCompositionEnd() {
 }
 
 const { tasks: allTasks } = useTasks()
+const { quests } = useQuests()
+const { getSubquestsByQuestId } = useAllSubquests()
 
 const formattedDueDate = computed(() => {
   if (!dueDate.value) return ''
@@ -270,6 +341,29 @@ const formattedDueDate = computed(() => {
 const dueDateOverdue = computed(() => {
   if (!dueDate.value) return false
   return isDueDateOverdue(dueDate.value)
+})
+
+const formattedRecurrence = computed(() => {
+  if (!nlpRecurrenceMatch.value) return ''
+  return formatRecurrence(nlpRecurrenceMatch.value.recurrence, locale.value, t)
+})
+
+// Effective quest ID (local override or prop)
+const effectiveQuestId = computed(() => localQuestId.value || props.questId)
+const effectiveSubQuestId = computed(() => localSubQuestId.value || props.subQuestId)
+
+const questPillLabel = computed(() => {
+  const qId = effectiveQuestId.value
+  if (!qId) return ''
+  const quest = quests.value.find(q => q.id === qId)
+  if (!quest) return qId
+  const sqId = effectiveSubQuestId.value
+  if (sqId) {
+    const subs = getSubquestsByQuestId(qId)
+    const sub = subs.find(s => s.id === sqId)
+    if (sub) return `${quest.name} / ${sub.name}`
+  }
+  return quest.name
 })
 
 // When editTask is provided, pre-fill fields
@@ -304,9 +398,15 @@ function collapse() {
   blockedByTaskIds.value = []
   dueDate.value = null
   nlpMatch.value = null
+  nlpRecurrenceMatch.value = null
+  localQuestId.value = ''
+  localSubQuestId.value = ''
   showWishPicker.value = false
   showBlockerPicker.value = false
   showDatePicker.value = false
+  showQuestPicker.value = false
+  showMentionPicker.value = false
+  mentionQuery.value = ''
 }
 
 function handleWishSelect(wish: Wish) {
@@ -315,48 +415,101 @@ function handleWishSelect(wish: Wish) {
   showWishPicker.value = false
 }
 
-// Detect /wish and /block and /date commands, and sync contenteditable on code-driven changes
+// Detect @, !, # triggers; sync contenteditable on code-driven changes
 watch(title, (val) => {
-  if (val === '/wish') {
-    title.value = ''
-    showWishPicker.value = true
-  }
-  if (val === '/block') {
-    title.value = ''
-    showBlockerPicker.value = true
-  }
-  if (val === '/date') {
-    title.value = ''
-    showDatePicker.value = true
+  // @ mention trigger: opens mention picker
+  const atMatch = val.match(/(^|.*\s)@(\w*)$/)
+  if (atMatch) {
+    const partialQuery = atMatch[2] // text after @
+    mentionQuery.value = partialQuery
+
+    // Check for exact match "@wish"
+    if (val === '@wish' || val.endsWith(' @wish')) {
+      showMentionPicker.value = false
+      title.value = val === '@wish' ? '' : val.slice(0, -5).trimEnd()
+      showWishPicker.value = true
+      return
+    }
+
+    // Show mention picker
+    if (!showWishPicker.value) {
+      showMentionPicker.value = true
+    }
+  } else {
+    if (showMentionPicker.value) {
+      showMentionPicker.value = false
+      mentionQuery.value = ''
+    }
   }
 
-  // When title is set from code (wish select, slash commands, collapse/reset),
+  // ! blocker trigger
+  if (val === '!' || val.endsWith(' !')) {
+    title.value = val === '!' ? '' : val.slice(0, -2).trimEnd()
+    showBlockerPicker.value = true
+  }
+
+  // # quest trigger
+  if (val === '#' || val.endsWith(' #')) {
+    title.value = val === '#' ? '' : val.slice(0, -2).trimEnd()
+    showQuestPicker.value = true
+  }
+
+  // When title is set from code (wish select, triggers, collapse/reset),
   // sync the contenteditable div
   if (!_suppressRender) {
     nextTick(() => renderHighlight())
   }
 })
 
-// NLP date detection (debounced)
+// NLP date + recurrence detection (debounced)
 watchDebounced(title, (val) => {
-  // Don't NLP parse if a date was manually set (via picker, not NLP)
-  if (dueDate.value && !nlpMatch.value) return
+  // Recurrence detection
+  const recResult = parseRecurrenceFromText(val, locale.value)
+  if (recResult) {
+    nlpRecurrenceMatch.value = recResult
 
-  const result = parseDateFromText(val, locale.value)
-  if (result) {
-    nlpMatch.value = result
-    dueDate.value = result.date
-  } else {
-    // Clear dueDate only if it was previously set by NLP
-    if (nlpMatch.value) {
-      dueDate.value = null
+    // If recurrence implies a date (e.g. "every monday") or has no impliedDate (e.g. "daily"), auto-set dueDate
+    if (!dueDate.value) {
+      dueDate.value = recResult.impliedDate || computeInitialDueDateFromRecurrence(recResult.recurrence)
+      // Suppress chrono date detection for the same region
+      nlpMatch.value = null
     }
-    nlpMatch.value = null
+
+    // Only run chrono date detection on the portion of text outside the recurrence match
+    if (!dueDate.value || nlpMatch.value) {
+      const textWithoutRec = val.slice(0, recResult.index) + ' '.repeat(recResult.end - recResult.index) + val.slice(recResult.end)
+      const dateResult = parseDateFromText(textWithoutRec, locale.value)
+      if (dateResult) {
+        nlpMatch.value = dateResult
+        dueDate.value = dateResult.date
+      } else if (nlpMatch.value) {
+        dueDate.value = recResult.impliedDate || null
+        nlpMatch.value = null
+      }
+    }
+  } else {
+    if (nlpRecurrenceMatch.value) {
+      nlpRecurrenceMatch.value = null
+    }
+
+    // Normal date detection
+    if (dueDate.value && !nlpMatch.value) return
+
+    const result = parseDateFromText(val, locale.value)
+    if (result) {
+      nlpMatch.value = result
+      dueDate.value = result.date
+    } else {
+      if (nlpMatch.value) {
+        dueDate.value = null
+      }
+      nlpMatch.value = null
+    }
   }
 }, { debounce: 150 })
 
 // Re-render highlight when NLP match changes
-watch(nlpMatch, () => {
+watch([nlpMatch, nlpRecurrenceMatch], () => {
   nextTick(() => renderHighlight())
 })
 
@@ -387,6 +540,41 @@ function clearDueDate() {
   nlpMatch.value = null
 }
 
+function clearRecurrence() {
+  nlpRecurrenceMatch.value = null
+}
+
+function handleQuestSelect(questId: string, subQuestId: string) {
+  localQuestId.value = questId
+  localSubQuestId.value = subQuestId
+  showQuestPicker.value = false
+}
+
+function removeQuestLink() {
+  localQuestId.value = ''
+  localSubQuestId.value = ''
+}
+
+function handleMentionSelect(type: string) {
+  // Strip the @ + partial text from title
+  const val = title.value
+  const atMatch = val.match(/(^|.*\s)@(\w*)$/)
+  if (atMatch) {
+    const beforeAt = atMatch[1] || ''
+    title.value = beforeAt.trimEnd()
+  }
+  showMentionPicker.value = false
+  mentionQuery.value = ''
+
+  // Defer picker opening to next tick so the mention picker fully closes
+  // and the click event finishes propagating before the new picker mounts
+  if (type === 'wish') {
+    nextTick(() => {
+      showWishPicker.value = true
+    })
+  }
+}
+
 function submit() {
   if (!title.value.trim()) return
   if (props.editTask) {
@@ -403,24 +591,38 @@ function submit() {
     return
   }
 
-  // Strip NLP-detected date text from title
+  // Strip NLP-detected date and recurrence text from title
   let finalTitle = title.value.trim()
-  if (nlpMatch.value) {
-    finalTitle = stripDateTextFromTitle(title.value, nlpMatch.value.matchedText, nlpMatch.value.index).trim()
-    if (!finalTitle) finalTitle = title.value.trim() // Fallback if stripping removes everything
+
+  // Collect regions to strip (recurrence first if it comes earlier in text)
+  type StripRegion = { text: string; index: number }
+  const strips: StripRegion[] = []
+  if (nlpRecurrenceMatch.value) {
+    strips.push({ text: nlpRecurrenceMatch.value.matchedText, index: nlpRecurrenceMatch.value.index })
   }
+  if (nlpMatch.value) {
+    strips.push({ text: nlpMatch.value.matchedText, index: nlpMatch.value.index })
+  }
+  // Strip from end to start to preserve indices
+  strips.sort((a, b) => b.index - a.index)
+  for (const s of strips) {
+    finalTitle = stripDateTextFromTitle(finalTitle, s.text, s.index)
+  }
+  finalTitle = finalTitle.trim()
+  if (!finalTitle) finalTitle = title.value.trim()
 
   emit('add', {
     title: finalTitle,
     description: description.value.trim(),
     dueDate: dueDate.value ? dueDate.value.toISOString() : '',
-    questId: props.questId,
-    subQuestId: props.subQuestId,
+    questId: localQuestId.value || props.questId,
+    subQuestId: localSubQuestId.value || props.subQuestId,
     tripId: props.tripId,
     destinationId: props.destinationId,
     experienceId: props.experienceId,
     wishId: wishId.value,
     blockedByTaskIds: [...blockedByTaskIds.value],
+    recurrence: nlpRecurrenceMatch.value ? JSON.stringify(nlpRecurrenceMatch.value.recurrence) : '',
   })
   title.value = ''
   description.value = ''
@@ -428,6 +630,9 @@ function submit() {
   blockedByTaskIds.value = []
   dueDate.value = null
   nlpMatch.value = null
+  nlpRecurrenceMatch.value = null
+  localQuestId.value = ''
+  localSubQuestId.value = ''
   nextTick(() => focusAtEnd())
 }
 </script>

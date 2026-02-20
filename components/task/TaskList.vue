@@ -24,6 +24,7 @@
           @update-estimated-time="(id, et) => $emit('updateEstimatedTime', id, et)"
           @update-blocked-by="(id, ids) => $emit('updateBlockedBy', id, ids)"
           @update-due-date="(id, d) => $emit('updateDueDate', id, d)"
+          @update-recurrence="(id, r) => $emit('updateRecurrence', id, r)"
         />
       </template>
     </div>
@@ -81,6 +82,7 @@
             @update-estimated-time="(id, et) => $emit('updateEstimatedTime', id, et)"
             @update-blocked-by="(id, ids) => $emit('updateBlockedBy', id, ids)"
             @update-due-date="(id, d) => $emit('updateDueDate', id, d)"
+            @update-recurrence="(id, r) => $emit('updateRecurrence', id, r)"
           />
         </template>
       </div>
@@ -89,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Task, TaskTimeHorizon, TaskEstimatedTime } from '~/types'
+import type { Task, TaskTimeHorizon, TaskEstimatedTime, TaskRecurrence } from '~/types'
 import { isOwnedStatus } from '~/types'
 
 interface Props {
@@ -117,12 +119,13 @@ const emit = defineEmits<{
   toggle: [id: string, completed: boolean]
   edit: [task: Task]
   delete: [id: string]
-  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[] }]
+  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string }]
   inlineUpdate: [id: string, data: { title: string; description: string; dueDate?: string }]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]
   updateBlockedBy: [id: string, blockedByTaskIds: string[]]
   updateDueDate: [id: string, dueDate: Date | null]
+  updateRecurrence: [id: string, recurrence: TaskRecurrence | null]
 }>()
 
 const { getWishById } = useAllWishes()
