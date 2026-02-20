@@ -69,11 +69,9 @@
     </div>
 
     <!-- Badge group -->
-    <div class="flex items-start gap-1 mt-0.5 shrink-0">
-     
-
+    <div class="flex items-center gap-3 mt-0.5 shrink-0">
       <!-- Time horizon pill -->
-      <div class="relative min-w-[4rem] flex justify-center" ref="horizonDropdownRef">
+      <div class="relative min-w-[2rem] flex justify-center" ref="horizonDropdownRef">
         <button
           v-if="task.timeHorizon"
           @click.stop="toggleHorizonDropdown"
@@ -89,7 +87,7 @@
           class="p-1 text-gray-300 hover:text-gray-500 transition-all"
           :class="task.dueDate ? 'opacity-40 cursor-default' : ''"
         >
-          <Icon name="lucide:calendar-clock" class="w-4 h-4" />
+          <Icon name="lucide:hourglass" class="w-4 h-4" />
         </button>
 
         <!-- Dropdown (only when no dueDate) -->
@@ -122,7 +120,7 @@
       </div>
 
       <!-- Estimated time pill -->
-      <div class="relative min-w-[4rem] flex justify-center" ref="estimateDropdownRef">
+      <div class="relative min-w-[2rem] flex justify-center" ref="estimateDropdownRef">
         <button
           v-if="task.estimatedTime"
           @click.stop="toggleEstimateDropdown"
@@ -239,6 +237,35 @@
             :exclude-task-ids="[props.task.id, ...(props.task.blockedByTaskIds || [])]"
             @update:model-value="showBlockerPicker = $event"
             @select="addBlocker"
+          />
+        </div>
+      </div>
+
+      <!-- Due date pill -->
+      <div class="relative min-w-[2rem] flex justify-center" ref="dueDateDropdownRef">
+        <button
+          v-if="task.dueDate"
+          @click.stop="toggleDueDateDropdown"
+          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+          :class="dueDatePillClass"
+        >
+          <Icon name="lucide:calendar" class="w-3 h-3 shrink-0" />
+          <span>{{ formattedDueDate }}</span>
+        </button>
+        <button
+          v-else
+          @click.stop="toggleDueDateDropdown"
+          class="p-1 text-gray-300 hover:text-gray-500 transition-all"
+        >
+          <Icon name="lucide:calendar" class="w-4 h-4" />
+        </button>
+
+        <div v-if="showDueDateDropdown" class="absolute right-0 top-full mt-1 w-64 z-50">
+          <TaskDatePicker
+            :model-value="showDueDateDropdown"
+            :current-date="task.dueDate"
+            @update:model-value="showDueDateDropdown = $event"
+            @select="handleDueDateSelect"
           />
         </div>
       </div>
@@ -379,7 +406,7 @@ const horizonOptions = computed(() => [
 
 const horizonIcon = computed(() => {
   const option = horizonOptions.value.find(o => o.value === props.task.timeHorizon)
-  return option?.icon || 'lucide:calendar-clock'
+  return option?.icon || 'lucide:hourglass'
 })
 
 const horizonLabel = computed(() => {
