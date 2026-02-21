@@ -1,0 +1,39 @@
+{
+  "name": "@superwish/web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "lsof -ti:5001 | xargs kill -9 2>/dev/null; cd ../../functions && npm run build && cd ../apps/web && firebase emulators:start --only functions --config ../../firebase.json & nuxt dev",
+    "dev:nuxt": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxtjs/i18n": "^10.2.1",
+    "@vueuse/core": "^14.1.0",
+    "@vueuse/nuxt": "^14.1.0",
+    "browser-image-compression": "^2.0.2",
+    "chrono-node": "^2.9.0",
+    "firebase": "^11.0.0",
+    "nuxt": "^3.14.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.4.0",
+    "vuedraggable": "^4.1.0",
+    "@superwish/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "^1.6.0",
+    "@nuxt/icon": "^1",
+    "@nuxtjs/tailwindcss": "^6.12.0",
+    "@types/node": "^22.0.0",
+    "autoprefixer": "^10.4.20",
+    "csv-parse": "^6.1.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.6.0",
+    "vue-tsc": "^2.1.0"
+  }
+}

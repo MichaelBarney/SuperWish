@@ -1,0 +1,10 @@
+android {
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 34
+        generatedDensities = []
+    }
+    aaptOptions {
+        additionalParameters "--no-version-vectors"
+    }
+}

@@ -32,6 +32,21 @@ SuperTask is the task management module of SuperX. It provides a unified task sy
 - **Today**: Tasks with "Today" time horizon
 - **Group by project**: Group tasks by their linked quest/trip
 
+### Sidebar Drag-and-Drop (Missions)
+
+The left sidebar groups quests and trips ("missions") by status: Ongoing, On Hold, Planning, Completed. Items can be:
+
+- **Reordered** within the same group by dragging — persisted via `sidebarOrder` field on Quest/Trip
+- **Moved between groups** to change status (e.g., drag from Planning → Ongoing sets quest to `in_progress`)
+- Trips cannot be dragged to On Hold (TripStatus doesn't include `on_hold`); the drag is reverted
+
+**Implementation**:
+- Uses `vuedraggable` v4 (wraps SortableJS) with `group="missions"` for cross-list dragging
+- Computed `sidebarGroups` produces unified `SidebarMissionItem[]` per group (quests + trips merged, sorted by `sidebarOrder` then date)
+- Mutable `dragItems` ref mirrors computed data for vuedraggable's v-model
+- `onMissionDragChange` handler updates status via `updateQuestStatus`/`updateTripStatus` and persists order via `sidebarOrder` field
+- All 4 groups always render (even when empty) so they remain valid drop targets
+
 ## Color Scheme
 
 - **Accent Color**: Orange (#f97316 - orange-500)

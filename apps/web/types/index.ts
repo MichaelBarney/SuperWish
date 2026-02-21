@@ -246,6 +246,7 @@ export interface Trip {
   totalBudget?: number
   status: TripStatus
   origin?: TripOrigin
+  sidebarOrder?: number
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -684,6 +685,7 @@ export interface Quest {
   startDate?: Date | null
   endDate?: Date | null
   status: QuestStatus
+  sidebarOrder?: number
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -738,60 +740,18 @@ export interface SubQuestForm {
 }
 
 // =============================================
-// TASK TYPES (SuperTask)
+// TASK TYPES (SuperTask) — re-exported from shared package
 // =============================================
 
-export type TaskTimeHorizon = 'today' | 'this_week' | 'this_month' | 'long_term'
-export type TaskEstimatedTime = '5min' | '12min' | '25min' | '1h_plus'
-export type TemperatureUnit = 'celsius' | 'fahrenheit'
-export type TaskGroupBy = 'none' | 'project'
+export type {
+  TaskTimeHorizon,
+  TaskEstimatedTime,
+  TemperatureUnit,
+  TaskGroupBy,
+  TaskRecurrenceFrequency,
+  TaskRecurrence,
+  TaskForm,
+} from '@superwish/shared'
 
-export type TaskRecurrenceFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
-
-export interface TaskRecurrence {
-  frequency: TaskRecurrenceFrequency
-  interval: number
-  dayOfWeek?: number
-  dayOfMonth?: number
-}
-
-export interface Task {
-  id: string
-  userId: string
-  title: string
-  description?: string
-  completed: boolean
-  completedAt?: Date | null
-  dueDate?: Date | null
-  questId?: string | null
-  subQuestId?: string | null
-  tripId?: string | null
-  destinationId?: string | null
-  accommodationId?: string | null
-  experienceId?: string | null
-  wishId?: string | null
-  timeHorizon?: TaskTimeHorizon | null
-  estimatedTime?: TaskEstimatedTime | null
-  recurrence?: TaskRecurrence | null
-  blockedByTaskIds?: string[]
-  order: number
-  createdAt: Timestamp
-  updatedAt: Timestamp
-}
-
-export interface TaskForm {
-  title: string
-  description: string
-  dueDate: string
-  questId: string
-  subQuestId: string
-  tripId: string
-  destinationId: string
-  accommodationId: string
-  experienceId: string
-  wishId: string
-  timeHorizon: string
-  estimatedTime: string
-  recurrence: string
-  blockedByTaskIds: string[]
-}
+// Web-specific Task type with Firestore Timestamp
+export { type Task } from '@superwish/shared'

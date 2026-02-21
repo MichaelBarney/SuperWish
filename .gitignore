@@ -6,6 +6,10 @@ node_modules/
 .output/
 dist/
 
+# NativeScript build output
+platforms/
+hooks/
+
 # Environment variables (contains API keys)
 .env
 .env.local
@@ -15,6 +19,10 @@ dist/
 .firebase/
 .firebaserc
 firebase-debug.log
+
+# Firebase config files (platform-specific, downloaded from console)
+apps/mobile/App_Resources/Android/google-services.json
+apps/mobile/App_Resources/iOS/GoogleService-Info.plist
 
 # IDE
 .vscode/

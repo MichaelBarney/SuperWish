@@ -1,6 +1,8 @@
 # SuperX - Personal Life Manager
 
-A modern, minimal personal life management application built with Nuxt 3, Firebase, and Tailwind CSS. SuperX combines four integrated modules:
+A modern, minimal personal life management application built with Nuxt 3, Firebase, and Tailwind CSS. SuperX is a **pnpm workspaces monorepo** with a web app, a shared library, and a native mobile app.
+
+### Modules (Web)
 
 | Module | Description | Documentation |
 |--------|-------------|---------------|
@@ -8,6 +10,14 @@ A modern, minimal personal life management application built with Nuxt 3, Fireba
 | **SuperTrip** | Travel planning with itineraries | [SUPERTRIP.md](./SUPERTRIP.md) |
 | **SuperQuest** | Goal and project tracking | [SUPERQUEST.md](./SUPERQUEST.md) |
 | **SuperTask** | Task management across quests and trips | [SUPERTASK.md](./SUPERTASK.md) |
+
+### Packages
+
+| Package | Path | Description |
+|---------|------|-------------|
+| `@superwish/shared` | `packages/shared/` | Shared types, utils, Firebase interfaces |
+| `@superwish/web` | `apps/web/` | Nuxt 3 SPA (this directory) |
+| `@superwish/mobile` | `apps/mobile/` | NativeScript-Vue 3 mobile app — see [MOBILE.md](../../apps/mobile/documentation/MOBILE.md) |
 
 ## Tech Stack
 
