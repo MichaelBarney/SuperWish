@@ -12,10 +12,13 @@ export class NativeScriptFirebaseProvider implements FirebaseProvider {
   }
 
   onAuthStateChange(callback: (userId: string | null) => void): () => void {
-    const unsubscribe = getFirebaseAuth().onAuthStateChanged((user) => {
+    const listener = (user: any) => {
       callback(user?.uid ?? null)
-    })
-    return unsubscribe
+    }
+    getFirebaseAuth().addAuthStateChangeListener(listener)
+    return () => {
+      getFirebaseAuth().removeAuthStateChangeListener(listener)
+    }
   }
 
   subscribeToTasks(

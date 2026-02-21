@@ -1,6 +1,6 @@
 import { ref, computed, readonly } from 'nativescript-vue'
 import { NativeScriptFirebaseProvider } from './useFirebase'
-import { getFirebaseFirestore } from '../firebase'
+import { FieldValue } from '@nativescript/firebase-firestore'
 import type {
   Task,
   TaskForm,
@@ -56,7 +56,6 @@ export function useTasks() {
     if (!userId) return { success: false, error: 'Not authenticated' }
 
     try {
-      const db = getFirebaseFirestore()
       const maxOrder = tasks.value.length > 0
         ? Math.max(...tasks.value.map(t => t.order)) + 1
         : 0
@@ -93,8 +92,8 @@ export function useTasks() {
         recurrence: parsedRecurrence,
         blockedByTaskIds: data.blockedByTaskIds || [],
         order: maxOrder,
-        createdAt: db.FieldValue.serverTimestamp(),
-        updatedAt: db.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       })
       return { success: true, id: docId }
     } catch (err) {
@@ -122,11 +121,10 @@ export function useTasks() {
     }
 
     try {
-      const db = getFirebaseFirestore()
       await provider.updateTask(id, {
         completed,
-        completedAt: completed ? db.FieldValue.serverTimestamp() : null,
-        updatedAt: db.FieldValue.serverTimestamp(),
+        completedAt: completed ? FieldValue.serverTimestamp() : null,
+        updatedAt: FieldValue.serverTimestamp(),
       })
 
       // Auto-create next occurrence for recurring tasks
@@ -155,8 +153,8 @@ export function useTasks() {
           recurrence: task.recurrence,
           blockedByTaskIds: [],
           order: maxOrder,
-          createdAt: db.FieldValue.serverTimestamp(),
-          updatedAt: db.FieldValue.serverTimestamp(),
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         })
       }
 
@@ -169,10 +167,9 @@ export function useTasks() {
 
   const updateTaskTimeHorizon = async (id: string, timeHorizon: TaskTimeHorizon | null) => {
     try {
-      const db = getFirebaseFirestore()
       await provider.updateTask(id, {
         timeHorizon: timeHorizon || null,
-        updatedAt: db.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       })
       return { success: true }
     } catch (err) {
@@ -183,10 +180,9 @@ export function useTasks() {
 
   const updateTaskEstimatedTime = async (id: string, estimatedTime: TaskEstimatedTime | null) => {
     try {
-      const db = getFirebaseFirestore()
       await provider.updateTask(id, {
         estimatedTime: estimatedTime || null,
-        updatedAt: db.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       })
       return { success: true }
     } catch (err) {
@@ -199,11 +195,10 @@ export function useTasks() {
     try {
       // Clean up references in other tasks that were blocked by this one
       const referencingTasks = tasks.value.filter(t => t.blockedByTaskIds?.includes(id))
-      const db = getFirebaseFirestore()
       for (const t of referencingTasks) {
         await provider.updateTask(t.id, {
           blockedByTaskIds: t.blockedByTaskIds!.filter(bid => bid !== id),
-          updatedAt: db.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         })
       }
 

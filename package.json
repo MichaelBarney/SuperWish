@@ -1,6 +1,11 @@
 {
   "name": "superwish-monorepo",
   "private": true,
+  "pnpm": {
+    "overrides": {
+      "typescript": "~5.8.3"
+    }
+  },
   "scripts": {
     "dev": "pnpm --filter @superwish/web dev",
     "dev:nuxt": "pnpm --filter @superwish/web dev:nuxt",
