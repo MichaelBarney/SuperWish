@@ -447,6 +447,9 @@ export function useTasks() {
     return tasks.value.find(task => task.id === id)
   }
 
+  const getTasksByWishId = (wishId: string) =>
+    tasks.value.filter(t => t.wishId === wishId)
+
   // Auto-subscribe when user changes (only on client)
   if (import.meta.client) {
     watch(user, (newUser) => {
@@ -484,6 +487,7 @@ export function useTasks() {
     toggleTaskComplete,
     deleteTask,
     getTaskById,
+    getTasksByWishId,
     getTasksByQuestId,
     getTasksBySubQuestId,
     getTasksByTripId,

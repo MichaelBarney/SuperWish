@@ -77,5 +77,11 @@ service cloud.firestore {
       allow read, update, delete: if isOwner(resource.data.userId);
       allow create: if isOwner(request.resource.data.userId);
     }
+
+    // API Keys collection (only Admin SDK can create/update)
+    match /apiKeys/{keyId} {
+      allow read, delete: if isOwner(resource.data.userId);
+      allow create, update: if false;
+    }
   }
 }

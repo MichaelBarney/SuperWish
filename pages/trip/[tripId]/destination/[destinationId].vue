@@ -285,6 +285,7 @@ const { experiences, loading: experiencesLoading, createExperience, updateExperi
 
 // Tasks
 const { getDirectDestinationTasks, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskRecurrence } = useTasks()
+const { resolveWishId } = useResolveWishCreation()
 const destinationDirectTasks = computed(() => getDirectDestinationTasks(destinationId.value))
 
 // Accommodations
@@ -598,6 +599,7 @@ async function handleUpdateRecurrence(id: string, recurrence: import('~/types').
 }
 
 async function handleQuickAddTask(data: { title: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; recurrence?: string }) {
+  const resolvedWishId = await resolveWishId(data.wishId, data.title)
   await createTask({
     title: data.title,
     description: '',
@@ -608,7 +610,7 @@ async function handleQuickAddTask(data: { title: string; dueDate?: string; quest
     destinationId: destinationId.value,
     accommodationId: '',
     experienceId: '',
-    wishId: data.wishId || '',
+    wishId: resolvedWishId,
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     recurrence: data.recurrence || '',

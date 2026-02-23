@@ -196,7 +196,25 @@
     "temperatureUnit": "Unidade de Temperatura",
     "temperatureUnitHint": "Usada nas previsões do tempo das viagens",
     "celsius": "Celsius (°C)",
-    "fahrenheit": "Fahrenheit (°F)"
+    "fahrenheit": "Fahrenheit (°F)",
+    "apiKeys": {
+      "title": "Chaves de API",
+      "description": "Crie chaves de API para adicionar tarefas de servicos externos como Atalhos da Siri.",
+      "generate": "Gerar Nova Chave",
+      "revoke": "Revogar",
+      "noKeys": "Nenhuma chave de API ainda.",
+      "labelPlaceholder": "Nome da chave (ex: Atalho Siri)",
+      "labelRequired": "Nome e obrigatorio",
+      "generatedTitle": "Chave de API Gerada",
+      "generatedWarning": "Copie esta chave agora. Voce nao podera ve-la novamente.",
+      "copied": "Copiado!",
+      "copyKey": "Copiar Chave",
+      "done": "Pronto",
+      "revokeTitle": "Revogar Chave de API",
+      "revokeWarning": "Qualquer atalho ou integracao usando esta chave deixara de funcionar. Isso nao pode ser desfeito.",
+      "revokeConfirm": "Revogar Chave",
+      "createdAt": "Criada em {date}"
+    }
   },
   "statuses": {
     "wanted": "Desejado",
@@ -701,17 +719,12 @@
       "selectSubQuest": "Selecione uma sub-missão",
       "selectTrip": "Selecione uma viagem",
       "selectDestination": "Selecione um destino",
-      "linkWish": "Desejo",
-      "selectWish": "Selecione um desejo",
+      "linkWish": "Criar Desejo",
       "linkedToWish": "Vinculado a desejo",
+      "wishWillBeCreated": "Um desejo será criado com o título desta tarefa",
       "dueDate": "Data de Vencimento",
       "recurrence": "Recorrência",
       "createTask": "Criar Tarefa"
-    },
-    "wishPicker": {
-      "searchPlaceholder": "Buscar desejos...",
-      "noResults": "Nenhum desejo encontrado",
-      "title": "Selecione um Desejo"
     },
     "blockerPicker": {
       "searchPlaceholder": "Buscar tarefas...",
@@ -744,7 +757,7 @@
       "skipDestination": "Sem destino específico"
     },
     "mentions": {
-      "wish": "Desejo"
+      "createWish": "Criar Desejo"
     },
     "tooltips": {
       "horizon": "Horizonte de tempo",

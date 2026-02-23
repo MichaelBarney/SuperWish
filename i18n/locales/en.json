@@ -196,7 +196,25 @@
     "temperatureUnit": "Temperature Unit",
     "temperatureUnitHint": "Used for weather forecasts in trips",
     "celsius": "Celsius (°C)",
-    "fahrenheit": "Fahrenheit (°F)"
+    "fahrenheit": "Fahrenheit (°F)",
+    "apiKeys": {
+      "title": "API Keys",
+      "description": "Create API keys to add tasks from external services like Siri Shortcuts.",
+      "generate": "Generate New Key",
+      "revoke": "Revoke",
+      "noKeys": "No API keys yet.",
+      "labelPlaceholder": "Key label (e.g. Siri Shortcut)",
+      "labelRequired": "Label is required",
+      "generatedTitle": "API Key Generated",
+      "generatedWarning": "Copy this key now. You won't be able to see it again.",
+      "copied": "Copied!",
+      "copyKey": "Copy Key",
+      "done": "Done",
+      "revokeTitle": "Revoke API Key",
+      "revokeWarning": "Any shortcuts or integrations using this key will stop working. This cannot be undone.",
+      "revokeConfirm": "Revoke Key",
+      "createdAt": "Created {date}"
+    }
   },
   "statuses": {
     "wanted": "Wanted",
@@ -701,17 +719,12 @@
       "selectSubQuest": "Select a sub-quest",
       "selectTrip": "Select a trip",
       "selectDestination": "Select a destination",
-      "linkWish": "Wish",
-      "selectWish": "Select a wish",
+      "linkWish": "Create Wish",
       "linkedToWish": "Linked to wish",
+      "wishWillBeCreated": "A wish will be created with this task's title",
       "dueDate": "Due Date",
       "recurrence": "Recurrence",
       "createTask": "Create Task"
-    },
-    "wishPicker": {
-      "searchPlaceholder": "Search wishes...",
-      "noResults": "No wishes found",
-      "title": "Select a Wish"
     },
     "blockerPicker": {
       "searchPlaceholder": "Search tasks...",
@@ -744,7 +757,7 @@
       "skipDestination": "No specific destination"
     },
     "mentions": {
-      "wish": "Wish"
+      "createWish": "Create Wish"
     },
     "tooltips": {
       "horizon": "Time horizon",

@@ -7,7 +7,7 @@
       </label>
       <div class="flex items-center gap-2">
         <Icon
-          v-if="form.wishId"
+          v-if="form.wishId || linkType === 'wish'"
           name="lucide:star"
           class="w-4 h-4 text-teal-500 shrink-0"
         />
@@ -19,11 +19,6 @@
           required
         />
       </div>
-      <!-- Wish Picker (triggered by /wish in title) -->
-      <TaskWishPicker
-        v-model="showTitleWishPicker"
-        @select="handleTitleWishSelect"
-      />
     </div>
 
     <!-- Description -->
@@ -114,7 +109,7 @@
         <option value="none">{{ $t('task.form.linkNone') }}</option>
         <option value="quest">{{ $t('task.form.linkQuest') }}</option>
         <option value="trip">{{ $t('task.form.linkTrip') }}</option>
-        <option value="wish">{{ $t('task.form.linkWish') }}</option>
+        <option v-if="!initialData?.wishId" value="wish">{{ $t('task.form.linkWish') }}</option>
       </select>
     </div>
 
@@ -146,46 +141,24 @@
       </select>
     </div>
 
-    <!-- Wish selector -->
-    <div v-if="linkType === 'wish'" class="relative">
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        {{ $t('task.form.selectWish') }}
-      </label>
-
-      <!-- Selected wish preview -->
-      <div v-if="selectedWish" class="flex items-center gap-3 p-3 bg-teal-50 border border-teal-200 rounded-lg">
+    <!-- Wish create indicator -->
+    <div v-if="linkType === 'wish'">
+      <!-- Edit mode: read-only wish info -->
+      <div v-if="initialData?.wishId && selectedWish" class="flex items-center gap-3 p-3 bg-teal-50 border border-teal-200 rounded-lg">
         <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shrink-0 overflow-hidden">
           <img v-if="selectedWish.imageUrl" :src="selectedWish.imageUrl" :alt="selectedWish.title" class="w-full h-full object-cover" />
           <Icon v-else name="lucide:star" class="w-5 h-5 text-teal-400" />
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-gray-900 truncate">{{ selectedWish.title }}</p>
-          <div class="flex items-center gap-2 mt-0.5">
-            <WishesWishStatusBadge :status="selectedWish.status" />
-            <span v-if="selectedWish.targetPrice" class="text-xs text-gray-500">
-              {{ getCurrencySymbol(selectedWish.currency) }}{{ selectedWish.targetPrice }}
-            </span>
-          </div>
+          <p class="text-xs text-gray-500 mt-0.5">{{ $t('task.form.linkedToWish') }}</p>
         </div>
-        <button type="button" @click="clearWish" class="p-1 text-gray-400 hover:text-red-500 transition-colors">
-          <Icon name="lucide:x" class="w-4 h-4" />
-        </button>
       </div>
-
-      <!-- Wish search button -->
-      <button
-        v-else
-        type="button"
-        @click="showFormWishPicker = true"
-        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 text-left hover:border-teal-400 transition-colors"
-      >
-        {{ $t('task.form.selectWish') }}...
-      </button>
-
-      <TaskWishPicker
-        v-model="showFormWishPicker"
-        @select="handleFormWishSelect"
-      />
+      <!-- Create mode: indicator -->
+      <div v-else class="flex items-center gap-2 p-3 bg-teal-50 border border-teal-200 rounded-lg">
+        <Icon name="lucide:star" class="w-4 h-4 text-teal-500" />
+        <span class="text-sm text-teal-700">{{ $t('task.form.wishWillBeCreated') }}</span>
+      </div>
     </div>
 
     <!-- Actions -->
@@ -201,8 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TaskForm, Quest, Trip, Wish, TaskRecurrenceFrequency } from '~/types'
-import { getCurrencySymbol } from '~/types'
+import type { TaskForm, Quest, Trip, TaskRecurrenceFrequency } from '~/types'
 import { computeTimeHorizonFromDate } from '~/utils/taskDueDate'
 import { computeInitialDueDateFromRecurrence } from '~/utils/taskRecurrence'
 
@@ -309,11 +281,8 @@ const linkType = ref<'none' | 'quest' | 'trip' | 'wish'>(
   'none'
 )
 
-const showFormWishPicker = ref(false)
-const showTitleWishPicker = ref(false)
-
 const selectedWish = computed(() => {
-  if (!form.wishId) return null
+  if (!form.wishId || form.wishId === '__create__') return null
   return getWishById(form.wishId) || null
 })
 
@@ -329,6 +298,9 @@ watch(linkType, (newType) => {
   }
   if (newType !== 'wish') {
     form.wishId = ''
+  } else if (!props.initialData?.wishId) {
+    // Create mode: set sentinel
+    form.wishId = '__create__'
   }
 })
 
@@ -337,28 +309,9 @@ watch(() => form.title, (val) => {
   if (val === '@wish' || val.endsWith(' @wish')) {
     form.title = val === '@wish' ? '' : val.slice(0, -5).trimEnd()
     linkType.value = 'wish'
-    showTitleWishPicker.value = true
+    form.wishId = '__create__'
   }
 })
-
-function handleTitleWishSelect(wish: Wish) {
-  form.title = wish.title
-  form.wishId = wish.id
-  linkType.value = 'wish'
-  showTitleWishPicker.value = false
-}
-
-function handleFormWishSelect(wish: Wish) {
-  form.wishId = wish.id
-  if (!form.title) {
-    form.title = wish.title
-  }
-  showFormWishPicker.value = false
-}
-
-function clearWish() {
-  form.wishId = ''
-}
 
 function handleSubmit() {
   if (!form.title.trim()) return

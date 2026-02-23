@@ -4,6 +4,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
   query,
   where,
   orderBy,
@@ -148,7 +149,7 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
     }
   }
 
-  const createWish = async (targetListId: string | null, data: WishForm) => {
+  const createWish = async (targetListId: string | null, data: WishForm, options?: { skipAutoTask?: boolean }) => {
     const db = getDb()
     if (!user.value) return { success: false, error: 'Not authenticated' }
     if (!db) return { success: false, error: 'Database not initialized' }
@@ -194,6 +195,38 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
+
+      // Auto-create linked task in SuperTask
+      if (!options?.skipAutoTask) {
+        try {
+          const tasksRef = collection(db, 'tasks')
+          await addDoc(tasksRef, {
+            userId: user.value.uid,
+            title: data.title,
+            description: '',
+            completed: false,
+            completedAt: null,
+            dueDate: null,
+            questId: null,
+            subQuestId: null,
+            tripId: null,
+            destinationId: null,
+            accommodationId: null,
+            experienceId: null,
+            wishId: docRef.id,
+            timeHorizon: null,
+            estimatedTime: null,
+            recurrence: null,
+            blockedByTaskIds: [],
+            order: Date.now(),
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          })
+        } catch (taskErr) {
+          console.error('Error auto-creating task for wish:', taskErr)
+        }
+      }
+
       return { success: true, id: docRef.id }
     } catch (err) {
       console.error('Error creating wish:', err)
@@ -251,6 +284,25 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
       }
 
       await updateDoc(wishRef, updateData)
+
+      // Sync title to linked tasks
+      if (data.title !== undefined) {
+        try {
+          const tasksRef = collection(db, 'tasks')
+          const taskQuery = query(tasksRef, where('wishId', '==', id), where('userId', '==', user.value!.uid))
+          const taskSnapshot = await getDocs(taskQuery)
+          if (taskSnapshot.docs.length > 0) {
+            const batch = writeBatch(db)
+            taskSnapshot.docs.forEach(taskDoc => {
+              batch.update(taskDoc.ref, { title: data.title, updatedAt: serverTimestamp() })
+            })
+            await batch.commit()
+          }
+        } catch (taskErr) {
+          console.error('Error syncing wish title to tasks:', taskErr)
+        }
+      }
+
       return { success: true }
     } catch (err) {
       console.error('Error updating wish:', err)
@@ -272,8 +324,19 @@ export function useWishes(listId?: Ref<string | null | undefined>) {
     if (!db) return { success: false, error: 'Database not initialized' }
 
     try {
-      const wishRef = doc(db, 'wishes', id)
-      await deleteDoc(wishRef)
+      // Find and delete linked tasks atomically with the wish
+      const tasksRef = collection(db, 'tasks')
+      const taskQuery = query(tasksRef, where('wishId', '==', id), where('userId', '==', user.value.uid))
+      const taskSnapshot = await getDocs(taskQuery)
+
+      if (taskSnapshot.docs.length > 0) {
+        const batch = writeBatch(db)
+        taskSnapshot.docs.forEach(taskDoc => batch.delete(taskDoc.ref))
+        batch.delete(doc(db, 'wishes', id))
+        await batch.commit()
+      } else {
+        await deleteDoc(doc(db, 'wishes', id))
+      }
       return { success: true }
     } catch (err) {
       console.error('Error deleting wish:', err)

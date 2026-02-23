@@ -38,7 +38,7 @@ const { t } = useI18n()
 const containerRef = ref<HTMLElement | null>(null)
 
 const mentionTypes = computed(() => [
-  { key: 'wish', label: t('task.mentions.wish'), icon: 'lucide:star', iconClass: 'text-teal-500' },
+  { key: 'wish', label: t('task.mentions.createWish'), icon: 'lucide:star', iconClass: 'text-teal-500' },
 ])
 
 const filteredMentions = computed(() => {

@@ -541,6 +541,7 @@ const {
 
 // Tasks
 const { tasks: allTasks, getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence } = useTasks()
+const { resolveWishId } = useResolveWishCreation()
 const tripTasks = computed(() => getDirectTripTasks(tripId.value))
 
 // Sub-Quests
@@ -963,6 +964,7 @@ async function handleUpdateRecurrence(id: string, recurrence: import('~/types').
 }
 
 async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
+  const resolvedWishId = await resolveWishId(data.wishId, data.title)
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -973,7 +975,7 @@ async function handleQuickAddTask(data: { title: string; description: string; du
     destinationId: '',
     accommodationId: '',
     experienceId: '',
-    wishId: data.wishId || '',
+    wishId: resolvedWishId,
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     recurrence: data.recurrence || '',
@@ -982,6 +984,7 @@ async function handleQuickAddTask(data: { title: string; description: string; du
 }
 
 async function handleQuickAddDestinationTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
+  const resolvedWishId = await resolveWishId(data.wishId, data.title)
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -992,7 +995,7 @@ async function handleQuickAddDestinationTask(data: { title: string; description:
     destinationId: data.destinationId,
     accommodationId: '',
     experienceId: '',
-    wishId: data.wishId || '',
+    wishId: resolvedWishId,
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     recurrence: data.recurrence || '',
@@ -1001,6 +1004,7 @@ async function handleQuickAddDestinationTask(data: { title: string; description:
 }
 
 async function handleQuickAddSubQuestTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
+  const resolvedWishId = await resolveWishId(data.wishId, data.title)
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -1011,7 +1015,7 @@ async function handleQuickAddSubQuestTask(data: { title: string; description: st
     destinationId: '',
     accommodationId: '',
     experienceId: '',
-    wishId: data.wishId || '',
+    wishId: resolvedWishId,
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
     recurrence: data.recurrence || '',

@@ -279,6 +279,38 @@ Each app module has its own accent color:
 - Icon collections: Lucide, SVG Spinners, Simple Icons
 - Via @nuxt/icon module
 
+## Information Hierarchy
+
+All modules feed into SuperTask as the unified execution layer:
+
+```
+User
+├── SuperWish
+│   └── WishList
+│       └── Wish ──[auto-creates]──> Task (wishId)
+│
+├── SuperTrip
+│   └── Trip
+│       ├── Destination ──────────> Task (destinationId)
+│       │   ├── Accommodation ───> Task (accommodationId)
+│       │   └── Experience ──────> Task (experienceId)
+│       └── Transportation
+│
+├── SuperQuest
+│   └── Quest ────────────────────> Task (questId)
+│       └── SubQuest ────────────> Task (subQuestId)
+│
+└── SuperTask (unified execution layer)
+    └── Task ← all items above flow here
+        ├── Time horizon, due date, recurrence
+        ├── Blocked-by dependencies
+        └── Completion: manual OR wish-status-driven
+```
+
+- Wishes auto-create linked tasks on creation, auto-delete on deletion, and sync titles on update
+- Existing wishes are backfilled with tasks on first SuperTask page load via `useWishTaskSync`
+- Wish-linked tasks cannot be manually toggled (completion is tied to wish ownership status)
+
 ## Browser Support
 
 - Chrome (latest)

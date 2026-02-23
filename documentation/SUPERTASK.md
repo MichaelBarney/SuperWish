@@ -8,7 +8,7 @@ SuperTask is the task management module of SuperX. It provides a unified task sy
 - **Quick-add input**: Contenteditable input with inline NLP highlighting for dates and recurrence
 - **Modal form**: Full form with dropdowns for time horizon, recurrence, and link selectors
 - **Inline triggers**: Single-character triggers for quick actions:
-  - `@` → Mention picker → opens wish picker (type `@wish` or select from dropdown)
+  - `@` → Mention picker → toggles create-wish flag (type `@wish` or select from dropdown); task will also create a wish in SuperWish
   - `!` → Opens blocker picker to add blocked-by dependencies
   - `#` → Opens quest/sub-quest picker for linking
   - `/date` → Opens date picker
@@ -31,6 +31,18 @@ SuperTask is the task management module of SuperX. It provides a unified task sy
 - **Inbox**: Tasks not linked to any quest or trip
 - **Today**: Tasks with "Today" time horizon
 - **Group by project**: Group tasks by their linked quest/trip
+
+### Wish-Task Auto-Linking
+
+Every wish in SuperWish automatically creates a corresponding task in SuperTask. This ensures wishes flow into the unified task execution layer.
+
+**Auto-create**: When a wish is created via `useWishes.createWish()`, a linked task is automatically created with `wishId` set to the new wish's document ID. The task lands in Inbox (no quest, no timeHorizon). If task creation fails, the wish is still created successfully. Pass `{ skipAutoTask: true }` as the third argument to suppress auto-task creation (used when creating a wish from a task's `@wish` trigger, since the task already exists).
+
+**Auto-delete**: When a wish is deleted via `useWishes.deleteWish()`, all linked tasks (matching `wishId`) are deleted atomically in a Firestore batch along with the wish.
+
+**Title sync**: When a wish title is updated via `useWishes.updateWish()`, the title is propagated to all linked tasks. Title sync is non-fatal — the wish update succeeds even if task sync fails.
+
+**Backfill**: The `useWishTaskSync` composable handles existing wishes that were created before auto-linking was implemented. It runs once when the SuperTask index page loads (after tasks finish loading), finds wishes without corresponding tasks, and creates task documents for them. It is idempotent — safe to run multiple times.
 
 ## Color Scheme
 
@@ -56,13 +68,13 @@ The quick-add input (`TaskQuickAdd.vue`) supports inline triggers:
 
 | Trigger | Action | Description |
 |---------|--------|-------------|
-| `@` | Opens mention picker | Shows available mention types (currently: Wish). Filters as you type after `@`. |
-| `@wish` | Opens wish picker | Exact match shortcut—skips the mention picker. |
+| `@` | Opens mention picker | Shows available mention types (currently: Create Wish). Filters as you type after `@`. |
+| `@wish` | Toggles create-wish flag | Exact match shortcut—skips the mention picker. Task will also create a wish in SuperWish on submit. |
 | `!` | Opens blocker picker | Type `!` at start or after a space to pick blocking tasks. |
 | `#` | Opens quest picker | Two-step: select quest, then optionally select sub-quest. |
 | `/date` | Opens date picker | Manual date selection calendar. |
 
-The `TaskForm.vue` modal also supports the `@wish` trigger in the title field.
+The `TaskForm.vue` modal also supports the `@wish` trigger in the title field (sets link type to "wish" and marks `wishId` as `__create__`).
 
 ## Recurrence NLP Patterns
 
@@ -113,17 +125,19 @@ When tasks have a `dueDate`, the `timeHorizon` is **not read from Firestore** �
 | TaskQuickAdd | `components/task/TaskQuickAdd.vue` | Expandable quick-add input with NLP highlighting and inline triggers |
 | TaskForm | `components/task/TaskForm.vue` | Full modal form for creating/editing tasks |
 | TaskDatePicker | `components/task/TaskDatePicker.vue` | Calendar date picker with quick options (Today, Tomorrow, Next Week) |
-| TaskWishPicker | `components/task/TaskWishPicker.vue` | Wish search dropdown (thin wrapper around TaskInlineSearchPicker) |
 | TaskBlockerPicker | `components/task/TaskBlockerPicker.vue` | Blocker task search dropdown (thin wrapper around TaskInlineSearchPicker) |
 | TaskQuestPicker | `components/task/TaskQuestPicker.vue` | Two-step quest > sub-quest picker |
 | TaskMentionPicker | `components/task/TaskMentionPicker.vue` | `@` mention type selector dropdown |
-| TaskInlineSearchPicker | `components/task/TaskInlineSearchPicker.vue` | Shared search dropdown used by WishPicker, BlockerPicker, and QuestPicker |
+| TaskInlineSearchPicker | `components/task/TaskInlineSearchPicker.vue` | Shared search dropdown used by BlockerPicker and QuestPicker |
 
 ## Composables
 
 | Composable | File | Description |
 |------------|------|-------------|
 | useTasks | `composables/useTasks.ts` | CRUD operations and real-time Firestore subscription for tasks |
+| useWishTaskSync | `composables/useWishTaskSync.ts` | Backfill sync: creates tasks for existing wishes that lack one |
+| useResolveWishCreation | `composables/useResolveWishCreation.ts` | Shared helper to resolve `__create__` wish sentinel — creates a new wish with `skipAutoTask` and returns its ID |
+| useApiKeys | `composables/useApiKeys.ts` | API key management (generate, revoke, real-time list) |
 
 ## Pages
 
@@ -148,3 +162,66 @@ TaskList → wrapper component → page
 - `SubQuestCard` (SuperQuest quest detail pages)
 
 When adding new events to TaskList, update every wrapper component in the chain and every page that consumes tasks.
+
+## Public API
+
+SuperTask exposes a public HTTP endpoint for creating tasks from external services (e.g., Apple Siri Shortcuts). Authentication uses API keys managed in the Settings page.
+
+### Endpoint
+
+**POST** `https://<region>-<project-id>.cloudfunctions.net/createTaskViaApi`
+
+### Authentication
+
+Include an API key in the `Authorization` header:
+
+```
+Authorization: Bearer <api-key>
+```
+
+API keys are generated in **Settings > API Keys**. Each key is shown once at creation time and cannot be retrieved again. The server stores only a SHA-256 hash.
+
+### Request Body
+
+```json
+{
+  "title": "Buy groceries",
+  "description": "Milk, eggs, bread",
+  "dueDate": "2025-03-15"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `title` | string | Yes | Task title |
+| `description` | string | No | Task description (defaults to `""`) |
+| `dueDate` | string | No | Date in `YYYY-MM-DD` format. `timeHorizon` is auto-computed. |
+
+### Response
+
+**201 Created**:
+```json
+{ "success": true, "taskId": "abc123" }
+```
+
+**Error responses**: `400` (bad request), `401` (unauthorized), `405` (method not allowed), `500` (server error).
+
+### Cloud Functions
+
+| Function | Type | Description |
+|----------|------|-------------|
+| `createTaskViaApi` | `onRequest` (HTTP) | Public endpoint for creating tasks via API key |
+| `generateApiKey` | `onCall` (callable) | Generates a new API key (requires Firebase Auth) |
+| `revokeApiKey` | `onCall` (callable) | Deletes an API key by ID (requires Firebase Auth + ownership) |
+
+### Firestore Collection: `apiKeys`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `hashedKey` | string | SHA-256 hash of the raw API key |
+| `userId` | string | Owner's Firebase Auth UID |
+| `label` | string | User-provided label |
+| `prefix` | string | First 8 characters of the raw key (for display) |
+| `createdAt` | Timestamp | Creation timestamp |
+
+Security rules allow the owner to read and delete their keys. Only the Admin SDK (Cloud Functions) can create keys.

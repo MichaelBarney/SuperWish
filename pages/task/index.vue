@@ -560,11 +560,22 @@ onMounted(() => {
 
 // Data
 const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
+// Backfill: ensure all wishes have linked tasks (runs once after tasks load)
+const { syncWishesWithTasks } = useWishTaskSync()
+const hasSyncedWishTasks = ref(false)
+watch(() => tasksLoading.value, (isLoading) => {
+  if (!isLoading && !hasSyncedWishTasks.value) {
+    hasSyncedWishTasks.value = true
+    syncWishesWithTasks()
+  }
+})
+
 const { quests, updateQuest, updateQuestStatus } = useQuests()
 const { trips, updateTrip, updateTripStatus } = useTrips()
 const { subquests: allSubquests, getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip, createSubQuestForQuest } = useAllSubquests()
 const { destinations: allDestinations, getDestinationsByTripId } = useAllDestinations()
 const { user: authUser, updateUserPreferences } = useAuth()
+const { resolveWishId } = useResolveWishCreation()
 
 // Group By state
 const taskGroupBy = ref<TaskGroupBy>('none')
@@ -1374,7 +1385,8 @@ async function handleAddSubQuest() {
 
 // CRUD handlers
 async function handleCreate(data: TaskForm) {
-  const result = await createTask(data)
+  const resolvedWishId = await resolveWishId(data.wishId, data.title)
+  const result = await createTask({ ...data, wishId: resolvedWishId })
   if (result.success) {
     showCreateModal.value = false
   }
@@ -1396,6 +1408,7 @@ async function handleQuickAdd(data: { title: string; description: string; dueDat
   if (data.dueDate) {
     timeHorizon = computeTimeHorizonFromDate(new Date(data.dueDate))
   }
+  const resolvedWishId = await resolveWishId(data.wishId, data.title)
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -1406,7 +1419,7 @@ async function handleQuickAdd(data: { title: string; description: string; dueDat
     destinationId: data.destinationId,
     accommodationId: '',
     experienceId: data.experienceId || '',
-    wishId: data.wishId,
+    wishId: resolvedWishId,
     timeHorizon,
     estimatedTime: '',
     recurrence: data.recurrence || '',

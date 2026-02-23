@@ -1,7 +1,17 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import { logger } from "firebase-functions";
 import * as cheerio from "cheerio";
+import * as admin from "firebase-admin";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import * as crypto from "crypto";
+
+admin.initializeApp();
+const db = admin.firestore();
+
+function hashApiKey(key: string): string {
+  return crypto.createHash("sha256").update(key).digest("hex");
+}
 
 const serpApiKey = defineSecret("SERPAPI_KEY");
 
@@ -341,3 +351,186 @@ export const fetchUrlMetadata = onCall(
     }
   }
 );
+
+// --- API Key Management ---
+
+function computeTimeHorizon(
+  date: Date
+): "today" | "this_week" | "this_month" | "long_term" {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.floor(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays <= 0) return "today";
+
+  const dayOfWeek = now.getDay();
+  const daysUntilEndOfWeek = 7 - dayOfWeek;
+  if (diffDays <= daysUntilEndOfWeek) return "this_week";
+
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const daysUntilEndOfMonth = Math.floor(
+    (endOfMonth.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  if (diffDays <= daysUntilEndOfMonth) return "this_month";
+
+  return "long_term";
+}
+
+export const createTaskViaApi = onRequest(
+  { cors: true },
+  async (req, res) => {
+    if (req.method !== "POST") {
+      res.status(405).json({ error: "Method not allowed" });
+      return;
+    }
+
+    // Validate Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      res.status(401).json({ error: "Missing or invalid Authorization header" });
+      return;
+    }
+
+    const rawKey = authHeader.slice(7);
+    const hashed = hashApiKey(rawKey);
+
+    // Look up API key
+    const keySnap = await db
+      .collection("apiKeys")
+      .where("hashedKey", "==", hashed)
+      .limit(1)
+      .get();
+
+    if (keySnap.empty) {
+      res.status(401).json({ error: "Invalid API key" });
+      return;
+    }
+
+    const keyDoc = keySnap.docs[0];
+    const userId = keyDoc.data().userId as string;
+
+    // Validate request body
+    const { title, description, dueDate } = req.body as {
+      title?: string;
+      description?: string;
+      dueDate?: string;
+    };
+
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      res.status(400).json({ error: "title is required" });
+      return;
+    }
+
+    try {
+      // Compute next order value using existing ASC index
+      const allTasksSnap = await db
+        .collection("tasks")
+        .where("userId", "==", userId)
+        .orderBy("order", "asc")
+        .select("order")
+        .get();
+
+      let maxOrder = 0;
+      if (!allTasksSnap.empty) {
+        const lastDoc = allTasksSnap.docs[allTasksSnap.docs.length - 1];
+        maxOrder = (lastDoc.data().order as number) + 1;
+      }
+
+      // Parse dueDate if provided (append T12:00:00 per project convention)
+      let parsedDueDate: Date | null = null;
+      let timeHorizon: string | null = null;
+      if (dueDate && typeof dueDate === "string") {
+        parsedDueDate = new Date(dueDate + "T12:00:00");
+        if (isNaN(parsedDueDate.getTime())) {
+          res.status(400).json({ error: "Invalid dueDate format. Use YYYY-MM-DD" });
+          return;
+        }
+        timeHorizon = computeTimeHorizon(parsedDueDate);
+      }
+
+      const taskRef = await db.collection("tasks").add({
+        userId,
+        title: title.trim(),
+        description: description || "",
+        completed: false,
+        completedAt: null,
+        dueDate: parsedDueDate
+          ? Timestamp.fromDate(parsedDueDate)
+          : null,
+        questId: null,
+        subQuestId: null,
+        tripId: null,
+        destinationId: null,
+        accommodationId: null,
+        experienceId: null,
+        wishId: null,
+        timeHorizon,
+        estimatedTime: null,
+        recurrence: null,
+        blockedByTaskIds: [],
+        order: maxOrder,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+
+      logger.info("Task created via API", { taskId: taskRef.id, userId });
+      res.status(201).json({ success: true, taskId: taskRef.id });
+    } catch (err) {
+      logger.error("Error creating task via API", { error: err });
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+export const generateApiKey = onCall({ cors: "*" }, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  const { label } = request.data as { label?: string };
+  if (!label || typeof label !== "string" || label.trim().length === 0) {
+    throw new HttpsError("invalid-argument", "Label is required");
+  }
+
+  const rawKey = crypto.randomBytes(32).toString("hex");
+  const hashed = hashApiKey(rawKey);
+  const prefix = rawKey.slice(0, 8);
+
+  await db.collection("apiKeys").add({
+    hashedKey: hashed,
+    userId: request.auth.uid,
+    label: label.trim(),
+    prefix,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+
+  return { key: rawKey, prefix };
+});
+
+export const revokeApiKey = onCall({ cors: "*" }, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  const { keyId } = request.data as { keyId?: string };
+  if (!keyId || typeof keyId !== "string") {
+    throw new HttpsError("invalid-argument", "keyId is required");
+  }
+
+  const keyRef = db.collection("apiKeys").doc(keyId);
+  const keyDoc = await keyRef.get();
+
+  if (!keyDoc.exists) {
+    throw new HttpsError("not-found", "API key not found");
+  }
+
+  if (keyDoc.data()?.userId !== request.auth.uid) {
+    throw new HttpsError("permission-denied", "Not your API key");
+  }
+
+  await keyRef.delete();
+  return { success: true };
+});

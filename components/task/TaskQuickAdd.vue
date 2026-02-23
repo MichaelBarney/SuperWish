@@ -22,7 +22,7 @@
             <div class="flex items-center gap-2">
               <!-- Wish indicator -->
               <Icon
-                v-if="wishId"
+                v-if="createWishFlag"
                 name="lucide:star"
                 class="w-4 h-4 text-teal-500 shrink-0"
               />
@@ -47,10 +47,6 @@
               v-model="showMentionPicker"
               :query="mentionQuery"
               @select="handleMentionSelect"
-            />
-            <TaskWishPicker
-              v-model="showWishPicker"
-              @select="handleWishSelect"
             />
             <TaskBlockerPicker
               v-model="showBlockerPicker"
@@ -85,6 +81,16 @@
             <Icon name="lucide:lock" class="w-3 h-3" />
             <span class="truncate max-w-[120px]">{{ getBlockerTitle(bid) }}</span>
             <button @click="removeBlocker(bid)" class="ml-0.5 hover:text-red-900">
+              <Icon name="lucide:x" class="w-3 h-3" />
+            </button>
+          </span>
+        </div>
+        <!-- Wish pill -->
+        <div v-if="createWishFlag" class="flex flex-wrap gap-1.5 px-3 pb-2">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700">
+            <Icon name="lucide:star" class="w-3 h-3" />
+            <span>{{ $t('task.mentions.createWish') }}</span>
+            <button @click="createWishFlag = false" class="ml-0.5 hover:text-teal-900">
               <Icon name="lucide:x" class="w-3 h-3" />
             </button>
           </span>
@@ -168,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Task, Wish } from '~/types'
+import type { Task } from '~/types'
 import { watchDebounced } from '@vueuse/core'
 import { parseDateFromText, stripDateTextFromTitle, formatDueDate, isDueDateOverdue } from '~/utils/taskDueDate'
 import type { NlpDateMatch } from '~/utils/taskDueDate'
@@ -204,12 +210,11 @@ const { t, locale } = useI18n()
 const expanded = ref(false)
 const title = ref('')
 const description = ref('')
-const wishId = ref('')
+const createWishFlag = ref(false)
 const blockedByTaskIds = ref<string[]>([])
 const dueDate = ref<Date | null>(null)
 const nlpMatch = ref<NlpDateMatch | null>(null)
 const nlpRecurrenceMatch = ref<NlpRecurrenceMatch | null>(null)
-const showWishPicker = ref(false)
 const showBlockerPicker = ref(false)
 const showDatePicker = ref(false)
 const showQuestPicker = ref(false)
@@ -416,7 +421,7 @@ watch(() => props.editTask, (task) => {
   if (task) {
     title.value = task.title
     description.value = task.description || ''
-    wishId.value = task.wishId || ''
+    createWishFlag.value = !!task.wishId
     blockedByTaskIds.value = task.blockedByTaskIds ? [...task.blockedByTaskIds] : []
     dueDate.value = task.dueDate || null
     nextTick(() => {
@@ -439,7 +444,7 @@ function collapse() {
   expanded.value = false
   title.value = ''
   description.value = ''
-  wishId.value = ''
+  createWishFlag.value = false
   blockedByTaskIds.value = []
   dueDate.value = null
   nlpMatch.value = null
@@ -448,18 +453,11 @@ function collapse() {
   localSubQuestId.value = ''
   localTripId.value = ''
   localDestinationId.value = ''
-  showWishPicker.value = false
   showBlockerPicker.value = false
   showDatePicker.value = false
   showQuestPicker.value = false
   showMentionPicker.value = false
   mentionQuery.value = ''
-}
-
-function handleWishSelect(wish: Wish) {
-  title.value = wish.title
-  wishId.value = wish.id
-  showWishPicker.value = false
 }
 
 // Detect @, !, # triggers; sync contenteditable on code-driven changes
@@ -474,14 +472,12 @@ watch(title, (val) => {
     if (val === '@wish' || val.endsWith(' @wish')) {
       showMentionPicker.value = false
       title.value = val === '@wish' ? '' : val.slice(0, -5).trimEnd()
-      showWishPicker.value = true
+      createWishFlag.value = true
       return
     }
 
     // Show mention picker
-    if (!showWishPicker.value) {
-      showMentionPicker.value = true
-    }
+    showMentionPicker.value = true
   } else {
     if (showMentionPicker.value) {
       showMentionPicker.value = false
@@ -626,12 +622,8 @@ function handleMentionSelect(type: string) {
   showMentionPicker.value = false
   mentionQuery.value = ''
 
-  // Defer picker opening to next tick so the mention picker fully closes
-  // and the click event finishes propagating before the new picker mounts
   if (type === 'wish') {
-    nextTick(() => {
-      showWishPicker.value = true
-    })
+    createWishFlag.value = true
   }
 }
 
@@ -694,13 +686,13 @@ function submit() {
     tripId: localTripId.value || props.tripId,
     destinationId: localDestinationId.value || props.destinationId,
     experienceId: props.experienceId,
-    wishId: wishId.value,
+    wishId: createWishFlag.value ? '__create__' : '',
     blockedByTaskIds: [...blockedByTaskIds.value],
     recurrence: nlpRecurrenceMatch.value ? JSON.stringify(nlpRecurrenceMatch.value.recurrence) : '',
   })
   title.value = ''
   description.value = ''
-  wishId.value = ''
+  createWishFlag.value = false
   blockedByTaskIds.value = []
   dueDate.value = null
   nlpMatch.value = null
