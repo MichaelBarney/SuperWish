@@ -31,6 +31,7 @@
             isSuperTrip ? 'from-purple-400 to-purple-600' :
             isSuperQuest ? 'from-green-400 to-green-600' :
             isSuperTask ? 'from-orange-400 to-orange-600' :
+            isSuperXP ? 'from-rose-400 to-rose-600' :
             'from-accent-400 to-accent-600'
           ]"
         >
@@ -40,6 +41,8 @@
           <Icon v-else-if="isSuperTrip" name="lucide:plane" class="w-5 h-5 text-white" />
           <!-- Target icon for SuperQuest -->
           <Icon v-else-if="isSuperQuest" name="lucide:target" class="w-5 h-5 text-white" />
+          <!-- Sparkles icon for SuperXP -->
+          <Icon v-else-if="isSuperXP" name="lucide:sparkles" class="w-5 h-5 text-white" />
           <!-- Check icon for SuperTask -->
           <Icon v-else name="lucide:square-check-big" class="w-5 h-5 text-white" />
         </div>
@@ -145,6 +148,21 @@
           </template>
         </NavigationAppSidebarItem>
       </template>
+
+      <!-- SuperXP Navigation -->
+      <template v-else-if="isSuperXP">
+        <NavigationAppSidebarItem
+          to="/xp"
+          :label="$t('xp.nav.myExperiences')"
+          :is-active="route.path === '/xp' || route.path.startsWith('/xp/')"
+          :collapsed="!isMobile"
+          variant="rose"
+        >
+          <template #icon>
+            <Icon name="lucide:sparkles" class="w-5 h-5" />
+          </template>
+        </NavigationAppSidebarItem>
+      </template>
     </nav>
 
     <!-- Footer - User Profile (links to settings) -->
@@ -153,7 +171,7 @@
       <NuxtLink
         to="/settings"
         class="hidden lg:flex items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
-        :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : isSuperQuest ? 'bg-green-50' : isSuperTask ? 'bg-orange-50' : 'bg-accent-50') : ''"
+        :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : isSuperQuest ? 'bg-green-50' : isSuperTask ? 'bg-orange-50' : isSuperXP ? 'bg-rose-50' : 'bg-accent-50') : ''"
         :title="$t('nav.settings')"
       >
         <img
@@ -165,11 +183,11 @@
         <div
           v-else
           class="w-9 h-9 rounded-full flex items-center justify-center"
-          :class="isSuperTrip ? 'bg-purple-100' : isSuperQuest ? 'bg-green-100' : isSuperTask ? 'bg-orange-100' : 'bg-accent-100'"
+          :class="isSuperTrip ? 'bg-purple-100' : isSuperQuest ? 'bg-green-100' : isSuperTask ? 'bg-orange-100' : isSuperXP ? 'bg-rose-100' : 'bg-accent-100'"
         >
           <span
             class="text-sm font-medium"
-            :class="isSuperTrip ? 'text-purple-700' : isSuperQuest ? 'text-green-700' : isSuperTask ? 'text-orange-700' : 'text-accent-700'"
+            :class="isSuperTrip ? 'text-purple-700' : isSuperQuest ? 'text-green-700' : isSuperTask ? 'text-orange-700' : isSuperXP ? 'text-rose-700' : 'text-accent-700'"
           >
             {{ user.displayName?.charAt(0) || user.email?.charAt(0) || '?' }}
           </span>
@@ -181,7 +199,7 @@
         <NuxtLink
           to="/settings"
           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-gray-100"
-          :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : isSuperQuest ? 'bg-green-50' : isSuperTask ? 'bg-orange-50' : 'bg-accent-50') : ''"
+          :class="route.path === '/settings' ? (isSuperTrip ? 'bg-purple-50' : isSuperQuest ? 'bg-green-50' : isSuperTask ? 'bg-orange-50' : isSuperXP ? 'bg-rose-50' : 'bg-accent-50') : ''"
         >
           <img
             v-if="user.photoURL"
@@ -192,11 +210,11 @@
           <div
             v-else
             class="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-            :class="isSuperTrip ? 'bg-purple-100' : isSuperQuest ? 'bg-green-100' : isSuperTask ? 'bg-orange-100' : 'bg-accent-100'"
+            :class="isSuperTrip ? 'bg-purple-100' : isSuperQuest ? 'bg-green-100' : isSuperTask ? 'bg-orange-100' : isSuperXP ? 'bg-rose-100' : 'bg-accent-100'"
           >
             <span
               class="text-sm font-medium"
-              :class="isSuperTrip ? 'text-purple-700' : isSuperQuest ? 'text-green-700' : isSuperTask ? 'text-orange-700' : 'text-accent-700'"
+              :class="isSuperTrip ? 'text-purple-700' : isSuperQuest ? 'text-green-700' : isSuperTask ? 'text-orange-700' : isSuperXP ? 'text-rose-700' : 'text-accent-700'"
             >
               {{ user.displayName?.charAt(0) || user.email?.charAt(0) || '?' }}
             </span>
@@ -238,7 +256,7 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const { user, signOut } = useAuth()
-const { isSuperWish, isSuperTrip, isSuperQuest, isSuperTask } = useAppContext()
+const { isSuperWish, isSuperTrip, isSuperQuest, isSuperTask, isSuperXP } = useAppContext()
 
 // Check if we're on mobile
 const isMobile = ref(false)

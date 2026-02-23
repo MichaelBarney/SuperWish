@@ -8,6 +8,7 @@ A modern, minimal personal life management application built with Nuxt 3, Fireba
 | **SuperTrip** | Travel planning with itineraries | [SUPERTRIP.md](./SUPERTRIP.md) |
 | **SuperQuest** | Goal and project tracking | [SUPERQUEST.md](./SUPERQUEST.md) |
 | **SuperTask** | Task management across quests and trips | [SUPERTASK.md](./SUPERTASK.md) |
+| **SuperXP** | Experience management across trips and standalone | [SUPERXP.md](./SUPERXP.md) |
 
 ## Tech Stack
 

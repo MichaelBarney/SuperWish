@@ -490,7 +490,12 @@ async function handleExperienceSubmit(data: ExperienceForm) {
       selectedExperience.value = null
     }
   } else {
-    const result = await createExperience(destinationId.value, tripId.value, data)
+    const locationData = destination.value ? {
+      country: destination.value.country,
+      city: destination.value.name,
+      countryCode: destination.value.countryCode || '',
+    } : undefined
+    const result = await createExperience(destinationId.value, tripId.value, data, locationData)
     if (result.success) {
       showExperienceModal.value = false
     }

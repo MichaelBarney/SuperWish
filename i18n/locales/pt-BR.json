@@ -27,6 +27,7 @@
     "superTrip": "SuperTrip",
     "superQuest": "SuperQuest",
     "superTask": "SuperTask",
+    "superXP": "SuperXP",
     "dashboard": "Painel",
     "settings": "Configuracoes",
     "signOut": "Sair"
@@ -51,6 +52,8 @@
     "superTripDescription": "Planeje suas aventuras com itinerarios e orcamentos",
     "superQuestDescription": "Gerencie projetos e acompanhe seus objetivos",
     "superTaskDescription": "Gerencie tarefas entre suas missões e viagens",
+    "superXPDescription": "Acompanhe e descubra experiencias em todas as suas viagens",
+    "discoverExperiences": "Descobrir Experiencias",
     "manageTasks": "Gerenciar Tarefas",
     "signedInAs": "Conectado como",
     "footer": "Feito com carinho para os momentos especiais da vida"
@@ -777,11 +780,50 @@
       "everyYear": "Todo ano",
       "dayOfMonth": "Dia {day} do mês"
     },
+    "search": {
+      "placeholder": "Buscar tarefas...",
+      "noResults": "Nenhuma tarefa corresponde à sua busca",
+      "resultsTitle": "Resultados da Busca",
+      "paletteHint": "↑↓ navegar · ↵ selecionar · esc fechar"
+    },
     "empty": {
       "title": "Nenhuma tarefa ainda",
       "description": "Adicione sua primeira tarefa para começar",
       "inboxDescription": "Tarefas não vinculadas a nenhuma missão ou viagem aparecem aqui",
       "todayDescription": "Tarefas com horizonte 'Hoje' aparecem aqui"
+    }
+  },
+  "xp": {
+    "nav": {
+      "myExperiences": "Minhas Experiencias"
+    },
+    "experiences": {
+      "title": "Minhas Experiencias",
+      "experienceCount": "{count} experiencia | {count} experiencias",
+      "newExperience": "Nova Experiencia",
+      "editExperience": "Editar Experiencia",
+      "deleteExperience": "Excluir Experiencia",
+      "deleteConfirm": "Tem certeza que deseja excluir esta experiencia? Esta acao nao pode ser desfeita.",
+      "linkedToTrip": "Da viagem",
+      "noLocation": "Sem Localização",
+      "empty": {
+        "title": "Nenhuma experiencia ainda",
+        "description": "Comece a adicionar experiencias para acompanhar restaurantes, atividades e mais",
+        "createButton": "Adicionar Experiencia"
+      },
+      "form": {
+        "city": "Cidade",
+        "cityPlaceholder": "ex., Paris",
+        "country": "Pais",
+        "countryPlaceholder": "ex., Franca",
+        "tripInfo": "Experiencia de Viagem",
+        "tripInfoHint": "Esta experiencia esta vinculada a um destino de viagem"
+      }
+    },
+    "groupBy": {
+      "label": "Agrupar por",
+      "type": "Por Tipo",
+      "location": "Por Local"
     }
   }
 }

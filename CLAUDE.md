@@ -27,7 +27,7 @@ For detailed project documentation, see `documentation/PROJECT.md`. It covers th
 
 ## Architecture
 
-**SuperX** is a personal life management SPA built with Nuxt 3 (SSR disabled), Firebase, and Tailwind CSS. It contains four modules that share authentication, navigation, UI components, and i18n:
+**SuperX** is a personal life management SPA built with Nuxt 3 (SSR disabled), Firebase, and Tailwind CSS. It contains five modules that share authentication, navigation, UI components, and i18n:
 
 | Module | Route prefix | Accent color | Icon |
 |--------|-------------|--------------|------|
@@ -35,6 +35,7 @@ For detailed project documentation, see `documentation/PROJECT.md`. It covers th
 | SuperTrip | `/trip` | Purple | `lucide:plane` |
 | SuperQuest | `/quest` | Green | `lucide:target` |
 | SuperTask | `/task` | Orange | `lucide:square-check-big` |
+| SuperXP | `/xp` | Rose | `lucide:sparkles` |
 
 ### Key Patterns
 

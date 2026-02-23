@@ -73,7 +73,7 @@ interface Props {
   isActive?: boolean
   collapsed?: boolean
   badge?: string | number
-  variant?: 'teal' | 'purple' | 'green' | 'orange'
+  variant?: 'teal' | 'purple' | 'green' | 'orange' | 'rose'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -96,6 +96,9 @@ const activeClass = computed(() => {
   if (props.variant === 'orange') {
     return 'bg-orange-50 text-orange-700 font-semibold'
   }
+  if (props.variant === 'rose') {
+    return 'bg-rose-50 text-rose-700 font-semibold'
+  }
   return 'bg-accent-50 text-accent-700 font-semibold'
 })
 
@@ -108,6 +111,9 @@ const badgeClass = computed(() => {
   }
   if (props.variant === 'orange') {
     return 'bg-orange-100 text-orange-700'
+  }
+  if (props.variant === 'rose') {
+    return 'bg-rose-100 text-rose-700'
   }
   return 'bg-accent-100 text-accent-700'
 })

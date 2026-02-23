@@ -27,6 +27,7 @@
     "superTrip": "SuperTrip",
     "superQuest": "SuperQuest",
     "superTask": "SuperTask",
+    "superXP": "SuperXP",
     "dashboard": "Dashboard",
     "settings": "Settings",
     "signOut": "Sign out"
@@ -51,6 +52,8 @@
     "superTripDescription": "Plan your adventures with itineraries and budgets",
     "superQuestDescription": "Manage projects and track your goals",
     "superTaskDescription": "Manage tasks across your quests and trips",
+    "superXPDescription": "Track and discover experiences across all your travels",
+    "discoverExperiences": "Discover Experiences",
     "manageTasks": "Manage Tasks",
     "signedInAs": "Signed in as",
     "footer": "Made with care for life's special moments"
@@ -777,11 +780,50 @@
       "everyYear": "Every year",
       "dayOfMonth": "Day {day} of month"
     },
+    "search": {
+      "placeholder": "Search tasks...",
+      "noResults": "No tasks match your search",
+      "resultsTitle": "Search Results",
+      "paletteHint": "↑↓ navigate · ↵ select · esc close"
+    },
     "empty": {
       "title": "No tasks yet",
       "description": "Add your first task to get started",
       "inboxDescription": "Tasks not linked to any quest or trip appear here",
       "todayDescription": "Tasks with the 'Today' time horizon appear here"
+    }
+  },
+  "xp": {
+    "nav": {
+      "myExperiences": "My Experiences"
+    },
+    "experiences": {
+      "title": "My Experiences",
+      "experienceCount": "{count} experience | {count} experiences",
+      "newExperience": "New Experience",
+      "editExperience": "Edit Experience",
+      "deleteExperience": "Delete Experience",
+      "deleteConfirm": "Are you sure you want to delete this experience? This action cannot be undone.",
+      "linkedToTrip": "From trip",
+      "noLocation": "No Location",
+      "empty": {
+        "title": "No experiences yet",
+        "description": "Start adding experiences to track restaurants, activities, and more",
+        "createButton": "Add Experience"
+      },
+      "form": {
+        "city": "City",
+        "cityPlaceholder": "e.g., Paris",
+        "country": "Country",
+        "countryPlaceholder": "e.g., France",
+        "tripInfo": "Trip Experience",
+        "tripInfoHint": "This experience is linked to a trip destination"
+      }
+    },
+    "groupBy": {
+      "label": "Group by",
+      "type": "By Type",
+      "location": "By Location"
     }
   }
 }

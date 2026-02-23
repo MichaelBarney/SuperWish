@@ -4,6 +4,16 @@
       <!-- Left Panel: Navigation (desktop) -->
       <div class="hidden md:block w-56 shrink-0">
         <div class="sticky top-8 space-y-1">
+          <!-- Search button -->
+          <button
+            @click="showSearchPalette = true"
+            class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900 mb-1"
+          >
+            <Icon name="lucide:search" class="w-4 h-4" />
+            <span class="flex-1 text-left">{{ $t('task.search.placeholder') }}</span>
+            <kbd class="text-[10px] text-gray-400 bg-gray-100 border border-gray-200 rounded px-1 py-0.5 font-sans">&#8984;K</kbd>
+          </button>
+
           <!-- View buttons -->
           <button
             v-for="view in views"
@@ -232,6 +242,14 @@
             {{ $t('task.groupBy.label') }}: {{ taskGroupBy === 'project' ? $t('task.groupBy.project') : $t('task.groupBy.none') }}
           </button>
         </div>
+        <!-- Mobile search button -->
+        <button
+          @click="showSearchPalette = true"
+          class="flex items-center gap-2 mt-2 px-3 py-2 w-full text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <Icon name="lucide:search" class="w-4 h-4" />
+          <span>{{ $t('task.search.placeholder') }}</span>
+        </button>
       </div>
 
       <!-- Right Panel: Task list -->
@@ -535,6 +553,15 @@
         @cancel="showEditModal = false"
       />
     </UiModal>
+
+    <!-- Search Command Palette -->
+    <TaskSearchPalette
+      v-model="showSearchPalette"
+      :tasks="tasks"
+      :quest-names="questNameMap"
+      :trip-names="tripNameMap"
+      @navigate="handleSearchNavigate"
+    />
   </div>
 </template>
 
@@ -580,6 +607,9 @@ const { resolveWishId } = useResolveWishCreation()
 // Group By state
 const taskGroupBy = ref<TaskGroupBy>('none')
 const showGroupByDropdown = ref(false)
+
+// Search palette
+const showSearchPalette = ref(false)
 
 // Sync from Firestore when auth resolves
 watch(authUser, (u) => {
@@ -898,6 +928,47 @@ async function onMissionDragChange(evt: any, targetGroupKey: string) {
     isDragging.value = false
   }
 }
+
+// Search palette navigation
+function handleSearchNavigate(task: import('~/types').Task) {
+  if (task.subQuestId && task.questId) {
+    selectSubQuestView(task.questId, task.subQuestId)
+  } else if (task.subQuestId && task.tripId) {
+    selectTripSubQuestView(task.tripId, task.subQuestId)
+  } else if (task.destinationId && task.tripId) {
+    selectDestinationView(task.tripId, task.destinationId)
+  } else if (task.questId) {
+    selectQuestView(task.questId)
+  } else if (task.tripId) {
+    selectTripView(task.tripId)
+  } else if (task.timeHorizon) {
+    const horizonToView: Record<string, ViewType> = {
+      today: 'today',
+      this_week: 'this_week',
+      this_month: 'this_month',
+      long_term: 'long_term',
+    }
+    currentView.value = horizonToView[task.timeHorizon] || 'inbox'
+  } else {
+    currentView.value = 'inbox'
+  }
+}
+
+// Cmd+K handler
+function handleCmdK(e: KeyboardEvent) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault()
+    showSearchPalette.value = true
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleCmdK)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleCmdK)
+})
 
 // Views config
 const views = computed(() => [

@@ -12,9 +12,20 @@ import {
   Timestamp,
   type Firestore,
 } from 'firebase/firestore'
-import type { Experience, ExperienceForm } from '~/types'
+import type { Experience, ExperienceForm, ExperienceCategory } from '~/types'
 
-export function useExperiences(destinationId: Ref<string | null | undefined>) {
+export interface LocationCity {
+  city: string
+  experiences: Experience[]
+}
+
+export interface LocationGroup {
+  country: string
+  countryCode: string
+  cities: LocationCity[]
+}
+
+export function useXPExperiences() {
   const nuxtApp = useNuxtApp()
   const { user } = useAuth()
 
@@ -29,14 +40,14 @@ export function useExperiences(destinationId: Ref<string | null | undefined>) {
 
   let unsubscribe: (() => void) | null = null
 
-  const subscribeToExperiences = (targetDestinationId?: string | null) => {
+  // Fetch all destinations for client-side join (for legacy experiences without denormalized location)
+  const { destinations: allDestinations } = useAllDestinations()
+
+  const subscribeToAllExperiences = () => {
     if (import.meta.server) return
 
     const db = getDb()
     if (!user.value || !db) return
-
-    const did = targetDestinationId ?? destinationId.value
-    if (!did) return
 
     loading.value = true
     error.value = null
@@ -45,8 +56,7 @@ export function useExperiences(destinationId: Ref<string | null | undefined>) {
     const q = query(
       experiencesRef,
       where('userId', '==', user.value.uid),
-      where('destinationId', '==', did),
-      orderBy('scheduledDate', 'asc')
+      orderBy('createdAt', 'desc')
     )
 
     unsubscribe = onSnapshot(
@@ -56,9 +66,9 @@ export function useExperiences(destinationId: Ref<string | null | undefined>) {
           const data = docSnap.data()
           return {
             id: docSnap.id,
-            tripId: data.tripId,
+            tripId: data.tripId || undefined,
             userId: data.userId,
-            destinationId: data.destinationId,
+            destinationId: data.destinationId || undefined,
             category: data.category,
             name: data.name,
             description: data.description || '',
@@ -87,21 +97,91 @@ export function useExperiences(destinationId: Ref<string | null | undefined>) {
         loading.value = false
       },
       (err) => {
-        console.error('Error fetching experiences:', err)
+        console.error('Error fetching all experiences:', err)
         error.value = 'Failed to load experiences'
         loading.value = false
       }
     )
   }
 
-  const unsubscribeFromExperiences = () => {
+  const unsubscribeFromAllExperiences = () => {
     if (unsubscribe) {
       unsubscribe()
       unsubscribe = null
     }
   }
 
-  const createExperience = async (targetDestinationId: string, tripId: string, data: ExperienceForm, locationData?: { country: string; city: string; countryCode: string }) => {
+  // Resolve location for experiences that don't have denormalized country/city
+  const resolvedExperiences = computed(() => {
+    return experiences.value.map(exp => {
+      if (exp.country && exp.city) return exp
+      // Try to resolve from destination
+      if (exp.destinationId) {
+        const dest = allDestinations.value.find(d => d.id === exp.destinationId)
+        if (dest) {
+          return {
+            ...exp,
+            country: exp.country || dest.country,
+            city: exp.city || dest.name,
+            countryCode: exp.countryCode || dest.countryCode || '',
+          }
+        }
+      }
+      return exp
+    })
+  })
+
+  const totalCount = computed(() => resolvedExperiences.value.length)
+
+  // Group by category
+  const experiencesByCategory = computed(() => {
+    const grouped: Record<string, Experience[]> = {}
+    for (const exp of resolvedExperiences.value) {
+      const cat = exp.category || 'other'
+      if (!grouped[cat]) grouped[cat] = []
+      grouped[cat].push(exp)
+    }
+    // Sort experiences within each category by name
+    for (const cat of Object.keys(grouped)) {
+      grouped[cat].sort((a, b) => a.name.localeCompare(b.name))
+    }
+    return grouped as Record<ExperienceCategory, Experience[]>
+  })
+
+  // Group by location (country > city)
+  const experiencesByLocation = computed(() => {
+    const countryMap: Record<string, { countryCode: string; cityMap: Record<string, Experience[]> }> = {}
+    const noLocation: Experience[] = []
+
+    for (const exp of resolvedExperiences.value) {
+      if (!exp.country) {
+        noLocation.push(exp)
+        continue
+      }
+      if (!countryMap[exp.country]) {
+        countryMap[exp.country] = { countryCode: exp.countryCode || '', cityMap: {} }
+      }
+      const city = exp.city || 'Unknown'
+      if (!countryMap[exp.country].cityMap[city]) {
+        countryMap[exp.country].cityMap[city] = []
+      }
+      countryMap[exp.country].cityMap[city].push(exp)
+    }
+
+    const groups: LocationGroup[] = Object.entries(countryMap)
+      .map(([country, { countryCode, cityMap }]) => ({
+        country,
+        countryCode,
+        cities: Object.entries(cityMap)
+          .map(([city, exps]) => ({ city, experiences: exps }))
+          .sort((a, b) => a.city.localeCompare(b.city)),
+      }))
+      .sort((a, b) => a.country.localeCompare(b.country))
+
+    return { groups, noLocation }
+  })
+
+  const createExperience = async (data: ExperienceForm) => {
     const db = getDb()
     if (!user.value) return { success: false, error: 'Not authenticated' }
     if (!db) return { success: false, error: 'Database not initialized' }
@@ -109,15 +189,12 @@ export function useExperiences(destinationId: Ref<string | null | undefined>) {
     try {
       const experiencesRef = collection(db, 'experiences')
       const docRef = await addDoc(experiencesRef, {
-        tripId,
         userId: user.value.uid,
-        destinationId: targetDestinationId,
-        ...(locationData ? { country: locationData.country, city: locationData.city, countryCode: locationData.countryCode } : {}),
         category: data.category,
         name: data.name,
         description: data.description || '',
         address: data.address || '',
-        scheduledDate: data.scheduledDate ? Timestamp.fromDate(new Date(data.scheduledDate)) : null,
+        scheduledDate: data.scheduledDate ? Timestamp.fromDate(new Date(data.scheduledDate + 'T12:00:00')) : null,
         scheduledTime: data.scheduledTime || '',
         duration: data.duration ? Number(data.duration) : 0,
         status: data.status || 'wishlist',
@@ -130,6 +207,9 @@ export function useExperiences(destinationId: Ref<string | null | undefined>) {
         notes: data.notes || '',
         imageUrl: data.imageUrl || '',
         externalUrl: data.externalUrl || '',
+        country: data.country || '',
+        city: data.city || '',
+        countryCode: data.countryCode || '',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
@@ -156,7 +236,7 @@ export function useExperiences(destinationId: Ref<string | null | undefined>) {
       if (data.description !== undefined) updateData.description = data.description
       if (data.address !== undefined) updateData.address = data.address
       if (data.scheduledDate !== undefined) {
-        updateData.scheduledDate = data.scheduledDate ? Timestamp.fromDate(new Date(data.scheduledDate)) : null
+        updateData.scheduledDate = data.scheduledDate ? Timestamp.fromDate(new Date(data.scheduledDate + 'T12:00:00')) : null
       }
       if (data.scheduledTime !== undefined) updateData.scheduledTime = data.scheduledTime
       if (data.duration !== undefined) updateData.duration = data.duration ? Number(data.duration) : 0
@@ -170,6 +250,9 @@ export function useExperiences(destinationId: Ref<string | null | undefined>) {
       if (data.notes !== undefined) updateData.notes = data.notes
       if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl
       if (data.externalUrl !== undefined) updateData.externalUrl = data.externalUrl
+      if (data.country !== undefined) updateData.country = data.country
+      if (data.city !== undefined) updateData.city = data.city
+      if (data.countryCode !== undefined) updateData.countryCode = data.countryCode
 
       await updateDoc(experienceRef, updateData)
       return { success: true }
@@ -194,36 +277,31 @@ export function useExperiences(destinationId: Ref<string | null | undefined>) {
     }
   }
 
-  const getExperienceById = (id: string): Experience | undefined => {
-    return experiences.value.find(e => e.id === id)
-  }
-
-  // Auto-subscribe when user or destinationId changes (only on client)
+  // Auto-subscribe when user changes (only on client)
   if (import.meta.client) {
-    watch([user, destinationId], ([newUser, newDestinationId]) => {
-      unsubscribeFromExperiences()
-      if (newUser && newDestinationId) {
-        subscribeToExperiences(newDestinationId)
+    watch(user, (newUser) => {
+      unsubscribeFromAllExperiences()
+      if (newUser) {
+        subscribeToAllExperiences()
       } else {
         experiences.value = []
       }
     }, { immediate: true })
 
-    // Cleanup on unmount
     onUnmounted(() => {
-      unsubscribeFromExperiences()
+      unsubscribeFromAllExperiences()
     })
   }
 
   return {
-    experiences: readonly(experiences),
+    experiences: resolvedExperiences,
     loading: readonly(loading),
     error: readonly(error),
+    totalCount,
+    experiencesByCategory,
+    experiencesByLocation,
     createExperience,
     updateExperience,
     deleteExperience,
-    getExperienceById,
-    subscribeToExperiences,
-    unsubscribeFromExperiences,
   }
 }

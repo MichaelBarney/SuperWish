@@ -48,6 +48,7 @@ export interface User {
   defaultRegion?: string
   temperatureUnit?: TemperatureUnit
   taskGroupBy?: TaskGroupBy
+  xpGroupBy?: XPGroupBy
 }
 
 export interface WishList {
@@ -456,9 +457,9 @@ export interface AccommodationForm {
 // Experience
 export interface Experience {
   id: string
-  tripId: string
+  tripId?: string
   userId: string
-  destinationId: string
+  destinationId?: string
   category: ExperienceCategory
   name: string
   description?: string
@@ -477,6 +478,9 @@ export interface Experience {
   notes?: string
   imageUrl?: string
   externalUrl?: string
+  country?: string
+  city?: string
+  countryCode?: string
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -500,7 +504,12 @@ export interface ExperienceForm {
   notes: string
   imageUrl: string
   externalUrl: string
+  country: string
+  city: string
+  countryCode: string
 }
+
+export type XPGroupBy = 'type' | 'location'
 
 // Budget
 export interface BudgetAllocation {

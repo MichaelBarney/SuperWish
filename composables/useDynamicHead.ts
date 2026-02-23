@@ -6,6 +6,7 @@ export function useDynamicHead() {
       case 'supertrip': return '/favicon-travel.svg'
       case 'superquest': return '/favicon-quest.svg'
       case 'supertask': return '/favicon-task.svg'
+      case 'superxp': return '/favicon-xp.svg'
       default: return '/favicon.svg'
     }
   })
@@ -15,6 +16,7 @@ export function useDynamicHead() {
       case 'supertrip': return 'SuperTrip - Trip Planner'
       case 'superquest': return 'SuperQuest - Goal Tracker'
       case 'supertask': return 'SuperTask - Task Manager'
+      case 'superxp': return 'SuperXP - Experience Manager'
       default: return 'SuperWish - Wishlist Manager'
     }
   })

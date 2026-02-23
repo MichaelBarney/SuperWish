@@ -32,6 +32,10 @@ SuperTask is the task management module of SuperX. It provides a unified task sy
 - **Today**: Tasks with "Today" time horizon
 - **Group by project**: Group tasks by their linked quest/trip
 
+### Search
+- **Sidebar search button**: A "Search" button at the top of the desktop sidebar (with Cmd+K hint) and a search button on mobile. Clicking it opens the command palette.
+- **Command palette** (Cmd/Ctrl+K): Opens a modal overlay (`TaskSearchPalette.vue`) near the top of the screen. Auto-focuses, filters all tasks by case-insensitive substring match on title and description, supports keyboard navigation (Arrow Up/Down, Enter to select, Escape to close). Selecting a task navigates to its natural context (quest, trip, subquest, destination, or time horizon view). Shows up to 8 results with completion state, project badge, and time horizon pill.
+
 ### Wish-Task Auto-Linking
 
 Every wish in SuperWish automatically creates a corresponding task in SuperTask. This ensures wishes flow into the unified task execution layer.
@@ -129,6 +133,7 @@ When tasks have a `dueDate`, the `timeHorizon` is **not read from Firestore** â€
 | TaskQuestPicker | `components/task/TaskQuestPicker.vue` | Two-step quest > sub-quest picker |
 | TaskMentionPicker | `components/task/TaskMentionPicker.vue` | `@` mention type selector dropdown |
 | TaskInlineSearchPicker | `components/task/TaskInlineSearchPicker.vue` | Shared search dropdown used by BlockerPicker and QuestPicker |
+| TaskSearchPalette | `components/task/TaskSearchPalette.vue` | Cmd/Ctrl+K command palette for quick-jump task search with keyboard navigation |
 
 ## Composables
 

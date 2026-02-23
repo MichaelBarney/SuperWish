@@ -111,7 +111,7 @@ export function useAuth() {
     }
   }
 
-  const updateUserPreferences = async (preferences: { defaultRegion?: string; temperatureUnit?: string; taskGroupBy?: string }) => {
+  const updateUserPreferences = async (preferences: { defaultRegion?: string; temperatureUnit?: string; taskGroupBy?: string; xpGroupBy?: string }) => {
     const auth = getAuth()
     const db = getDb()
 
@@ -128,6 +128,7 @@ export function useAuth() {
         if (preferences.defaultRegion) updates.defaultRegion = preferences.defaultRegion
         if (preferences.temperatureUnit) updates.temperatureUnit = preferences.temperatureUnit as 'celsius' | 'fahrenheit'
         if (preferences.taskGroupBy) updates.taskGroupBy = preferences.taskGroupBy as 'none' | 'project'
+        if (preferences.xpGroupBy) updates.xpGroupBy = preferences.xpGroupBy as 'type' | 'location'
         user.value = { ...user.value, ...updates }
       }
 

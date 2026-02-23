@@ -40,6 +40,19 @@ export default <Config>{
           800: '#9a3412',
           900: '#7c2d12',
         },
+        // Rose palette for SuperXP
+        rose: {
+          50: '#fff1f2',
+          100: '#ffe4e6',
+          200: '#fecdd3',
+          300: '#fda4af',
+          400: '#fb7185',
+          500: '#f43f5e',
+          600: '#e11d48',
+          700: '#be123c',
+          800: '#9f1239',
+          900: '#881337',
+        },
         // Purple palette for SuperTrip
         purple: {
           50: '#faf5ff',

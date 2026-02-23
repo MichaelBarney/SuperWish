@@ -36,7 +36,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // Get app context for theme-aware styling
-const { isSuperTrip, isSuperQuest, isSuperTask } = useAppContext()
+const { isSuperTrip, isSuperQuest, isSuperTask, isSuperXP } = useAppContext()
 
 const sizeClasses = computed(() => {
   switch (props.size) {
@@ -64,6 +64,9 @@ const variantClasses = computed(() => {
       }
       if (isSuperTask.value) {
         return 'bg-orange-500 text-white hover:bg-orange-600 focus:ring-orange-300 shadow-sm hover:shadow-md'
+      }
+      if (isSuperXP.value) {
+        return 'bg-rose-500 text-white hover:bg-rose-600 focus:ring-rose-300 shadow-sm hover:shadow-md'
       }
       return 'bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-300 shadow-sm hover:shadow-md'
   }

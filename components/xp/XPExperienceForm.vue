@@ -1,6 +1,15 @@
 <template>
   <form @submit.prevent="handleSubmit">
     <div class="space-y-4">
+      <!-- Trip info banner (read-only for trip-linked experiences) -->
+      <div v-if="initialData?.tripId" class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+        <div class="flex items-center gap-2 text-sm text-purple-700">
+          <Icon name="lucide:plane" class="w-4 h-4" />
+          <span class="font-medium">{{ $t('xp.experiences.form.tripInfo') }}</span>
+        </div>
+        <p class="text-xs text-purple-500 mt-1">{{ $t('xp.experiences.form.tripInfoHint') }}</p>
+      </div>
+
       <!-- Category -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -8,7 +17,7 @@
         </label>
         <select
           v-model="form.category"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
         >
           <option v-for="cat in EXPERIENCE_CATEGORIES" :key="cat.value" :value="cat.value">
             {{ $t(`travel.experiences.categories.${cat.value}`) }}
@@ -25,8 +34,34 @@
           v-model="form.name"
           type="text"
           :placeholder="$t('travel.experiences.form.namePlaceholder')"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
           required
+        />
+      </div>
+
+      <!-- City (with autocomplete) — only for standalone experiences -->
+      <div v-if="!initialData?.tripId">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          {{ $t('xp.experiences.form.city') }}
+        </label>
+        <TripDestinationsCityAutocomplete
+          :model-value="form.city"
+          :placeholder="$t('xp.experiences.form.cityPlaceholder')"
+          @update:model-value="form.city = $event"
+          @city-selected="handleCitySelected"
+        />
+      </div>
+
+      <!-- Country (auto-filled from city, or manual) — only for standalone experiences -->
+      <div v-if="!initialData?.tripId">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          {{ $t('xp.experiences.form.country') }}
+        </label>
+        <input
+          v-model="form.country"
+          type="text"
+          :placeholder="$t('xp.experiences.form.countryPlaceholder')"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
         />
       </div>
 
@@ -38,7 +73,7 @@
         <textarea
           v-model="form.description"
           rows="2"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
         />
       </div>
 
@@ -50,7 +85,7 @@
         <input
           v-model="form.address"
           type="text"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
         />
       </div>
 
@@ -63,7 +98,7 @@
           <input
             v-model="form.scheduledDate"
             type="date"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
           />
         </div>
         <div>
@@ -73,7 +108,7 @@
           <input
             v-model="form.scheduledTime"
             type="time"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
           />
         </div>
       </div>
@@ -87,7 +122,7 @@
           v-model="form.duration"
           type="number"
           min="0"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
         />
       </div>
 
@@ -102,7 +137,7 @@
             type="number"
             min="0"
             step="0.01"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
           />
         </div>
         <div>
@@ -111,7 +146,7 @@
           </label>
           <select
             v-model="form.currency"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
           >
             <option v-for="c in CURRENCIES" :key="c.code" :value="c.code">
               {{ c.symbol }} {{ c.code }}
@@ -127,7 +162,7 @@
         </label>
         <select
           v-model="form.status"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
         >
           <option v-for="s in EXPERIENCE_STATUSES" :key="s.value" :value="s.value">
             {{ $t(`travel.experiences.status.${s.value}`) }}
@@ -144,19 +179,7 @@
           v-model="form.bookingReference"
           type="text"
           :placeholder="$t('travel.transportation.form.bookingReferencePlaceholder')"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-        />
-      </div>
-
-      <!-- Booking URL -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          {{ $t('travel.transportation.form.bookingUrl') }}
-        </label>
-        <input
-          v-model="form.bookingUrl"
-          type="url"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
         />
       </div>
 
@@ -168,7 +191,7 @@
         <input
           v-model="form.externalUrl"
           type="url"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
         />
       </div>
 
@@ -181,7 +204,7 @@
           v-model="form.notes"
           rows="2"
           :placeholder="$t('travel.transportation.form.notesPlaceholder')"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
         />
       </div>
     </div>
@@ -202,17 +225,16 @@
 </template>
 
 <script setup lang="ts">
-import type { ExperienceForm, Experience } from '~/types'
+import type { ExperienceForm, Experience, CitySelection } from '~/types'
 import { EXPERIENCE_CATEGORIES, EXPERIENCE_STATUSES, CURRENCIES } from '~/types'
 
 interface Props {
   initialData?: Experience
-  tripCurrency?: string
-  defaultDate?: string
+  defaultCurrency?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  tripCurrency: 'USD',
+  defaultCurrency: 'USD',
 })
 
 const emit = defineEmits<{
@@ -233,7 +255,7 @@ const form = ref<ExperienceForm>({
     ? (props.initialData.scheduledDate instanceof Date
         ? props.initialData.scheduledDate.toISOString().split('T')[0]
         : new Date(props.initialData.scheduledDate).toISOString().split('T')[0])
-    : (props.defaultDate || ''),
+    : '',
   scheduledTime: props.initialData?.scheduledTime || '',
   duration: props.initialData?.duration ? String(props.initialData.duration) : '',
   status: props.initialData?.status || 'wishlist',
@@ -241,7 +263,7 @@ const form = ref<ExperienceForm>({
   bookingUrl: props.initialData?.bookingUrl || '',
   estimatedCost: props.initialData?.estimatedCost ? String(props.initialData.estimatedCost) : '',
   actualCost: props.initialData?.actualCost ? String(props.initialData.actualCost) : '',
-  currency: props.initialData?.currency || props.tripCurrency,
+  currency: props.initialData?.currency || props.defaultCurrency,
   rating: props.initialData?.rating ? String(props.initialData.rating) : '',
   notes: props.initialData?.notes || '',
   imageUrl: props.initialData?.imageUrl || '',
@@ -250,6 +272,12 @@ const form = ref<ExperienceForm>({
   city: props.initialData?.city || '',
   countryCode: props.initialData?.countryCode || '',
 })
+
+function handleCitySelected(city: CitySelection) {
+  form.value.city = city.name
+  form.value.country = city.country
+  form.value.countryCode = city.countryCode
+}
 
 function handleSubmit() {
   if (!form.value.name.trim()) return
@@ -279,7 +307,7 @@ watch(() => props.initialData, (newData) => {
       bookingUrl: newData.bookingUrl || '',
       estimatedCost: newData.estimatedCost ? String(newData.estimatedCost) : '',
       actualCost: newData.actualCost ? String(newData.actualCost) : '',
-      currency: newData.currency || props.tripCurrency,
+      currency: newData.currency || props.defaultCurrency,
       rating: newData.rating ? String(newData.rating) : '',
       notes: newData.notes || '',
       imageUrl: newData.imageUrl || '',

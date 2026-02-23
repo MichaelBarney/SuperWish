@@ -20,7 +20,7 @@
 
         <!-- Logged In: App Selector -->
         <template v-else-if="user">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <!-- SuperWish Card -->
             <NuxtLink
               to="/wish"
@@ -68,6 +68,18 @@
               <h2 class="text-xl font-bold text-gray-900 mb-2">SuperTask</h2>
               <p class="text-gray-500 text-sm flex-1">{{ $t('landing.superTaskDescription') }}</p>
             </NuxtLink>
+
+            <!-- SuperXP Card -->
+            <NuxtLink
+              to="/xp"
+              class="group flex flex-col bg-white rounded-2xl shadow-soft p-6 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 border-2 border-transparent hover:border-rose-200"
+            >
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-400 to-rose-600 flex items-center justify-center mx-auto mb-4 transition-transform group-hover:scale-110">
+                <Icon name="lucide:sparkles" class="w-8 h-8 text-white" />
+              </div>
+              <h2 class="text-xl font-bold text-gray-900 mb-2">SuperXP</h2>
+              <p class="text-gray-500 text-sm flex-1">{{ $t('landing.superXPDescription') }}</p>
+            </NuxtLink>
           </div>
 
           <!-- User info -->
@@ -97,7 +109,7 @@
           </div>
 
           <!-- Features -->
-          <div class="mt-12 grid grid-cols-4 gap-4 text-center max-w-lg mx-auto">
+          <div class="mt-12 grid grid-cols-5 gap-4 text-center max-w-2xl mx-auto">
             <div class="p-4">
               <div class="w-10 h-10 rounded-xl bg-accent-50 flex items-center justify-center mx-auto mb-3">
                 <Icon name="lucide:archive" class="w-5 h-5 text-accent-600" />
@@ -121,6 +133,12 @@
                 <Icon name="lucide:square-check-big" class="w-5 h-5 text-orange-600" />
               </div>
               <p class="text-sm font-medium text-gray-700">{{ $t('landing.manageTasks') }}</p>
+            </div>
+            <div class="p-4">
+              <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center mx-auto mb-3">
+                <Icon name="lucide:sparkles" class="w-5 h-5 text-rose-600" />
+              </div>
+              <p class="text-sm font-medium text-gray-700">{{ $t('landing.discoverExperiences') }}</p>
             </div>
           </div>
         </template>
