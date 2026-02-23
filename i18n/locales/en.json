@@ -677,7 +677,11 @@
       "noProject": "No Project"
     },
     "sidebar": {
-      "missions": "Missions"
+      "missions": "Missions",
+      "addMission": "New Mission",
+      "missionNamePlaceholder": "Mission name...",
+      "addSubMission": "Add",
+      "subMissionNamePlaceholder": "Sub-mission name..."
     },
     "sections": {
       "quests": "Quests",
@@ -760,7 +764,14 @@
       "skipDestination": "No specific destination"
     },
     "mentions": {
-      "createWish": "Create Wish"
+      "createWish": "Create Wish",
+      "createExperience": "Create Experience"
+    },
+    "experiencePicker": {
+      "selectCategory": "Select category",
+      "searchCategory": "Search categories...",
+      "selectCity": "Search city...",
+      "skipCity": "No specific city"
     },
     "tooltips": {
       "horizon": "Time horizon",

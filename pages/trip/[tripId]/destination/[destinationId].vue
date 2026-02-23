@@ -286,6 +286,7 @@ const { experiences, loading: experiencesLoading, createExperience, updateExperi
 // Tasks
 const { getDirectDestinationTasks, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskRecurrence } = useTasks()
 const { resolveWishId } = useResolveWishCreation()
+const { resolveExperienceId } = useResolveExperienceCreation()
 const destinationDirectTasks = computed(() => getDirectDestinationTasks(destinationId.value))
 
 // Accommodations
@@ -603,8 +604,9 @@ async function handleUpdateRecurrence(id: string, recurrence: import('~/types').
   await updateTaskRecurrence(id, recurrence)
 }
 
-async function handleQuickAddTask(data: { title: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; recurrence?: string }) {
+async function handleQuickAddTask(data: { title: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; recurrence?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
+  const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title, data.createExperienceData)
   await createTask({
     title: data.title,
     description: '',
@@ -614,7 +616,7 @@ async function handleQuickAddTask(data: { title: string; dueDate?: string; quest
     tripId: tripId.value,
     destinationId: destinationId.value,
     accommodationId: '',
-    experienceId: '',
+    experienceId: resolvedExperience,
     wishId: resolvedWishId,
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',

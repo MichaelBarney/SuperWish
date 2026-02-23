@@ -119,7 +119,7 @@ const emit = defineEmits<{
   toggle: [id: string, completed: boolean]
   edit: [task: Task]
   delete: [id: string]
-  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string }]
+  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }]
   inlineUpdate: [id: string, data: Record<string, any>]
   updateTimeHorizon: [id: string, timeHorizon: TaskTimeHorizon | null]
   updateEstimatedTime: [id: string, estimatedTime: TaskEstimatedTime | null]

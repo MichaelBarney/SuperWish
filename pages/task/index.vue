@@ -36,13 +36,38 @@
           </button>
 
           <!-- Missions section -->
-          <div v-if="hasMissions" class="pt-5">
-            <p class="px-3 py-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider">
-              {{ $t('task.sidebar.missions') }}
-            </p>
+          <div class="pt-5">
+            <div class="flex items-center justify-between px-3 py-1.5">
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                {{ $t('task.sidebar.missions') }}
+              </p>
+              <button
+                @click="openSidebarAddMission"
+                class="text-gray-400 hover:text-orange-600 transition-colors"
+                :title="$t('task.sidebar.addMission')"
+              >
+                <Icon name="lucide:plus" class="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <!-- Inline mission creation form -->
+            <form
+              v-if="showSidebarAddMission"
+              @submit.prevent="handleSidebarAddMission"
+              class="px-3 pb-2"
+            >
+              <input
+                ref="sidebarMissionInput"
+                v-model="newMissionName"
+                type="text"
+                :placeholder="$t('task.sidebar.missionNamePlaceholder')"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                @keydown.escape="showSidebarAddMission = false"
+              />
+            </form>
 
             <!-- Status-grouped sub-sections -->
-            <div v-for="group in sidebarGroups" :key="group.key" class="mt-1">
+            <div v-if="hasMissions" v-for="group in sidebarGroups" :key="group.key" class="mt-1">
               <button
                 @click="toggleSectionExpand(group.key)"
                 class="w-full flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
@@ -79,7 +104,7 @@
                         <div class="flex items-center cursor-grab active:cursor-grabbing">
                           <div class="w-[22px] shrink-0 flex items-center justify-center">
                             <button
-                              v-if="getSubquestsByQuestId(element.id).length > 0"
+                              v-if="getSubquestsByQuestId(element.id).length > 0 || expandedQuestIds[element.id]"
                               @click.stop="toggleQuestExpand(element.id)"
                               class="text-gray-400 hover:text-gray-600 transition-colors"
                             >
@@ -102,7 +127,7 @@
                           </button>
                         </div>
                         <!-- SubQuests (expanded) -->
-                        <div v-if="expandedQuestIds[element.id]" class="ml-5">
+                        <div v-if="expandedQuestIds[element.id] || (sidebarAddSubMissionParentId === element.id && sidebarAddSubMissionParentType === 'quest')" class="ml-5">
                           <button
                             v-for="subquest in getSubquestsByQuestId(element.id)"
                             :key="subquest.id"
@@ -115,6 +140,29 @@
                             <Icon name="lucide:circle-dot" class="w-3.5 h-3.5" />
                             <span class="flex-1 text-left truncate">{{ subquest.name }}</span>
                           </button>
+                          <!-- Inline sub-mission add -->
+                          <form
+                            v-if="sidebarAddSubMissionParentId === element.id && sidebarAddSubMissionParentType === 'quest'"
+                            @submit.prevent="handleSidebarAddSubMission"
+                            class="px-3 py-1"
+                          >
+                            <input
+                              ref="sidebarSubMissionInput"
+                              v-model="newSidebarSubMissionName"
+                              type="text"
+                              :placeholder="$t('task.sidebar.subMissionNamePlaceholder')"
+                              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                              @keydown.escape="closeSidebarAddSubMission"
+                            />
+                          </form>
+                          <button
+                            v-else
+                            @click="openSidebarAddSubMission(element.id, 'quest')"
+                            class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-400 hover:text-orange-600 transition-colors"
+                          >
+                            <Icon name="lucide:plus" class="w-3 h-3" />
+                            {{ $t('task.sidebar.addSubMission') }}
+                          </button>
                         </div>
                       </template>
 
@@ -123,7 +171,7 @@
                         <div class="flex items-center cursor-grab active:cursor-grabbing">
                           <div class="w-[22px] shrink-0 flex items-center justify-center">
                             <button
-                              v-if="getDestinationsByTripId(element.id).length > 0 || getSubquestsByTripId(element.id).length > 0"
+                              v-if="getDestinationsByTripId(element.id).length > 0 || getSubquestsByTripId(element.id).length > 0 || expandedTripIds[element.id]"
                               @click.stop="toggleTripExpand(element.id)"
                               class="text-gray-400 hover:text-gray-600 transition-colors"
                             >
@@ -146,7 +194,7 @@
                           </button>
                         </div>
                         <!-- SubQuests & Destinations (expanded) -->
-                        <div v-if="expandedTripIds[element.id]" class="ml-5">
+                        <div v-if="expandedTripIds[element.id] || (sidebarAddSubMissionParentId === element.id && sidebarAddSubMissionParentType === 'trip')" class="ml-5">
                           <button
                             v-for="subquest in getSubquestsByTripId(element.id)"
                             :key="subquest.id"
@@ -170,6 +218,29 @@
                           >
                             <Icon name="lucide:map-pin" class="w-3.5 h-3.5" />
                             <span class="flex-1 text-left truncate">{{ destination.name }}</span>
+                          </button>
+                          <!-- Inline sub-mission add for trips -->
+                          <form
+                            v-if="sidebarAddSubMissionParentId === element.id && sidebarAddSubMissionParentType === 'trip'"
+                            @submit.prevent="handleSidebarAddSubMission"
+                            class="px-3 py-1"
+                          >
+                            <input
+                              ref="sidebarSubMissionInput"
+                              v-model="newSidebarSubMissionName"
+                              type="text"
+                              :placeholder="$t('task.sidebar.subMissionNamePlaceholder')"
+                              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                              @keydown.escape="closeSidebarAddSubMission"
+                            />
+                          </form>
+                          <button
+                            v-else
+                            @click="openSidebarAddSubMission(element.id, 'trip')"
+                            class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-400 hover:text-orange-600 transition-colors"
+                          >
+                            <Icon name="lucide:plus" class="w-3 h-3" />
+                            {{ $t('task.sidebar.addSubMission') }}
                           </button>
                         </div>
                       </template>
@@ -597,12 +668,13 @@ watch(() => tasksLoading.value, (isLoading) => {
   }
 })
 
-const { quests, updateQuest, updateQuestStatus } = useQuests()
+const { quests, createQuest, updateQuest, updateQuestStatus } = useQuests()
 const { trips, updateTrip, updateTripStatus } = useTrips()
 const { subquests: allSubquests, getSubquestsByQuestId, getSubquestsByTripId, createSubQuestForTrip, createSubQuestForQuest } = useAllSubquests()
 const { destinations: allDestinations, getDestinationsByTripId } = useAllDestinations()
 const { user: authUser, updateUserPreferences } = useAuth()
 const { resolveWishId } = useResolveWishCreation()
+const { resolveExperienceId } = useResolveExperienceCreation()
 
 // Group By state
 const taskGroupBy = ref<TaskGroupBy>('none')
@@ -1454,6 +1526,84 @@ async function handleAddSubQuest() {
   showAddSubQuestInput.value = false
 }
 
+// Sidebar quick-create: Mission
+const showSidebarAddMission = ref(false)
+const newMissionName = ref('')
+const sidebarMissionInput = ref<HTMLInputElement | null>(null)
+
+// Sidebar quick-create: Sub-Mission
+const sidebarAddSubMissionParentId = ref('')
+const sidebarAddSubMissionParentType = ref<'quest' | 'trip'>('quest')
+const newSidebarSubMissionName = ref('')
+const sidebarSubMissionInput = ref<HTMLInputElement | null>(null)
+
+function closeSidebarForms() {
+  showSidebarAddMission.value = false
+  sidebarAddSubMissionParentId.value = ''
+}
+
+function openSidebarAddMission() {
+  closeSidebarForms()
+  showSidebarAddMission.value = true
+  newMissionName.value = ''
+  nextTick(() => {
+    sidebarMissionInput.value?.focus()
+  })
+}
+
+async function handleSidebarAddMission() {
+  const name = newMissionName.value.trim()
+  if (!name) return
+  const result = await createQuest({
+    name,
+    icon: 'lucide:target',
+    goal: '',
+    description: '',
+    coverUrl: '',
+    startDate: '',
+    endDate: '',
+    status: 'in_progress',
+  })
+  if (result.success && result.id) {
+    showSidebarAddMission.value = false
+    newMissionName.value = ''
+    selectQuestView(result.id)
+  }
+}
+
+function openSidebarAddSubMission(parentId: string, parentType: 'quest' | 'trip') {
+  closeSidebarForms()
+  sidebarAddSubMissionParentId.value = parentId
+  sidebarAddSubMissionParentType.value = parentType
+  newSidebarSubMissionName.value = ''
+  // Ensure the parent tree is expanded so the form is visible
+  if (parentType === 'quest') {
+    expandedQuestIds.value[parentId] = true
+  } else {
+    expandedTripIds.value[parentId] = true
+  }
+  nextTick(() => {
+    sidebarSubMissionInput.value?.focus()
+  })
+}
+
+function closeSidebarAddSubMission() {
+  sidebarAddSubMissionParentId.value = ''
+  newSidebarSubMissionName.value = ''
+}
+
+async function handleSidebarAddSubMission() {
+  const name = newSidebarSubMissionName.value.trim()
+  if (!name) return
+  const subQuestData = { name, icon: 'lucide:target', goal: '', description: '', startDate: '', endDate: '', status: 'in_progress' as const }
+  if (sidebarAddSubMissionParentType.value === 'quest') {
+    await createSubQuestForQuest(sidebarAddSubMissionParentId.value, subQuestData)
+  } else {
+    await createSubQuestForTrip(sidebarAddSubMissionParentId.value, subQuestData)
+  }
+  closeSidebarAddSubMission()
+}
+
 // CRUD handlers
 async function handleCreate(data: TaskForm) {
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
@@ -1473,7 +1623,7 @@ async function handleInlineUpdate(id: string, data: Record<string, any>) {
   await updateTask(id, data)
 }
 
-async function handleQuickAdd(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
+async function handleQuickAdd(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   const viewToHorizon: Record<string, string> = {
     today: 'today',
     this_week: 'this_week',
@@ -1486,6 +1636,7 @@ async function handleQuickAdd(data: { title: string; description: string; dueDat
     timeHorizon = computeTimeHorizonFromDate(new Date(data.dueDate))
   }
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
+  const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title, data.createExperienceData)
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -1495,7 +1646,7 @@ async function handleQuickAdd(data: { title: string; description: string; dueDat
     tripId: data.tripId,
     destinationId: data.destinationId,
     accommodationId: '',
-    experienceId: data.experienceId || '',
+    experienceId: resolvedExperience,
     wishId: resolvedWishId,
     timeHorizon,
     estimatedTime: '',

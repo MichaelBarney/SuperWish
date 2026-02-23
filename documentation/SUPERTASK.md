@@ -32,6 +32,11 @@ SuperTask is the task management module of SuperX. It provides a unified task sy
 - **Today**: Tasks with "Today" time horizon
 - **Group by project**: Group tasks by their linked quest/trip
 
+### Sidebar Quick-Create
+- **New Mission "+" button**: Next to the "MISSIONS" header in the desktop sidebar. Clicking it reveals an inline text input for typing the mission name. On submit (Enter), creates a quest with defaults (`icon: 'lucide:target'`, `status: 'in_progress'`) and auto-selects it. The MISSIONS header is always visible (even with no missions) to allow creating the first mission from the sidebar.
+- **Add Sub-Mission**: When a quest or trip is expanded in the sidebar tree, a small "+ Add" button appears after the sub-quest list. Clicking it reveals an inline text input. On submit, creates a sub-quest via `createSubQuestForQuest()` or `createSubQuestForTrip()`. New sub-quests appear automatically via the Firestore real-time listener.
+- **Interaction**: Enter submits, Escape cancels, input auto-focuses on open. Only one inline form is open at a time (opening one closes the other). Desktop-only (sidebar is `hidden md:block`).
+
 ### Search
 - **Sidebar search button**: A "Search" button at the top of the desktop sidebar (with Cmd+K hint) and a search button on mobile. Clicking it opens the command palette.
 - **Command palette** (Cmd/Ctrl+K): Opens a modal overlay (`TaskSearchPalette.vue`) near the top of the screen. Auto-focuses, filters all tasks by case-insensitive substring match on title and description, supports keyboard navigation (Arrow Up/Down, Enter to select, Escape to close). Selecting a task navigates to its natural context (quest, trip, subquest, destination, or time horizon view). Shows up to 8 results with completion state, project badge, and time horizon pill.
@@ -72,8 +77,9 @@ The quick-add input (`TaskQuickAdd.vue`) supports inline triggers:
 
 | Trigger | Action | Description |
 |---------|--------|-------------|
-| `@` | Opens mention picker | Shows available mention types (currently: Create Wish). Filters as you type after `@`. |
+| `@` | Opens mention picker | Shows available mention types: Create Wish and Create Experience. Filters as you type after `@`. Supports keyboard navigation (Arrow Up/Down + Enter). |
 | `@wish` | Toggles create-wish flag | Exact match shortcut—skips the mention picker. Task will also create a wish in SuperWish on submit. |
+| `@xp` / `@experience` | Opens experience picker | Exact match shortcuts—opens the two-step experience picker (category → city). Task will create an experience in SuperXP on submit. |
 | `!` | Opens blocker picker | Type `!` at start or after a space to pick blocking tasks. |
 | `#` | Opens quest picker | Two-step: select quest, then optionally select sub-quest. |
 | `/date` | Opens date picker | Manual date selection calendar. |
@@ -131,8 +137,9 @@ When tasks have a `dueDate`, the `timeHorizon` is **not read from Firestore** �
 | TaskDatePicker | `components/task/TaskDatePicker.vue` | Calendar date picker with quick options (Today, Tomorrow, Next Week) |
 | TaskBlockerPicker | `components/task/TaskBlockerPicker.vue` | Blocker task search dropdown (thin wrapper around TaskInlineSearchPicker) |
 | TaskQuestPicker | `components/task/TaskQuestPicker.vue` | Two-step quest > sub-quest picker |
-| TaskMentionPicker | `components/task/TaskMentionPicker.vue` | `@` mention type selector dropdown |
-| TaskInlineSearchPicker | `components/task/TaskInlineSearchPicker.vue` | Shared search dropdown used by BlockerPicker and QuestPicker |
+| TaskMentionPicker | `components/task/TaskMentionPicker.vue` | `@` mention type selector dropdown with keyboard navigation (Arrow Up/Down + Enter) |
+| TaskExperiencePicker | `components/task/TaskExperiencePicker.vue` | Two-step experience picker: category selection → optional city search. Creates experiences in SuperXP. |
+| TaskInlineSearchPicker | `components/task/TaskInlineSearchPicker.vue` | Shared search dropdown used by BlockerPicker, QuestPicker, and ExperiencePicker |
 | TaskSearchPalette | `components/task/TaskSearchPalette.vue` | Cmd/Ctrl+K command palette for quick-jump task search with keyboard navigation |
 
 ## Composables
@@ -142,6 +149,7 @@ When tasks have a `dueDate`, the `timeHorizon` is **not read from Firestore** �
 | useTasks | `composables/useTasks.ts` | CRUD operations and real-time Firestore subscription for tasks |
 | useWishTaskSync | `composables/useWishTaskSync.ts` | Backfill sync: creates tasks for existing wishes that lack one |
 | useResolveWishCreation | `composables/useResolveWishCreation.ts` | Shared helper to resolve `__create__` wish sentinel — creates a new wish with `skipAutoTask` and returns its ID |
+| useResolveExperienceCreation | `composables/useResolveExperienceCreation.ts` | Shared helper to resolve `__create__` experience sentinel — creates a new experience in SuperXP with category/city data and returns its ID |
 | useApiKeys | `composables/useApiKeys.ts` | API key management (generate, revoke, real-time list) |
 
 ## Pages
@@ -167,6 +175,8 @@ TaskList → wrapper component → page
 - `SubQuestCard` (SuperQuest quest detail pages)
 
 When adding new events to TaskList, update every wrapper component in the chain and every page that consumes tasks.
+
+**`add` event data shape**: The `add` event includes `createExperienceData?: CreateExperienceData` (with `category`, `city`, `country`, `countryCode`) alongside the existing fields. Page handlers use `useResolveExperienceCreation().resolveExperienceId()` to resolve the `__create__` sentinel, mirroring the existing `useResolveWishCreation` pattern.
 
 ## Public API
 

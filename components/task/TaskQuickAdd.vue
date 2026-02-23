@@ -26,6 +26,12 @@
                 name="lucide:star"
                 class="w-4 h-4 text-teal-500 shrink-0"
               />
+              <!-- Experience indicator -->
+              <Icon
+                v-if="createExperienceFlag"
+                name="lucide:sparkles"
+                class="w-4 h-4 text-rose-500 shrink-0"
+              />
               <div
                 ref="inputRef"
                 contenteditable="true"
@@ -35,8 +41,7 @@
                 :data-placeholder="$t('task.form.titlePlaceholder')"
                 class="task-quick-add-input flex-1 text-sm text-gray-900 bg-transparent border-none outline-none font-medium whitespace-nowrap overflow-hidden"
                 @input="onInput"
-                @keydown.enter.prevent="submit"
-                @keydown.escape="collapse"
+                @keydown="handleKeydown"
                 @paste.prevent="onPaste"
                 @compositionstart="_composing = true"
                 @compositionend="onCompositionEnd"
@@ -44,9 +49,14 @@
             </div>
             <!-- Pickers anchored below title input -->
             <TaskMentionPicker
+              ref="mentionPickerRef"
               v-model="showMentionPicker"
               :query="mentionQuery"
               @select="handleMentionSelect"
+            />
+            <TaskExperiencePicker
+              v-model="showExperiencePicker"
+              @select="handleExperienceSelect"
             />
             <TaskBlockerPicker
               v-model="showBlockerPicker"
@@ -91,6 +101,16 @@
             <Icon name="lucide:star" class="w-3 h-3" />
             <span>{{ $t('task.mentions.createWish') }}</span>
             <button @click="createWishFlag = false" class="ml-0.5 hover:text-teal-900">
+              <Icon name="lucide:x" class="w-3 h-3" />
+            </button>
+          </span>
+        </div>
+        <!-- Experience pill -->
+        <div v-if="createExperienceFlag && createExperienceData" class="flex flex-wrap gap-1.5 px-3 pb-2">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
+            <Icon name="lucide:sparkles" class="w-3 h-3" />
+            <span>{{ experiencePillLabel }}</span>
+            <button @click="clearExperienceCreation" class="ml-0.5 hover:text-rose-900">
               <Icon name="lucide:x" class="w-3 h-3" />
             </button>
           </span>
@@ -174,7 +194,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Task } from '~/types'
+import type { Task, ExperienceCategory } from '~/types'
+import type { CreateExperienceData } from '~/composables/useResolveExperienceCreation'
+import { EXPERIENCE_CATEGORIES } from '~/types'
 import { watchDebounced } from '@vueuse/core'
 import { parseDateFromText, stripDateTextFromTitle, formatDueDate, isDueDateOverdue } from '~/utils/taskDueDate'
 import type { NlpDateMatch } from '~/utils/taskDueDate'
@@ -200,7 +222,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string }]
+  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string; createExperienceData?: CreateExperienceData }]
   update: [id: string, data: Record<string, any>]
   cancelEdit: []
 }>()
@@ -219,7 +241,11 @@ const showBlockerPicker = ref(false)
 const showDatePicker = ref(false)
 const showQuestPicker = ref(false)
 const showMentionPicker = ref(false)
+const showExperiencePicker = ref(false)
+const createExperienceFlag = ref(false)
+const createExperienceData = ref<CreateExperienceData | null>(null)
 const mentionQuery = ref('')
+const mentionPickerRef = ref<{ moveUp: () => void; moveDown: () => void; confirmActive: () => void } | null>(null)
 const localQuestId = ref('')
 const localSubQuestId = ref('')
 const localTripId = ref('')
@@ -416,6 +442,28 @@ const tripPillLabel = computed(() => {
   return trip.name
 })
 
+const CATEGORY_ICONS: Record<string, string> = {
+  restaurant: 'lucide:utensils',
+  attraction: 'lucide:landmark',
+  museum: 'lucide:building-2',
+  outdoor: 'lucide:trees',
+  activity: 'lucide:dumbbell',
+  nightlife: 'lucide:moon',
+  shopping: 'lucide:shopping-bag',
+  day_trip: 'lucide:map-pin',
+  event: 'lucide:party-popper',
+  other: 'lucide:circle-dot',
+}
+
+const experiencePillLabel = computed(() => {
+  if (!createExperienceData.value) return ''
+  const catLabel = t(`trip.experiences.categories.${createExperienceData.value.category}`)
+  if (createExperienceData.value.city) {
+    return `${catLabel} - ${createExperienceData.value.city}`
+  }
+  return catLabel
+})
+
 // When editTask is provided, pre-fill fields
 watch(() => props.editTask, (task) => {
   if (task) {
@@ -445,6 +493,8 @@ function collapse() {
   title.value = ''
   description.value = ''
   createWishFlag.value = false
+  createExperienceFlag.value = false
+  createExperienceData.value = null
   blockedByTaskIds.value = []
   dueDate.value = null
   nlpMatch.value = null
@@ -457,6 +507,7 @@ function collapse() {
   showDatePicker.value = false
   showQuestPicker.value = false
   showMentionPicker.value = false
+  showExperiencePicker.value = false
   mentionQuery.value = ''
 }
 
@@ -473,6 +524,20 @@ watch(title, (val) => {
       showMentionPicker.value = false
       title.value = val === '@wish' ? '' : val.slice(0, -5).trimEnd()
       createWishFlag.value = true
+      return
+    }
+
+    // Check for exact match "@xp" or "@experience"
+    if (val === '@xp' || val.endsWith(' @xp')) {
+      showMentionPicker.value = false
+      title.value = val === '@xp' ? '' : val.slice(0, -3).trimEnd()
+      showExperiencePicker.value = true
+      return
+    }
+    if (val === '@experience' || val.endsWith(' @experience')) {
+      showMentionPicker.value = false
+      title.value = val === '@experience' ? '' : val.slice(0, -11).trimEnd()
+      showExperiencePicker.value = true
       return
     }
 
@@ -624,6 +689,45 @@ function handleMentionSelect(type: string) {
 
   if (type === 'wish') {
     createWishFlag.value = true
+  } else if (type === 'experience') {
+    showExperiencePicker.value = true
+  }
+}
+
+function handleExperienceSelect(data: { category: ExperienceCategory; city: string; country: string; countryCode: string }) {
+  createExperienceFlag.value = true
+  createExperienceData.value = data
+  showExperiencePicker.value = false
+}
+
+function clearExperienceCreation() {
+  createExperienceFlag.value = false
+  createExperienceData.value = null
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  if (showMentionPicker.value) {
+    if (e.key === 'ArrowUp') {
+      mentionPickerRef.value?.moveUp()
+      e.preventDefault()
+      return
+    }
+    if (e.key === 'ArrowDown') {
+      mentionPickerRef.value?.moveDown()
+      e.preventDefault()
+      return
+    }
+    if (e.key === 'Enter') {
+      mentionPickerRef.value?.confirmActive()
+      e.preventDefault()
+      return
+    }
+  }
+  if (e.key === 'Enter') {
+    submit()
+    e.preventDefault()
+  } else if (e.key === 'Escape') {
+    collapse()
   }
 }
 
@@ -690,14 +794,17 @@ function submit() {
     subQuestId: localSubQuestId.value || props.subQuestId,
     tripId: localTripId.value || props.tripId,
     destinationId: localDestinationId.value || props.destinationId,
-    experienceId: props.experienceId,
+    experienceId: createExperienceFlag.value ? '__create__' : (props.experienceId || ''),
     wishId: createWishFlag.value ? '__create__' : '',
     blockedByTaskIds: [...blockedByTaskIds.value],
     recurrence: nlpRecurrenceMatch.value ? JSON.stringify(nlpRecurrenceMatch.value.recurrence) : '',
+    createExperienceData: createExperienceData.value || undefined,
   })
   title.value = ''
   description.value = ''
   createWishFlag.value = false
+  createExperienceFlag.value = false
+  createExperienceData.value = null
   blockedByTaskIds.value = []
   dueDate.value = null
   nlpMatch.value = null

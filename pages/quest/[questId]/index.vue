@@ -248,6 +248,7 @@ const { subquests, loading: subquestsLoading, createSubQuest, updateSubQuest, de
 // Tasks
 const { tasks: allTasks, getDirectQuestTasks, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence } = useTasks()
 const { resolveWishId } = useResolveWishCreation()
+const { resolveExperienceId } = useResolveExperienceCreation()
 const questTasks = computed(() => getDirectQuestTasks(questId.value))
 
 // Progress
@@ -380,8 +381,9 @@ async function handleInlineUpdateTask(id: string, data: Record<string, any>) {
   await updateTask(id, data)
 }
 
-async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
+async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
+  const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title, data.createExperienceData)
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -391,7 +393,7 @@ async function handleQuickAddTask(data: { title: string; description: string; du
     tripId: '',
     destinationId: '',
     accommodationId: '',
-    experienceId: '',
+    experienceId: resolvedExperience,
     wishId: resolvedWishId,
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',
@@ -420,8 +422,9 @@ async function handleUpdateRecurrence(id: string, recurrence: import('~/types').
   await updateTaskRecurrence(id, recurrence)
 }
 
-async function handleSubQuestQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string }) {
+async function handleSubQuestQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
+  const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title, data.createExperienceData)
   await createTask({
     title: data.title,
     description: data.description || '',
@@ -431,7 +434,7 @@ async function handleSubQuestQuickAddTask(data: { title: string; description: st
     tripId: '',
     destinationId: '',
     accommodationId: '',
-    experienceId: '',
+    experienceId: resolvedExperience,
     wishId: resolvedWishId,
     timeHorizon: data.dueDate ? computeTimeHorizonFromDate(new Date(data.dueDate)) : '',
     estimatedTime: '',

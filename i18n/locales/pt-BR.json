@@ -677,7 +677,11 @@
       "noProject": "Sem Projeto"
     },
     "sidebar": {
-      "missions": "Missões"
+      "missions": "Missões",
+      "addMission": "Nova Missão",
+      "missionNamePlaceholder": "Nome da missão...",
+      "addSubMission": "Adicionar",
+      "subMissionNamePlaceholder": "Nome da sub-missão..."
     },
     "sections": {
       "quests": "Missões",
@@ -760,7 +764,14 @@
       "skipDestination": "Sem destino específico"
     },
     "mentions": {
-      "createWish": "Criar Desejo"
+      "createWish": "Criar Desejo",
+      "createExperience": "Criar Experiência"
+    },
+    "experiencePicker": {
+      "selectCategory": "Selecionar categoria",
+      "searchCategory": "Buscar categorias...",
+      "selectCity": "Buscar cidade...",
+      "skipCity": "Sem cidade específica"
     },
     "tooltips": {
       "horizon": "Horizonte de tempo",
