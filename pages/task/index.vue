@@ -1393,6 +1393,12 @@ async function handleCreate(data: TaskForm) {
 }
 
 async function handleInlineUpdate(id: string, data: Record<string, any>) {
+  console.log('[handleInlineUpdate] id:', id, 'data:', data)
+  if (data.wishId === '__create__') {
+    const resolvedWishId = await resolveWishId(data.wishId, data.title || '')
+    console.log('[handleInlineUpdate] resolvedWishId:', resolvedWishId)
+    data = { ...data, wishId: resolvedWishId }
+  }
   await updateTask(id, data)
 }
 
@@ -1434,7 +1440,11 @@ function openEditModal(task: Task) {
 
 async function handleUpdate(data: TaskForm) {
   if (!selectedTask.value) return
-  const result = await updateTask(selectedTask.value.id, data)
+  console.log('[handleUpdate] called with data.wishId:', data.wishId, 'title:', data.title)
+  const resolvedWishId = await resolveWishId(data.wishId, data.title)
+  console.log('[handleUpdate] resolvedWishId:', resolvedWishId)
+  const result = await updateTask(selectedTask.value.id, { ...data, wishId: resolvedWishId })
+  console.log('[handleUpdate] updateTask result:', result)
   if (result.success) {
     showEditModal.value = false
     selectedTask.value = null

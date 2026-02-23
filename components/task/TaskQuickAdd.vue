@@ -640,6 +640,10 @@ function submit() {
       description: description.value.trim(),
       dueDate: dueDate.value ? dueDate.value.toISOString() : '',
     }
+    // Include wish link if user toggled createWishFlag
+    if (createWishFlag.value && !props.editTask.wishId) {
+      updateData.wishId = '__create__'
+    }
     // Include quest/trip link if user changed it via # picker
     if (localQuestId.value) {
       updateData.questId = localQuestId.value
@@ -653,6 +657,7 @@ function submit() {
       updateData.questId = ''
       updateData.subQuestId = ''
     }
+    console.log('[TaskQuickAdd] edit submit, updateData:', updateData)
     emit('update', props.editTask.id, updateData)
     return
   }
