@@ -52,6 +52,11 @@ export function useTasks() {
       (snapshot) => {
         tasks.value = snapshot.docs.map(docSnap => {
           const data = docSnap.data()
+          const dueDate = data.dueDate ? (data.dueDate as Timestamp).toDate() : null
+          // Dynamically recompute timeHorizon from dueDate so it stays current as days pass
+          const timeHorizon = dueDate
+            ? computeTimeHorizonFromDate(dueDate)
+            : (data.timeHorizon || null)
           return {
             id: docSnap.id,
             userId: data.userId,
@@ -59,7 +64,7 @@ export function useTasks() {
             description: data.description || '',
             completed: data.completed || false,
             completedAt: data.completedAt ? (data.completedAt as Timestamp).toDate() : null,
-            dueDate: data.dueDate ? (data.dueDate as Timestamp).toDate() : null,
+            dueDate,
             questId: data.questId || null,
             subQuestId: data.subQuestId || null,
             tripId: data.tripId || null,
@@ -67,7 +72,7 @@ export function useTasks() {
             accommodationId: data.accommodationId || null,
             experienceId: data.experienceId || null,
             wishId: data.wishId || null,
-            timeHorizon: data.timeHorizon || null,
+            timeHorizon,
             estimatedTime: data.estimatedTime || null,
             recurrence: data.recurrence || null,
             blockedByTaskIds: data.blockedByTaskIds || [],

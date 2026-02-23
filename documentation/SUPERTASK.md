@@ -19,7 +19,7 @@ SuperTask is the task management module of SuperX. It provides a unified task sy
 ### Task Properties
 - Title and description
 - Due date (with optional time)
-- Time horizon: Today, This Week, This Month, Long Term (auto-computed from due date)
+- Time horizon: Today, This Week, This Month, Long Term (dynamically derived from due date at read time)
 - Estimated time: 5 min, 12 min, 25 min, 1h+
 - Recurrence: Daily, Weekly, Monthly, Yearly
 - Blocked-by dependencies (other tasks)
@@ -86,6 +86,10 @@ The recurrence parser (`utils/taskRecurrence.ts`) supports:
 **Auto-compute utilities** (`utils/taskRecurrence.ts`):
 - `computeInitialDueDateFromRecurrence(recurrence)` → computes the initial due date for a new recurrence
 - `computeTimeHorizonFromRecurrence(recurrence)` → computes time horizon via `computeTimeHorizonFromDate`
+
+### Dynamic Time Horizon
+
+When tasks have a `dueDate`, the `timeHorizon` is **not read from Firestore** — it is dynamically recomputed from the due date every time tasks are loaded (in the `onSnapshot` callback in `useTasks.ts`). This ensures the displayed horizon stays accurate as days pass (e.g., a task due today always shows "Today", not "This Week" as it might have been when the due date was originally set). Tasks without a `dueDate` use the stored/manual `timeHorizon` value from Firestore.
 
 ## Data Models
 
