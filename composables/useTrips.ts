@@ -63,6 +63,7 @@ export function useTrips() {
             totalBudget: data.totalBudget || undefined,
             status: data.status || 'planning',
             origin: data.origin || undefined,
+            sidebarOrder: data.sidebarOrder ?? undefined,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
           } as Trip
@@ -135,6 +136,7 @@ export function useTrips() {
       if (data.coverUrl !== undefined) updateData.coverUrl = data.coverUrl
       if (data.baseCurrency !== undefined) updateData.baseCurrency = data.baseCurrency
       if (data.status !== undefined) updateData.status = data.status
+      if (data.sidebarOrder !== undefined) updateData.sidebarOrder = data.sidebarOrder
       if (data.totalBudget !== undefined) {
         updateData.totalBudget = data.totalBudget ? parseFloat(data.totalBudget) : null
       }

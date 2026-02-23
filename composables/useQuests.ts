@@ -61,6 +61,7 @@ export function useQuests() {
             startDate: data.startDate ? (data.startDate as Timestamp).toDate() : null,
             endDate: data.endDate ? (data.endDate as Timestamp).toDate() : null,
             status: data.status || 'planning',
+            sidebarOrder: data.sidebarOrder ?? undefined,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
           } as Quest
@@ -126,6 +127,7 @@ export function useQuests() {
       if (data.description !== undefined) updateData.description = data.description
       if (data.coverUrl !== undefined) updateData.coverUrl = data.coverUrl
       if (data.status !== undefined) updateData.status = data.status
+      if (data.sidebarOrder !== undefined) updateData.sidebarOrder = data.sidebarOrder
       if (data.startDate !== undefined) {
         updateData.startDate = data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null
       }

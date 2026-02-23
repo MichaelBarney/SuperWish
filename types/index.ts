@@ -246,6 +246,7 @@ export interface Trip {
   totalBudget?: number
   status: TripStatus
   origin?: TripOrigin
+  sidebarOrder?: number
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -263,6 +264,7 @@ export interface TripForm {
   originName: string
   originCountry: string
   originCountryCode: string
+  sidebarOrder?: number
 }
 
 // Destination
@@ -684,6 +686,7 @@ export interface Quest {
   startDate?: Date | null
   endDate?: Date | null
   status: QuestStatus
+  sidebarOrder?: number
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -697,6 +700,7 @@ export interface QuestForm {
   startDate: string
   endDate: string
   status: QuestStatus
+  sidebarOrder?: number
 }
 
 export const QUEST_STATUSES: { value: QuestStatus; label: string; color: string }[] = [

@@ -463,7 +463,6 @@
                 :sub-quest-id="currentView === 'subquest' ? selectedSubQuestId : ''"
                 :trip-id="currentView === 'trip' || currentView === 'destination' || (currentView === 'subquest' && selectedTripId && !selectedQuestId) ? selectedTripId : ''"
                 :destination-id="currentView === 'destination' ? selectedDestinationId : ''"
-                :empty-message="currentEmptyMessage"
                 @toggle="handleToggle"
                 @edit="openEditModal"
                 @delete="handleDelete"
@@ -880,8 +879,8 @@ async function onMissionDragChange(evt: any, targetGroupKey: string) {
     if (items) {
       await Promise.all(items.map((item, i) =>
         item.type === 'quest'
-          ? updateQuest(item.id, { sidebarOrder: i } as any)
-          : updateTrip(item.id, { sidebarOrder: i } as any)
+          ? updateQuest(item.id, { sidebarOrder: i })
+          : updateTrip(item.id, { sidebarOrder: i })
       ))
     }
   } finally {
