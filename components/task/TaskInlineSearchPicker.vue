@@ -172,7 +172,7 @@ watch(() => props.modelValue, (open) => {
     document.removeEventListener('click', handleClickOutside)
     document.removeEventListener('keydown', handleEscape)
   }
-})
+}, { immediate: true })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)

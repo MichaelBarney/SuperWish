@@ -723,6 +723,13 @@ function handleKeydown(e: KeyboardEvent) {
       return
     }
   }
+  // When a sub-picker is open, let it handle Enter/Escape via its own focused input
+  if (showQuestPicker.value || showBlockerPicker.value || showExperiencePicker.value || showDatePicker.value) {
+    if (e.key === 'Enter' || e.key === 'Escape') {
+      e.preventDefault()
+      return
+    }
+  }
   if (e.key === 'Enter') {
     submit()
     e.preventDefault()

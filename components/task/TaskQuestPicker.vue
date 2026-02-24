@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Step 1: Quest & Trip selection -->
+    <!-- Step 1: Quest, SubQuest, Trip & Destination selection -->
     <TaskInlineSearchPicker
       v-if="!selectedProject"
       :model-value="modelValue"
@@ -8,23 +8,29 @@
       :search-placeholder="$t('task.questPicker.searchPlaceholder')"
       :no-results-text="$t('task.questPicker.noResults')"
       accent-color="green"
-      search-field="name"
+      search-field="_searchText"
       @update:model-value="handleProjectClose"
       @select="handleProjectSelect"
     >
       <template #item="{ item }">
         <div
-          class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-          :class="item._type === 'trip' ? 'bg-purple-50' : 'bg-green-50'"
+          class="rounded-lg flex items-center justify-center shrink-0"
+          :class="[
+            item._type === 'subquest' || item._type === 'destination' ? 'w-7 h-7' : 'w-8 h-8',
+            item._type === 'trip' || item._type === 'destination' ? 'bg-purple-50' : 'bg-green-50'
+          ]"
         >
           <Icon
-            :name="item._type === 'trip' ? 'lucide:plane' : (item.icon || 'lucide:target')"
-            class="w-4 h-4"
-            :class="item._type === 'trip' ? 'text-purple-500' : 'text-green-500'"
+            :name="item._type === 'trip' ? 'lucide:plane' : item._type === 'destination' ? 'lucide:map-pin' : (item.icon || 'lucide:target')"
+            :class="[
+              item._type === 'subquest' || item._type === 'destination' ? 'w-3.5 h-3.5' : 'w-4 h-4',
+              item._type === 'trip' ? 'text-purple-500' : item._type === 'destination' ? 'text-purple-400' : item._type === 'subquest' ? 'text-green-400' : 'text-green-500'
+            ]"
           />
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-gray-900 truncate">{{ item.name }}</p>
+          <p v-if="item._parentName" class="text-xs text-gray-400 truncate">{{ item._parentName }}</p>
         </div>
       </template>
     </TaskInlineSearchPicker>
@@ -101,7 +107,10 @@
 import type { Quest, Trip, SubQuest, Destination } from '~/types'
 
 interface ProjectItem extends Record<string, any> {
-  _type: 'quest' | 'trip'
+  _type: 'quest' | 'trip' | 'subquest' | 'destination'
+  _parentName?: string
+  _parentId?: string
+  _searchText: string
 }
 
 const props = defineProps<{
@@ -115,15 +124,34 @@ const emit = defineEmits<{
 
 const { quests } = useQuests()
 const { trips } = useTrips()
-const { getSubquestsByQuestId } = useAllSubquests()
-const { getDestinationsByTripId } = useAllDestinations()
+const { subquests, getSubquestsByQuestId } = useAllSubquests()
+const { destinations, getDestinationsByTripId } = useAllDestinations()
 
 const selectedProject = ref<ProjectItem | null>(null)
 
 const projectItems = computed(() => {
-  const questList = quests.value.map(q => ({ ...q, _type: 'quest' as const }))
-  const tripList = trips.value.map(t => ({ ...t, _type: 'trip' as const }))
-  return [...questList, ...tripList] as unknown as Record<string, any>[]
+  const items: ProjectItem[] = []
+  // Access .value directly to ensure Vue tracks these reactive deps
+  const allSubquests = subquests.value
+  const allDestinations = destinations.value
+
+  for (const q of quests.value) {
+    items.push({ ...q, _type: 'quest' as const, _searchText: q.name })
+    const subs = allSubquests.filter(s => s.questId === q.id)
+    for (const sq of subs) {
+      items.push({ ...sq, _type: 'subquest' as const, _parentName: q.name, _parentId: q.id, _searchText: `${sq.name} ${q.name}` })
+    }
+  }
+
+  for (const t of trips.value) {
+    items.push({ ...t, _type: 'trip' as const, _searchText: t.name })
+    const dests = allDestinations.filter(d => d.tripId === t.id)
+    for (const d of dests) {
+      items.push({ ...d, _type: 'destination' as const, _parentName: t.name, _parentId: t.id, _searchText: `${d.name} ${t.name}` })
+    }
+  }
+
+  return items as unknown as Record<string, any>[]
 })
 
 const subQuestItems = computed(() => {
@@ -145,7 +173,15 @@ function handleProjectClose(value: boolean) {
 function handleProjectSelect(item: any) {
   const project = item as ProjectItem
 
-  if (project._type === 'quest') {
+  if (project._type === 'subquest') {
+    emit('select', { questId: project._parentId, subQuestId: project.id })
+    emit('update:modelValue', false)
+    selectedProject.value = null
+  } else if (project._type === 'destination') {
+    emit('select', { tripId: project._parentId, destinationId: project.id })
+    emit('update:modelValue', false)
+    selectedProject.value = null
+  } else if (project._type === 'quest') {
     const subs = getSubquestsByQuestId(project.id)
     if (subs.length === 0) {
       emit('select', { questId: project.id, subQuestId: '' })

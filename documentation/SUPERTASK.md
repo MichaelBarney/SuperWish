@@ -81,7 +81,7 @@ The quick-add input (`TaskQuickAdd.vue`) supports inline triggers:
 | `@wish` | Toggles create-wish flag | Exact match shortcut—skips the mention picker. Task will also create a wish in SuperWish on submit. |
 | `@xp` / `@experience` | Opens experience picker | Exact match shortcuts—opens the two-step experience picker (category → city). Creates ONLY an experience in SuperXP on submit — no task is created. |
 | `!` | Opens blocker picker | Type `!` at start or after a space to pick blocking tasks. |
-| `#` | Opens quest picker | Two-step: select quest, then optionally select sub-quest. |
+| `#` | Opens quest picker | Flat search across quests, sub-quests, trips, and destinations. Selecting a sub-quest or destination links directly (skips Step 2). Selecting a quest/trip with children opens Step 2 for optional refinement. |
 | `/date` | Opens date picker | Manual date selection calendar. |
 
 The `TaskForm.vue` modal also supports the `@wish` trigger in the title field (sets link type to "wish" and marks `wishId` as `__create__`).
@@ -136,7 +136,7 @@ When tasks have a `dueDate`, the `timeHorizon` is **not read from Firestore** �
 | TaskForm | `components/task/TaskForm.vue` | Full modal form for creating/editing tasks |
 | TaskDatePicker | `components/task/TaskDatePicker.vue` | Calendar date picker with quick options (Today, Tomorrow, Next Week) |
 | TaskBlockerPicker | `components/task/TaskBlockerPicker.vue` | Blocker task search dropdown (thin wrapper around TaskInlineSearchPicker) |
-| TaskQuestPicker | `components/task/TaskQuestPicker.vue` | Two-step quest > sub-quest picker |
+| TaskQuestPicker | `components/task/TaskQuestPicker.vue` | Flat search picker for quests, sub-quests, trips, and destinations with optional Step 2 refinement |
 | TaskMentionPicker | `components/task/TaskMentionPicker.vue` | `@` mention type selector dropdown with keyboard navigation (Arrow Up/Down + Enter) |
 | TaskExperiencePicker | `components/task/TaskExperiencePicker.vue` | Two-step experience picker: category selection → optional city search. Creates experiences in SuperXP. |
 | TaskInlineSearchPicker | `components/task/TaskInlineSearchPicker.vue` | Shared search dropdown used by BlockerPicker, QuestPicker, and ExperiencePicker |

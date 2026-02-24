@@ -754,8 +754,8 @@
       "clearAll": "Limpar todos"
     },
     "questPicker": {
-      "searchPlaceholder": "Buscar missões e viagens...",
-      "noResults": "Nenhuma missão ou viagem encontrada",
+      "searchPlaceholder": "Buscar missões, sub-missões, viagens...",
+      "noResults": "Nenhum resultado encontrado",
       "searchSubQuestPlaceholder": "Buscar sub-missões...",
       "noSubQuests": "Nenhuma sub-missão encontrada",
       "skipSubQuest": "Sem sub-missão específica",

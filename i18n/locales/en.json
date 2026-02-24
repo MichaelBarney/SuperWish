@@ -754,8 +754,8 @@
       "clearAll": "Clear all"
     },
     "questPicker": {
-      "searchPlaceholder": "Search quests and trips...",
-      "noResults": "No quests or trips found",
+      "searchPlaceholder": "Search missions, sub-missions, trips...",
+      "noResults": "No results found",
       "searchSubQuestPlaceholder": "Search sub-quests...",
       "noSubQuests": "No sub-quests found",
       "skipSubQuest": "No specific sub-quest",
