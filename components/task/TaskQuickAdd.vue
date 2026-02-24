@@ -457,7 +457,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 const experiencePillLabel = computed(() => {
   if (!createExperienceData.value) return ''
-  const catLabel = t(`trip.experiences.categories.${createExperienceData.value.category}`)
+  const catLabel = t(`task.experiencePicker.categories.${createExperienceData.value.category}`)
   if (createExperienceData.value.city) {
     return `${catLabel} - ${createExperienceData.value.city}`
   }

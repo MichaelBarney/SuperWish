@@ -62,11 +62,9 @@ watch(() => props.modelValue, (open) => {
     activeIndex.value = 0
     nextTick(() => {
       document.addEventListener('click', handleClickOutside)
-      document.addEventListener('keydown', handleKeydown)
     })
   } else {
     document.removeEventListener('click', handleClickOutside)
-    document.removeEventListener('keydown', handleKeydown)
   }
 })
 
@@ -103,22 +101,6 @@ function handleClickOutside(e: MouseEvent) {
   }
 }
 
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') {
-    emit('update:modelValue', false)
-    e.preventDefault()
-  } else if (e.key === 'ArrowDown') {
-    moveDown()
-    e.preventDefault()
-  } else if (e.key === 'ArrowUp') {
-    moveUp()
-    e.preventDefault()
-  } else if (e.key === 'Enter') {
-    confirmActive()
-    e.preventDefault()
-  }
-}
-
 defineExpose({
   moveUp,
   moveDown,
@@ -127,6 +109,5 @@ defineExpose({
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
-  document.removeEventListener('keydown', handleKeydown)
 })
 </script>

@@ -9,22 +9,23 @@
         :placeholder="searchPlaceholder"
         class="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2"
         :class="ringClass"
-        @keydown.escape="$emit('update:modelValue', false)"
+        @keydown="handleSearchKeydown"
       />
     </div>
 
     <!-- Results -->
-    <div class="max-h-64 overflow-y-auto">
+    <div ref="listRef" class="max-h-64 overflow-y-auto">
       <slot name="before-list" />
       <div v-if="filteredItems.length === 0" class="px-4 py-6 text-center text-sm text-gray-400">
         {{ noResultsText }}
       </div>
       <button
-        v-for="item in filteredItems"
+        v-for="(item, idx) in filteredItems"
         :key="item.id"
+        :ref="el => { if (idx === activeIndex) activeItemRef = el as HTMLElement | null }"
         @click="selectItem(item)"
         class="w-full flex items-center gap-3 px-3 py-2 transition-colors text-left"
-        :class="hoverClass"
+        :class="idx === activeIndex ? activeClass : hoverClass"
       >
         <slot name="item" :item="item">
           <span class="text-sm text-gray-900 truncate">{{ item[searchField] }}</span>
@@ -61,6 +62,9 @@ const emit = defineEmits<{
 const searchQuery = ref('')
 const searchRef = ref<HTMLInputElement | null>(null)
 const containerRef = ref<HTMLElement | null>(null)
+const listRef = ref<HTMLElement | null>(null)
+const activeItemRef = ref<HTMLElement | null>(null)
+const activeIndex = ref(0)
 
 const ringClass = computed(() => {
   switch (props.accentColor) {
@@ -86,6 +90,18 @@ const hoverClass = computed(() => {
   }
 })
 
+const activeClass = computed(() => {
+  switch (props.accentColor) {
+    case 'teal': return 'bg-teal-50'
+    case 'orange': return 'bg-orange-50'
+    case 'green': return 'bg-green-50'
+    case 'red': return 'bg-red-50'
+    case 'purple': return 'bg-purple-50'
+    case 'rose': return 'bg-rose-50'
+    default: return 'bg-teal-50'
+  }
+})
+
 const filteredItems = computed(() => {
   const q = searchQuery.value.toLowerCase().trim()
   return props.items.filter(item => {
@@ -95,6 +111,35 @@ const filteredItems = computed(() => {
     return typeof fieldValue === 'string' && fieldValue.toLowerCase().includes(q)
   })
 })
+
+watch(filteredItems, () => {
+  activeIndex.value = 0
+})
+
+function handleSearchKeydown(e: KeyboardEvent) {
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    if (filteredItems.value.length === 0) return
+    activeIndex.value = activeIndex.value >= filteredItems.value.length - 1
+      ? 0
+      : activeIndex.value + 1
+    nextTick(() => activeItemRef.value?.scrollIntoView({ block: 'nearest' }))
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    if (filteredItems.value.length === 0) return
+    activeIndex.value = activeIndex.value <= 0
+      ? filteredItems.value.length - 1
+      : activeIndex.value - 1
+    nextTick(() => activeItemRef.value?.scrollIntoView({ block: 'nearest' }))
+  } else if (e.key === 'Enter') {
+    e.preventDefault()
+    if (filteredItems.value.length > 0 && activeIndex.value < filteredItems.value.length) {
+      selectItem(filteredItems.value[activeIndex.value])
+    }
+  } else if (e.key === 'Escape') {
+    emit('update:modelValue', false)
+  }
+}
 
 function selectItem(item: any) {
   emit('select', item)
@@ -117,6 +162,7 @@ function handleEscape(e: KeyboardEvent) {
 watch(() => props.modelValue, (open) => {
   if (open) {
     searchQuery.value = ''
+    activeIndex.value = 0
     nextTick(() => {
       searchRef.value?.focus()
       document.addEventListener('click', handleClickOutside)

@@ -1635,8 +1635,13 @@ async function handleQuickAdd(data: { title: string; description: string; dueDat
   if (data.dueDate) {
     timeHorizon = computeTimeHorizonFromDate(new Date(data.dueDate))
   }
+  // Experience-only: create experience and skip task creation
+  if (data.createExperienceData) {
+    await resolveExperienceId('__create__', data.title, data.createExperienceData)
+    return
+  }
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
-  const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title, data.createExperienceData)
+  const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title)
   await createTask({
     title: data.title,
     description: data.description || '',

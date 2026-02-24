@@ -35,13 +35,14 @@
           type="text"
           :placeholder="$t('task.experiencePicker.selectCity')"
           class="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
-          @keydown.escape="handleCityClose(false)"
+          @keydown="handleCityKeydown"
         />
       </div>
       <div class="max-h-64 overflow-y-auto">
         <button
           @click="skipCity"
-          class="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors text-left border-b border-gray-100"
+          class="w-full flex items-center gap-3 px-3 py-2 transition-colors text-left border-b border-gray-100"
+          :class="cityActiveIndex === -1 ? 'bg-gray-50' : 'hover:bg-gray-50'"
         >
           <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
             <Icon name="lucide:skip-forward" class="w-4 h-4 text-gray-400" />
@@ -52,10 +53,11 @@
           {{ $t('task.blockerPicker.noResults') }}
         </div>
         <button
-          v-for="city in cityResults"
+          v-for="(city, idx) in cityResults"
           :key="city.id"
           @click="handleCitySelect(city)"
-          class="w-full flex items-center gap-3 px-3 py-2 hover:bg-rose-50 transition-colors text-left"
+          class="w-full flex items-center gap-3 px-3 py-2 transition-colors text-left"
+          :class="idx === cityActiveIndex ? 'bg-rose-50' : 'hover:bg-rose-50'"
         >
           <div class="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
             <Icon name="lucide:map-pin" class="w-4 h-4 text-rose-400" />
@@ -103,6 +105,7 @@ const selectedCategory = ref<ExperienceCategory | null>(null)
 const citySearchQuery = ref('')
 const citySearchRef = ref<HTMLInputElement | null>(null)
 const cityContainerRef = ref<HTMLElement | null>(null)
+const cityActiveIndex = ref(-1) // -1 = "Skip" button highlighted
 
 onMounted(() => {
   loadCities()
@@ -111,7 +114,7 @@ onMounted(() => {
 const categoryItems = computed(() => {
   return EXPERIENCE_CATEGORIES.map(cat => ({
     id: cat.value,
-    name: t(`trip.experiences.categories.${cat.value}`),
+    name: t(`task.experiencePicker.categories.${cat.value}`),
     icon: CATEGORY_ICONS[cat.value] || 'lucide:circle-dot',
     value: cat.value,
   }))
@@ -126,6 +129,40 @@ const cityResults = computed(() => {
     countryCode: c.countryCode,
   }))
 })
+
+watch(cityResults, () => {
+  cityActiveIndex.value = -1
+})
+
+function handleCityKeydown(e: KeyboardEvent) {
+  // total selectable items: 1 (skip at index -1) + cityResults.length
+  const totalItems = 1 + cityResults.value.length
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    // -1 → 0 → 1 → ... → length-1 → -1
+    if (cityActiveIndex.value >= cityResults.value.length - 1) {
+      cityActiveIndex.value = -1
+    } else {
+      cityActiveIndex.value++
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    if (cityActiveIndex.value <= -1) {
+      cityActiveIndex.value = cityResults.value.length - 1
+    } else {
+      cityActiveIndex.value--
+    }
+  } else if (e.key === 'Enter') {
+    e.preventDefault()
+    if (cityActiveIndex.value === -1) {
+      skipCity()
+    } else if (cityActiveIndex.value >= 0 && cityActiveIndex.value < cityResults.value.length) {
+      handleCitySelect(cityResults.value[cityActiveIndex.value])
+    }
+  } else if (e.key === 'Escape') {
+    handleCityClose(false)
+  }
+}
 
 function handleCategoryClose(value: boolean) {
   if (!value && !selectedCategory.value) {

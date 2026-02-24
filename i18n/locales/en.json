@@ -771,7 +771,19 @@
       "selectCategory": "Select category",
       "searchCategory": "Search categories...",
       "selectCity": "Search city...",
-      "skipCity": "No specific city"
+      "skipCity": "No specific city",
+      "categories": {
+        "restaurant": "Restaurant",
+        "attraction": "Attraction",
+        "museum": "Museum",
+        "outdoor": "Outdoor",
+        "activity": "Activity",
+        "nightlife": "Nightlife",
+        "shopping": "Shopping",
+        "day_trip": "Day Trip",
+        "event": "Event",
+        "other": "Other"
+      }
     },
     "tooltips": {
       "horizon": "Time horizon",

@@ -79,7 +79,7 @@ The quick-add input (`TaskQuickAdd.vue`) supports inline triggers:
 |---------|--------|-------------|
 | `@` | Opens mention picker | Shows available mention types: Create Wish and Create Experience. Filters as you type after `@`. Supports keyboard navigation (Arrow Up/Down + Enter). |
 | `@wish` | Toggles create-wish flag | Exact match shortcut—skips the mention picker. Task will also create a wish in SuperWish on submit. |
-| `@xp` / `@experience` | Opens experience picker | Exact match shortcuts—opens the two-step experience picker (category → city). Task will create an experience in SuperXP on submit. |
+| `@xp` / `@experience` | Opens experience picker | Exact match shortcuts—opens the two-step experience picker (category → city). Creates ONLY an experience in SuperXP on submit — no task is created. |
 | `!` | Opens blocker picker | Type `!` at start or after a space to pick blocking tasks. |
 | `#` | Opens quest picker | Two-step: select quest, then optionally select sub-quest. |
 | `/date` | Opens date picker | Manual date selection calendar. |
@@ -176,7 +176,7 @@ TaskList → wrapper component → page
 
 When adding new events to TaskList, update every wrapper component in the chain and every page that consumes tasks.
 
-**`add` event data shape**: The `add` event includes `createExperienceData?: CreateExperienceData` (with `category`, `city`, `country`, `countryCode`) alongside the existing fields. Page handlers use `useResolveExperienceCreation().resolveExperienceId()` to resolve the `__create__` sentinel, mirroring the existing `useResolveWishCreation` pattern.
+**`add` event data shape**: The `add` event includes `createExperienceData?: CreateExperienceData` (with `category`, `city`, `country`, `countryCode`) alongside the existing fields. When `createExperienceData` is present, page handlers create ONLY an experience (via `resolveExperienceId`) and return early — no task is created. This differs from `@wish`, which creates both a wish and a task.
 
 ## Public API
 
