@@ -638,6 +638,7 @@
 
 <script setup lang="ts">
 import type { Task, TaskForm, TaskTimeHorizon, TaskEstimatedTime, TaskGroupBy, QuestStatus, TripStatus } from '~/types'
+import { isOwnedStatus } from '~/types'
 import { computeTimeHorizonFromDate } from '~/utils/taskDueDate'
 import draggable from 'vuedraggable'
 
@@ -658,6 +659,7 @@ onMounted(() => {
 
 // Data
 const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
+const { getWishById } = useAllWishes()
 // Backfill: ensure all wishes have linked tasks (runs once after tasks load)
 const { syncWishesWithTasks } = useWishTaskSync()
 const hasSyncedWishTasks = ref(false)
@@ -1042,43 +1044,52 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleCmdK)
 })
 
+// Match TaskList's completion logic: wish-linked tasks are completed when the wish is owned
+function isTaskEffectivelyCompleted(task: Task): boolean {
+  if (task.wishId) {
+    const wish = getWishById(task.wishId)
+    return wish ? isOwnedStatus(wish.status) : false
+  }
+  return task.completed
+}
+
 // Views config
 const views = computed(() => [
   {
     key: 'inbox' as const,
     label: t('task.views.inbox'),
     icon: 'lucide:inbox',
-    count: inboxTasks.value.filter(t => !t.completed).length,
+    count: inboxTasks.value.filter(t => !isTaskEffectivelyCompleted(t)).length,
   },
   {
     key: 'today' as const,
     label: t('task.timeHorizon.today'),
     icon: 'lucide:sun',
-    count: todayHorizonTasks.value.filter(t => !t.completed).length,
+    count: todayHorizonTasks.value.filter(t => !isTaskEffectivelyCompleted(t)).length,
   },
   {
     key: 'this_week' as const,
     label: t('task.timeHorizon.thisWeek'),
     icon: 'lucide:calendar-days',
-    count: thisWeekTasks.value.filter(t => !t.completed).length,
+    count: thisWeekTasks.value.filter(t => !isTaskEffectivelyCompleted(t)).length,
   },
   {
     key: 'this_month' as const,
     label: t('task.timeHorizon.thisMonth'),
     icon: 'lucide:calendar',
-    count: thisMonthTasks.value.filter(t => !t.completed).length,
+    count: thisMonthTasks.value.filter(t => !isTaskEffectivelyCompleted(t)).length,
   },
   {
     key: 'long_term' as const,
     label: t('task.timeHorizon.longTerm'),
     icon: 'lucide:clock',
-    count: longTermTasks.value.filter(t => !t.completed).length,
+    count: longTermTasks.value.filter(t => !isTaskEffectivelyCompleted(t)).length,
   },
   {
     key: 'no_horizon' as const,
     label: t('task.views.noHorizon'),
     icon: 'lucide:circle-off',
-    count: noHorizonTasks.value.filter(t => !t.completed).length,
+    count: noHorizonTasks.value.filter(t => !isTaskEffectivelyCompleted(t)).length,
   },
 ])
 
