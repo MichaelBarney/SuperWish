@@ -46,6 +46,12 @@ export default defineNuxtConfig({
       cookieKey: 'i18n_redirected',
       fallbackLocale: 'en',
     },
+    vueI18n: {
+      fallbackLocale: {
+        'pt': ['pt-BR', 'en'],
+        'default': ['en'],
+      },
+    },
   },
 
   app: {
