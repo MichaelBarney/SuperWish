@@ -263,6 +263,12 @@ export function useTasks() {
     if (!db) return { success: false, error: 'Database not initialized' }
 
     try {
+      // Delete linked wish if present, to prevent syncWishesWithTasks from recreating the task
+      const task = tasks.value.find(t => t.id === id)
+      if (task?.wishId) {
+        await deleteDoc(doc(db, 'wishes', task.wishId))
+      }
+
       const taskRef = doc(db, 'tasks', id)
       await deleteDoc(taskRef)
 
