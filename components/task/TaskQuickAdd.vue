@@ -79,6 +79,7 @@
             :placeholder="$t('task.form.descriptionPlaceholder')"
             class="w-full text-sm text-gray-700 placeholder-gray-400 bg-transparent border-none outline-none resize-none"
             @keydown.escape="collapse"
+            @keydown.enter.prevent="submit"
           />
         </div>
         <!-- Blocker pills -->
