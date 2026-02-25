@@ -29,13 +29,16 @@ SuperTask is the task management module of SuperX. It provides a unified task sy
 - Trip/destination linking
 
 ### URL Linking
-When a task title is a URL (detected via `new URL()` try/catch), the task stores `url` and `urlTitle` fields:
-- **Detection**: At submit time in TaskQuickAdd, if the entire title is a valid http/https URL, it is passed as the `url` field
-- **Title fetching**: After creation, `pages/task/index.vue` fires a background call to `useUrlMetadata` (which calls the `fetchUrlMetadata` Cloud Function) to fetch the page's `<title>`. On success, `updateTaskUrl` writes `urlTitle` back to Firestore
+When a URL is detected in the task title, the task stores `url` and `urlTitle` fields. URL metadata is fetched inline (Todoist-style) before submission:
+- **Inline detection**: TaskQuickAdd detects URLs via regex (`https?://[^\s]+`) on paste or after typing (debounced). Only the first URL match is processed
+- **Inline fetch**: When a URL is detected, `triggerUrlFetch()` immediately calls `useUrlMetadata().fetchMetadata()` (which invokes the `fetchUrlMetadata` Cloud Function). While loading, the URL text is shown dimmed blue (`text-blue-500 opacity-60`) and the pill shows a spinner + hostname. On success, the URL substring in the title is replaced with the fetched page title, styled as a blue underlined link (`text-blue-600 underline`)
+- **Submit with pre-fetched title**: On submit, both `url` (original URL) and `urlTitle` (fetched title) are passed in the `add` event. Page handlers store both fields directly — no post-creation backfill needed
+- **Fallback backfill**: If the user submits before the fetch completes (urlTitle is empty), the page handler fires the old fire-and-forget fetch to backfill `urlTitle` after creation
+- **Clearing**: The URL pill has an X button that reverts the title text to the original URL and clears the fetch state
+- **Invalidation**: If the user edits/deletes the URL region text, the fetch state is automatically cleared
 - **Display**: TaskItem renders URL tasks as a blue hyperlink (`text-blue-600`) with an external-link icon. Link text is `urlTitle` (fetched title) or falls back to the raw URL. The hostname (e.g., `youtube.com`) is shown below as a gray badge. Clicking the link opens a new tab and does NOT open the edit modal (`@click.stop`)
 - **Edit modal**: TaskForm shows the URL as a clickable link with a clear (X) button. Clearing removes both `url` and `urlTitle`
 - **Recurring tasks**: When a recurring URL task is completed, the next occurrence inherits `url` and `urlTitle`
-- **Quick-add preview**: A blue pill with link icon shows the hostname when the current title is a valid URL
 
 ### Task Views
 - **Inbox**: Tasks not linked to any quest or trip

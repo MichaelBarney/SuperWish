@@ -111,7 +111,7 @@ defineEmits<{
   toggleTask: [id: string, completed: boolean]
   editTask: [task: Task]
   deleteTask: [id: string]
-  addTask: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string; url: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }]
+  addTask: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string; url: string; urlTitle: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }]
   inlineUpdateTask: [id: string, data: Record<string, any>]
   updateTimeHorizonTask: [id: string, timeHorizon: string | null]
   updateEstimatedTimeTask: [id: string, estimatedTime: string | null]

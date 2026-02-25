@@ -1636,7 +1636,7 @@ async function handleInlineUpdate(id: string, data: Record<string, any>) {
   await updateTask(id, data)
 }
 
-async function handleQuickAdd(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
+async function handleQuickAdd(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; urlTitle?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   const viewToHorizon: Record<string, string> = {
     today: 'today',
     this_week: 'this_week',
@@ -1671,11 +1671,11 @@ async function handleQuickAdd(data: { title: string; description: string; dueDat
     recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
     url: data.url || '',
-    urlTitle: '',
+    urlTitle: data.urlTitle || '',
   })
 
-  // Fire-and-forget: fetch URL metadata and backfill title
-  if (data.url && result?.id) {
+  // Fire-and-forget backfill only when inline fetch didn't resolve the title
+  if (data.url && !data.urlTitle && result?.id) {
     const { fetchMetadata } = useUrlMetadata()
     fetchMetadata(data.url).then(meta => {
       if (meta?.title) {

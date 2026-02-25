@@ -381,7 +381,7 @@ async function handleInlineUpdateTask(id: string, data: Record<string, any>) {
   await updateTask(id, data)
 }
 
-async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
+async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; urlTitle?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   if (data.createExperienceData) {
     await resolveExperienceId('__create__', data.title, data.createExperienceData)
     return
@@ -404,9 +404,9 @@ async function handleQuickAddTask(data: { title: string; description: string; du
     recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
     url: data.url || '',
-    urlTitle: '',
+    urlTitle: data.urlTitle || '',
   })
-  if (data.url && result?.id) {
+  if (data.url && !data.urlTitle && result?.id) {
     const { fetchMetadata } = useUrlMetadata()
     fetchMetadata(data.url).then(meta => {
       if (meta?.title) updateTaskUrl(result.id!, data.url!, meta.title)
@@ -434,7 +434,7 @@ async function handleUpdateRecurrence(id: string, recurrence: import('~/types').
   await updateTaskRecurrence(id, recurrence)
 }
 
-async function handleSubQuestQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
+async function handleSubQuestQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; urlTitle?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   if (data.createExperienceData) {
     await resolveExperienceId('__create__', data.title, data.createExperienceData)
     return
@@ -457,9 +457,9 @@ async function handleSubQuestQuickAddTask(data: { title: string; description: st
     recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
     url: data.url || '',
-    urlTitle: '',
+    urlTitle: data.urlTitle || '',
   })
-  if (data.url && result?.id) {
+  if (data.url && !data.urlTitle && result?.id) {
     const { fetchMetadata } = useUrlMetadata()
     fetchMetadata(data.url).then(meta => {
       if (meta?.title) updateTaskUrl(result.id!, data.url!, meta.title)

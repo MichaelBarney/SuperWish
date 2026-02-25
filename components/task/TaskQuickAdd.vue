@@ -166,10 +166,14 @@
           </span>
         </div>
         <!-- URL pill -->
-        <div v-if="detectedUrl" class="flex flex-wrap gap-1.5 px-3 pb-2">
+        <div v-if="urlFetchState" class="flex flex-wrap gap-1.5 px-3 pb-2">
           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-            <Icon name="lucide:link" class="w-3 h-3" />
-            <span class="truncate max-w-[200px]">{{ detectedUrlHostname }}</span>
+            <Icon v-if="urlFetchState.loading" name="lucide:loader-2" class="w-3 h-3 animate-spin" />
+            <Icon v-else name="lucide:link" class="w-3 h-3" />
+            <span class="truncate max-w-[200px]">{{ urlFetchState.fetchedTitle || urlFetchHostname }}</span>
+            <button @click="clearUrlFetch" class="ml-0.5 hover:text-blue-900">
+              <Icon name="lucide:x" class="w-3 h-3" />
+            </button>
           </span>
         </div>
         <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 border-t border-gray-100 rounded-b-xl">
@@ -230,7 +234,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string; url: string; createExperienceData?: CreateExperienceData }]
+  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string; url: string; urlTitle: string; createExperienceData?: CreateExperienceData }]
   update: [id: string, data: Record<string, any>]
   cancelEdit: []
 }>()
@@ -335,6 +339,19 @@ function renderHighlight() {
     regions.push({ start: recMatch.index, end: recMatch.end, cls: 'bg-violet-100 text-violet-700 rounded px-0.5' })
   }
 
+  // URL region
+  if (urlFetchState.value) {
+    const us = urlFetchState.value
+    if (us.startIndex >= 0 && us.endIndex <= text.length) {
+      const urlCls = us.loading
+        ? 'text-blue-500 opacity-60'
+        : us.fetchedTitle
+          ? 'text-blue-600 underline decoration-blue-400'
+          : 'text-blue-500'
+      regions.push({ start: us.startIndex, end: us.endIndex, cls: urlCls })
+    }
+  }
+
   if (regions.length > 0) {
     // Sort by start index
     regions.sort((a, b) => a.start - b.start)
@@ -370,11 +387,30 @@ function onInput() {
   _suppressRender = true
   title.value = el.textContent || ''
   _suppressRender = false
+  // Invalidate URL fetch if the URL region was edited/removed
+  if (urlFetchState.value) {
+    const s = urlFetchState.value
+    const expected = s.fetchedTitle || s.originalUrl
+    const actual = title.value.slice(s.startIndex, s.startIndex + expected.length)
+    if (actual !== expected) {
+      urlFetchState.value = null
+    }
+  }
 }
 
 function onPaste(e: ClipboardEvent) {
   const text = (e.clipboardData?.getData('text/plain') || '').replace(/[\r\n]+/g, ' ')
   document.execCommand('insertText', false, text)
+  // After paste settles, check for URL
+  nextTick(() => {
+    onInput() // sync title.value from contenteditable
+    if (!urlFetchState.value) {
+      const detected = detectUrlInTitle(title.value)
+      if (detected) {
+        triggerUrlFetch(detected.url, detected.start, detected.end)
+      }
+    }
+  })
 }
 
 function onCompositionEnd() {
@@ -382,28 +418,86 @@ function onCompositionEnd() {
   onInput()
 }
 
-function isUrl(text: string): boolean {
+// --- Inline URL fetch state ---
+interface UrlFetchState {
+  originalUrl: string
+  startIndex: number
+  endIndex: number
+  fetchedTitle: string | null
+  loading: boolean
+  error: boolean
+}
+const urlFetchState = ref<UrlFetchState | null>(null)
+
+const URL_REGEX = /https?:\/\/[^\s]+/
+
+function detectUrlInTitle(text: string): { url: string; start: number; end: number } | null {
+  const m = text.match(URL_REGEX)
+  if (!m || m.index === undefined) return null
+  // Validate it's a real URL
   try {
-    const parsed = new URL(text)
-    return ['http:', 'https:'].includes(parsed.protocol)
-  } catch {
-    return false
-  }
+    const parsed = new URL(m[0])
+    if (!['http:', 'https:'].includes(parsed.protocol)) return null
+  } catch { return null }
+  return { url: m[0], start: m.index, end: m.index + m[0].length }
 }
 
-const detectedUrl = computed(() => {
-  const trimmed = title.value.trim()
-  return trimmed && isUrl(trimmed) ? trimmed : ''
+const urlFetchHostname = computed(() => {
+  if (!urlFetchState.value) return ''
+  try {
+    return new URL(urlFetchState.value.originalUrl).hostname.replace(/^www\./, '')
+  } catch { return '' }
 })
 
-const detectedUrlHostname = computed(() => {
-  if (!detectedUrl.value) return ''
-  try {
-    return new URL(detectedUrl.value).hostname.replace(/^www\./, '')
-  } catch {
-    return ''
+function triggerUrlFetch(url: string, start: number, end: number) {
+  urlFetchState.value = { originalUrl: url, startIndex: start, endIndex: end, fetchedTitle: null, loading: true, error: false }
+  const { fetchMetadata } = useUrlMetadata()
+  fetchMetadata(url).then(meta => {
+    // Guard: state may have been cleared
+    if (!urlFetchState.value || urlFetchState.value.originalUrl !== url) return
+    if (meta?.title) {
+      const fetchedTitle = meta.title
+      urlFetchState.value.fetchedTitle = fetchedTitle
+      urlFetchState.value.loading = false
+      // Replace URL text in title with fetched title
+      const currentText = title.value
+      const currentUrl = currentText.slice(urlFetchState.value.startIndex, urlFetchState.value.endIndex)
+      if (currentUrl === url) {
+        _suppressRender = true
+        title.value = currentText.slice(0, urlFetchState.value.startIndex) + fetchedTitle + currentText.slice(urlFetchState.value.endIndex)
+        _suppressRender = false
+        urlFetchState.value.endIndex = urlFetchState.value.startIndex + fetchedTitle.length
+        nextTick(() => renderHighlight())
+      }
+    } else {
+      urlFetchState.value.loading = false
+      urlFetchState.value.error = true
+    }
+  }).catch(() => {
+    if (urlFetchState.value && urlFetchState.value.originalUrl === url) {
+      urlFetchState.value.loading = false
+      urlFetchState.value.error = true
+    }
+  })
+}
+
+function clearUrlFetch() {
+  if (!urlFetchState.value) return
+  // If title was replaced with fetched title, revert to original URL
+  if (urlFetchState.value.fetchedTitle) {
+    const currentText = title.value
+    const start = urlFetchState.value.startIndex
+    const end = urlFetchState.value.endIndex
+    const currentSlice = currentText.slice(start, end)
+    if (currentSlice === urlFetchState.value.fetchedTitle) {
+      _suppressRender = true
+      title.value = currentText.slice(0, start) + urlFetchState.value.originalUrl + currentText.slice(end)
+      _suppressRender = false
+    }
   }
-})
+  urlFetchState.value = null
+  nextTick(() => renderHighlight())
+}
 
 const { tasks: allTasks } = useTasks()
 const { quests } = useQuests()
@@ -503,6 +597,41 @@ watch(() => props.editTask, (task) => {
     createWishFlag.value = !!task.wishId
     blockedByTaskIds.value = task.blockedByTaskIds ? [...task.blockedByTaskIds] : []
     dueDate.value = task.dueDate || null
+    // Restore URL state from existing task
+    if (task.url) {
+      // Find the URL or fetched title in the title text for highlight positioning
+      const titleText = task.urlTitle || task.url
+      const idx = task.title.indexOf(titleText)
+      if (task.urlTitle) {
+        // Title was already resolved — restore as completed fetch
+        urlFetchState.value = {
+          originalUrl: task.url,
+          startIndex: idx >= 0 ? idx : 0,
+          endIndex: idx >= 0 ? idx + titleText.length : titleText.length,
+          fetchedTitle: task.urlTitle,
+          loading: false,
+          error: false,
+        }
+      } else {
+        // URL exists but title wasn't fetched yet — trigger a fetch
+        const urlIdx = task.title.indexOf(task.url)
+        if (urlIdx >= 0) {
+          triggerUrlFetch(task.url, urlIdx, urlIdx + task.url.length)
+        } else {
+          // Title doesn't contain the raw URL (already replaced somehow), just restore state
+          urlFetchState.value = {
+            originalUrl: task.url,
+            startIndex: 0,
+            endIndex: 0,
+            fetchedTitle: null,
+            loading: false,
+            error: false,
+          }
+        }
+      }
+    } else {
+      urlFetchState.value = null
+    }
     nextTick(() => {
       renderHighlight()
       focusAtEnd()
@@ -530,6 +659,7 @@ function collapse() {
   dueDate.value = null
   nlpMatch.value = null
   nlpRecurrenceMatch.value = null
+  urlFetchState.value = null
   localQuestId.value = ''
   localSubQuestId.value = ''
   localTripId.value = ''
@@ -645,10 +775,18 @@ watchDebounced(title, (val) => {
       nlpMatch.value = null
     }
   }
+
+  // Secondary URL detection (catches typed URLs)
+  if (!urlFetchState.value) {
+    const detected = detectUrlInTitle(val)
+    if (detected) {
+      triggerUrlFetch(detected.url, detected.start, detected.end)
+    }
+  }
 }, { debounce: 150 })
 
-// Re-render highlight when NLP match changes
-watch([nlpMatch, nlpRecurrenceMatch], () => {
+// Re-render highlight when NLP match or URL fetch state changes
+watch([nlpMatch, nlpRecurrenceMatch, urlFetchState], () => {
   nextTick(() => renderHighlight())
 })
 
@@ -786,6 +924,15 @@ function submit() {
     if (createWishFlag.value && !props.editTask.wishId) {
       updateData.wishId = '__create__'
     }
+    // Include URL fields: preserve if present, clear if user removed
+    if (urlFetchState.value) {
+      updateData.url = urlFetchState.value.originalUrl
+      updateData.urlTitle = urlFetchState.value.fetchedTitle || ''
+    } else if (props.editTask.url) {
+      // User cleared the URL during edit
+      updateData.url = ''
+      updateData.urlTitle = ''
+    }
     // Include quest/trip link if user changed it via # picker
     if (localQuestId.value) {
       updateData.questId = localQuestId.value
@@ -824,8 +971,9 @@ function submit() {
   finalTitle = finalTitle.trim()
   if (!finalTitle) finalTitle = title.value.trim()
 
-  // Detect if the entire title is a URL
-  const urlToAdd = isUrl(finalTitle) ? finalTitle : ''
+  // Use inline-fetched URL data if available, otherwise detect raw URL
+  const urlToAdd = urlFetchState.value?.originalUrl || ''
+  const urlTitleToAdd = urlFetchState.value?.fetchedTitle || ''
 
   emit('add', {
     title: finalTitle,
@@ -840,6 +988,7 @@ function submit() {
     blockedByTaskIds: [...blockedByTaskIds.value],
     recurrence: nlpRecurrenceMatch.value ? JSON.stringify(nlpRecurrenceMatch.value.recurrence) : '',
     url: urlToAdd,
+    urlTitle: urlTitleToAdd,
     createExperienceData: createExperienceData.value || undefined,
   })
   title.value = ''
@@ -851,6 +1000,7 @@ function submit() {
   dueDate.value = null
   nlpMatch.value = null
   nlpRecurrenceMatch.value = null
+  urlFetchState.value = null
   localQuestId.value = ''
   localSubQuestId.value = ''
   localTripId.value = ''
