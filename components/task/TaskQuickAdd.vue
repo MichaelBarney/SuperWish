@@ -164,6 +164,13 @@
             </button>
           </span>
         </div>
+        <!-- URL pill -->
+        <div v-if="detectedUrl" class="flex flex-wrap gap-1.5 px-3 pb-2">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+            <Icon name="lucide:link" class="w-3 h-3" />
+            <span class="truncate max-w-[200px]">{{ detectedUrlHostname }}</span>
+          </span>
+        </div>
         <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 border-t border-gray-100 rounded-b-xl">
           <!-- Calendar button -->
           <button
@@ -222,7 +229,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string; createExperienceData?: CreateExperienceData }]
+  add: [data: { title: string; description: string; dueDate: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds: string[]; recurrence: string; url: string; createExperienceData?: CreateExperienceData }]
   update: [id: string, data: Record<string, any>]
   cancelEdit: []
 }>()
@@ -373,6 +380,29 @@ function onCompositionEnd() {
   _composing = false
   onInput()
 }
+
+function isUrl(text: string): boolean {
+  try {
+    const parsed = new URL(text)
+    return ['http:', 'https:'].includes(parsed.protocol)
+  } catch {
+    return false
+  }
+}
+
+const detectedUrl = computed(() => {
+  const trimmed = title.value.trim()
+  return trimmed && isUrl(trimmed) ? trimmed : ''
+})
+
+const detectedUrlHostname = computed(() => {
+  if (!detectedUrl.value) return ''
+  try {
+    return new URL(detectedUrl.value).hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+})
 
 const { tasks: allTasks } = useTasks()
 const { quests } = useQuests()
@@ -793,6 +823,9 @@ function submit() {
   finalTitle = finalTitle.trim()
   if (!finalTitle) finalTitle = title.value.trim()
 
+  // Detect if the entire title is a URL
+  const urlToAdd = isUrl(finalTitle) ? finalTitle : ''
+
   emit('add', {
     title: finalTitle,
     description: description.value.trim(),
@@ -805,6 +838,7 @@ function submit() {
     wishId: createWishFlag.value ? '__create__' : '',
     blockedByTaskIds: [...blockedByTaskIds.value],
     recurrence: nlpRecurrenceMatch.value ? JSON.stringify(nlpRecurrenceMatch.value.recurrence) : '',
+    url: urlToAdd,
     createExperienceData: createExperienceData.value || undefined,
   })
   title.value = ''

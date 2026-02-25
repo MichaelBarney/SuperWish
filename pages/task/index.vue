@@ -658,7 +658,7 @@ onMounted(() => {
 })
 
 // Data
-const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
+const { tasks, loading: tasksLoading, createTask, updateTask, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskUrl, updateTaskBlockedBy, updateTaskRecurrence, toggleTaskComplete, deleteTask, inboxTasks, todayHorizonTasks, thisWeekTasks, thisMonthTasks, longTermTasks, noHorizonTasks, getTasksByQuestId, getTasksByTripId, getTasksBySubQuestId, getTasksByDestinationId, getDirectQuestTasks, getDirectTripTasks } = useTasks()
 const { getWishById } = useAllWishes()
 // Backfill: ensure all wishes have linked tasks (runs once after tasks load)
 const { syncWishesWithTasks } = useWishTaskSync()
@@ -1447,6 +1447,8 @@ const selectedTaskForm = computed(() => {
     wishId: selectedTask.value.wishId || '',
     timeHorizon: selectedTask.value.timeHorizon || '',
     recurrence: selectedTask.value.recurrence ? JSON.stringify(selectedTask.value.recurrence) : '',
+    url: selectedTask.value.url || '',
+    urlTitle: selectedTask.value.urlTitle || '',
   }
 })
 
@@ -1634,7 +1636,7 @@ async function handleInlineUpdate(id: string, data: Record<string, any>) {
   await updateTask(id, data)
 }
 
-async function handleQuickAdd(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
+async function handleQuickAdd(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   const viewToHorizon: Record<string, string> = {
     today: 'today',
     this_week: 'this_week',
@@ -1653,7 +1655,7 @@ async function handleQuickAdd(data: { title: string; description: string; dueDat
   }
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
   const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title)
-  await createTask({
+  const result = await createTask({
     title: data.title,
     description: data.description || '',
     dueDate: data.dueDate || '',
@@ -1668,7 +1670,19 @@ async function handleQuickAdd(data: { title: string; description: string; dueDat
     estimatedTime: '',
     recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
+    url: data.url || '',
+    urlTitle: '',
   })
+
+  // Fire-and-forget: fetch URL metadata and backfill title
+  if (data.url && result?.id) {
+    const { fetchMetadata } = useUrlMetadata()
+    fetchMetadata(data.url).then(meta => {
+      if (meta?.title) {
+        updateTaskUrl(result.id!, data.url!, meta.title)
+      }
+    })
+  }
 }
 
 function openEditModal(task: Task) {

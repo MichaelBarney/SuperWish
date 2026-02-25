@@ -23,9 +23,19 @@ SuperTask is the task management module of SuperX. It provides a unified task sy
 - Estimated time: 5 min, 12 min, 25 min, 1h+
 - Recurrence: Daily, Weekly, Monthly, Yearly
 - Blocked-by dependencies (other tasks)
+- URL linking (auto-fetches page title, displays as clickable hyperlink)
 - Wish linking (completion tied to wish ownership status)
 - Quest/sub-quest linking
 - Trip/destination linking
+
+### URL Linking
+When a task title is a URL (detected via `new URL()` try/catch), the task stores `url` and `urlTitle` fields:
+- **Detection**: At submit time in TaskQuickAdd, if the entire title is a valid http/https URL, it is passed as the `url` field
+- **Title fetching**: After creation, `pages/task/index.vue` fires a background call to `useUrlMetadata` (which calls the `fetchUrlMetadata` Cloud Function) to fetch the page's `<title>`. On success, `updateTaskUrl` writes `urlTitle` back to Firestore
+- **Display**: TaskItem renders URL tasks as a blue hyperlink (`text-blue-600`) with an external-link icon. Link text is `urlTitle` (fetched title) or falls back to the raw URL. The hostname (e.g., `youtube.com`) is shown below as a gray badge. Clicking the link opens a new tab and does NOT open the edit modal (`@click.stop`)
+- **Edit modal**: TaskForm shows the URL as a clickable link with a clear (X) button. Clearing removes both `url` and `urlTitle`
+- **Recurring tasks**: When a recurring URL task is completed, the next occurrence inherits `url` and `urlTitle`
+- **Quick-add preview**: A blue pill with link icon shows the hostname when the current title is a valid URL
 
 ### Task Views
 - **Inbox**: Tasks not linked to any quest or trip

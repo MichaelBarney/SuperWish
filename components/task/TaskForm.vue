@@ -21,6 +21,27 @@
       </div>
     </div>
 
+    <!-- URL -->
+    <div v-if="form.url" class="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+      <Icon name="lucide:link" class="w-4 h-4 text-blue-500 shrink-0" />
+      <a
+        :href="form.url"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate flex-1"
+        @click.stop
+      >
+        {{ form.url }}
+      </a>
+      <button
+        type="button"
+        @click="clearUrl"
+        class="p-1 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+      >
+        <Icon name="lucide:x" class="w-4 h-4" />
+      </button>
+    </div>
+
     <!-- Description -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -211,6 +232,8 @@ const form = reactive<TaskForm>({
   estimatedTime: props.initialData?.estimatedTime || '',
   recurrence: props.initialData?.recurrence || '',
   blockedByTaskIds: props.initialData?.blockedByTaskIds || [],
+  url: props.initialData?.url || '',
+  urlTitle: props.initialData?.urlTitle || '',
 })
 
 // Recurrence frequency local state
@@ -312,6 +335,11 @@ watch(() => form.title, (val) => {
     form.wishId = '__create__'
   }
 })
+
+function clearUrl() {
+  form.url = ''
+  form.urlTitle = ''
+}
 
 function handleSubmit() {
   if (!form.title.trim()) return

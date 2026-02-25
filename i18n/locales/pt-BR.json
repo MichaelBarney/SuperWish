@@ -492,7 +492,7 @@
       "status": {
         "wishlist": "Lista de Desejos",
         "booked": "Reservado",
-        "completed": "Confirmado",
+        "completed": "Já Fiz",
         "skipped": "Pulado"
       },
       "form": {
@@ -731,7 +731,8 @@
       "wishWillBeCreated": "Um desejo será criado com o título desta tarefa",
       "dueDate": "Data de Vencimento",
       "recurrence": "Recorrência",
-      "createTask": "Criar Tarefa"
+      "createTask": "Criar Tarefa",
+      "url": "Link"
     },
     "blockerPicker": {
       "searchPlaceholder": "Buscar tarefas...",

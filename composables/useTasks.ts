@@ -76,6 +76,8 @@ export function useTasks() {
             estimatedTime: data.estimatedTime || null,
             recurrence: data.recurrence || null,
             blockedByTaskIds: data.blockedByTaskIds || [],
+            url: data.url || null,
+            urlTitle: data.urlTitle || null,
             order: data.order || 0,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
@@ -141,6 +143,8 @@ export function useTasks() {
         estimatedTime: data.estimatedTime || null,
         recurrence: parsedRecurrence,
         blockedByTaskIds: data.blockedByTaskIds || [],
+        url: data.url || null,
+        urlTitle: data.urlTitle || null,
         order: maxOrder,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -183,6 +187,8 @@ export function useTasks() {
       if (data.estimatedTime !== undefined) updateData.estimatedTime = data.estimatedTime || null
       if (data.recurrence !== undefined) updateData.recurrence = data.recurrence ? JSON.parse(data.recurrence) : null
       if (data.blockedByTaskIds !== undefined) updateData.blockedByTaskIds = data.blockedByTaskIds
+      if (data.url !== undefined) updateData.url = data.url || null
+      if (data.urlTitle !== undefined) updateData.urlTitle = data.urlTitle || null
 
       await updateDoc(taskRef, updateData)
       return { success: true }
@@ -244,6 +250,8 @@ export function useTasks() {
           estimatedTime: task.estimatedTime || null,
           recurrence: task.recurrence,
           blockedByTaskIds: [],
+          url: task.url || null,
+          urlTitle: task.urlTitle || null,
           order: maxOrder,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
@@ -343,6 +351,25 @@ export function useTasks() {
     } catch (err) {
       console.error('Error updating task due date:', err)
       return { success: false, error: 'Failed to update due date' }
+    }
+  }
+
+  const updateTaskUrl = async (id: string, url: string, urlTitle: string) => {
+    const db = getDb()
+    if (!user.value) return { success: false, error: 'Not authenticated' }
+    if (!db) return { success: false, error: 'Database not initialized' }
+
+    try {
+      const taskRef = doc(db, 'tasks', id)
+      await updateDoc(taskRef, {
+        url: url || null,
+        urlTitle: urlTitle || null,
+        updatedAt: serverTimestamp(),
+      })
+      return { success: true }
+    } catch (err) {
+      console.error('Error updating task URL:', err)
+      return { success: false, error: 'Failed to update task URL' }
     }
   }
 
@@ -488,6 +515,7 @@ export function useTasks() {
     updateTaskTimeHorizon,
     updateTaskEstimatedTime,
     updateTaskDueDate,
+    updateTaskUrl,
     updateTaskBlockedBy,
     updateTaskRecurrence,
     toggleTaskComplete,

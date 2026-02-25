@@ -540,7 +540,7 @@ const {
 } = useAccommodations(tripId)
 
 // Tasks
-const { tasks: allTasks, getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence } = useTasks()
+const { tasks: allTasks, getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, updateTaskUrl, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence } = useTasks()
 const { resolveWishId } = useResolveWishCreation()
 const { resolveExperienceId } = useResolveExperienceCreation()
 const tripTasks = computed(() => getDirectTripTasks(tripId.value))
@@ -964,14 +964,14 @@ async function handleUpdateRecurrence(id: string, recurrence: import('~/types').
   await updateTaskRecurrence(id, recurrence)
 }
 
-async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
+async function handleQuickAddTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   if (data.createExperienceData) {
     await resolveExperienceId('__create__', data.title, data.createExperienceData)
     return
   }
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
   const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title)
-  await createTask({
+  const result = await createTask({
     title: data.title,
     description: data.description || '',
     dueDate: data.dueDate || '',
@@ -986,17 +986,25 @@ async function handleQuickAddTask(data: { title: string; description: string; du
     estimatedTime: '',
     recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
+    url: data.url || '',
+    urlTitle: '',
   })
+  if (data.url && result?.id) {
+    const { fetchMetadata } = useUrlMetadata()
+    fetchMetadata(data.url).then(meta => {
+      if (meta?.title) updateTaskUrl(result.id!, data.url!, meta.title)
+    })
+  }
 }
 
-async function handleQuickAddDestinationTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
+async function handleQuickAddDestinationTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   if (data.createExperienceData) {
     await resolveExperienceId('__create__', data.title, data.createExperienceData)
     return
   }
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
   const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title)
-  await createTask({
+  const result = await createTask({
     title: data.title,
     description: data.description || '',
     dueDate: data.dueDate || '',
@@ -1011,17 +1019,25 @@ async function handleQuickAddDestinationTask(data: { title: string; description:
     estimatedTime: '',
     recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
+    url: data.url || '',
+    urlTitle: '',
   })
+  if (data.url && result?.id) {
+    const { fetchMetadata } = useUrlMetadata()
+    fetchMetadata(data.url).then(meta => {
+      if (meta?.title) updateTaskUrl(result.id!, data.url!, meta.title)
+    })
+  }
 }
 
-async function handleQuickAddSubQuestTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
+async function handleQuickAddSubQuestTask(data: { title: string; description: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; blockedByTaskIds?: string[]; recurrence?: string; url?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   if (data.createExperienceData) {
     await resolveExperienceId('__create__', data.title, data.createExperienceData)
     return
   }
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
   const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title)
-  await createTask({
+  const result = await createTask({
     title: data.title,
     description: data.description || '',
     dueDate: data.dueDate || '',
@@ -1036,7 +1052,15 @@ async function handleQuickAddSubQuestTask(data: { title: string; description: st
     estimatedTime: '',
     recurrence: data.recurrence || '',
     blockedByTaskIds: data.blockedByTaskIds || [],
+    url: data.url || '',
+    urlTitle: '',
   })
+  if (data.url && result?.id) {
+    const { fetchMetadata } = useUrlMetadata()
+    fetchMetadata(data.url).then(meta => {
+      if (meta?.title) updateTaskUrl(result.id!, data.url!, meta.title)
+    })
+  }
 }
 
 // Sub-Quest handlers

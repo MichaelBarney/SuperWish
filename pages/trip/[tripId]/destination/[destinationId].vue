@@ -284,7 +284,7 @@ const destination = computed(() => destinations.value.find(d => d.id === destina
 const { experiences, loading: experiencesLoading, createExperience, updateExperience, deleteExperience } = useExperiences(destinationId)
 
 // Tasks
-const { getDirectDestinationTasks, createTask, updateTask, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskRecurrence } = useTasks()
+const { getDirectDestinationTasks, createTask, updateTask, updateTaskUrl, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskRecurrence } = useTasks()
 const { resolveWishId } = useResolveWishCreation()
 const { resolveExperienceId } = useResolveExperienceCreation()
 const destinationDirectTasks = computed(() => getDirectDestinationTasks(destinationId.value))
@@ -604,14 +604,14 @@ async function handleUpdateRecurrence(id: string, recurrence: import('~/types').
   await updateTaskRecurrence(id, recurrence)
 }
 
-async function handleQuickAddTask(data: { title: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; recurrence?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
+async function handleQuickAddTask(data: { title: string; dueDate?: string; questId: string; subQuestId: string; tripId: string; destinationId: string; experienceId: string; wishId: string; recurrence?: string; url?: string; createExperienceData?: import('~/composables/useResolveExperienceCreation').CreateExperienceData }) {
   if (data.createExperienceData) {
     await resolveExperienceId('__create__', data.title, data.createExperienceData)
     return
   }
   const resolvedWishId = await resolveWishId(data.wishId, data.title)
   const resolvedExperience = await resolveExperienceId(data.experienceId || '', data.title)
-  await createTask({
+  const result = await createTask({
     title: data.title,
     description: '',
     dueDate: data.dueDate || '',
@@ -626,6 +626,14 @@ async function handleQuickAddTask(data: { title: string; dueDate?: string; quest
     estimatedTime: '',
     recurrence: data.recurrence || '',
     blockedByTaskIds: (data as any).blockedByTaskIds || [],
+    url: (data as any).url || '',
+    urlTitle: '',
   })
+  if (data.url && result?.id) {
+    const { fetchMetadata } = useUrlMetadata()
+    fetchMetadata(data.url).then(meta => {
+      if (meta?.title) updateTaskUrl(result.id!, data.url!, meta.title)
+    })
+  }
 }
 </script>

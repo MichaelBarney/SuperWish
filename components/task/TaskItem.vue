@@ -32,12 +32,32 @@
     <!-- Content -->
     <div class="flex-1 min-w-0">
       <div class="cursor-pointer" @click="$emit('edit', task)">
+        <!-- URL title as hyperlink -->
+        <a
+          v-if="task.url"
+          :href="task.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-sm font-medium transition-all flex items-center gap-1"
+          :class="effectiveCompleted ? 'text-gray-400 line-through' : 'text-blue-600 hover:text-blue-800 hover:underline'"
+          @click.stop
+        >
+          <span class="truncate">{{ task.urlTitle || task.title }}</span>
+          <Icon name="lucide:external-link" class="w-3 h-3 shrink-0" />
+        </a>
+        <!-- Regular title -->
         <p
+          v-else
           class="text-sm font-medium transition-all"
           :class="effectiveCompleted ? 'text-gray-400 line-through' : 'text-gray-900'"
         >
           {{ task.title }}
         </p>
+        <!-- URL hostname badge -->
+        <div v-if="task.url" class="flex items-center gap-1 mt-0.5">
+          <Icon name="lucide:globe" class="w-3 h-3 text-gray-400" />
+          <span class="text-xs text-gray-400">{{ urlHostname }}</span>
+        </div>
         <p
           v-if="task.description"
           class="text-xs text-gray-400 mt-0.5 truncate"
@@ -390,6 +410,15 @@ const emit = defineEmits<{
 const { t, locale } = useI18n()
 
 const isWishLinked = computed(() => !!props.task.wishId)
+
+const urlHostname = computed(() => {
+  if (!props.task.url) return ''
+  try {
+    return new URL(props.task.url).hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+})
 
 const effectiveCompleted = computed(() => {
   if (isWishLinked.value && props.linkedWish) {

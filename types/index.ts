@@ -787,6 +787,8 @@ export interface Task {
   estimatedTime?: TaskEstimatedTime | null
   recurrence?: TaskRecurrence | null
   blockedByTaskIds?: string[]
+  url?: string | null
+  urlTitle?: string | null
   order: number
   createdAt: Timestamp
   updatedAt: Timestamp
@@ -807,4 +809,6 @@ export interface TaskForm {
   estimatedTime: string
   recurrence: string
   blockedByTaskIds: string[]
+  url: string
+  urlTitle: string
 }

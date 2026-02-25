@@ -731,7 +731,8 @@
       "wishWillBeCreated": "A wish will be created with this task's title",
       "dueDate": "Due Date",
       "recurrence": "Recurrence",
-      "createTask": "Create Task"
+      "createTask": "Create Task",
+      "url": "Link"
     },
     "blockerPicker": {
       "searchPlaceholder": "Search tasks...",
