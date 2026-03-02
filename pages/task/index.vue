@@ -4,6 +4,18 @@
       <!-- Left Panel: Navigation (desktop) -->
       <div class="hidden md:block w-56 shrink-0">
         <div class="sticky top-8 space-y-1">
+          <!-- Add task button -->
+          <button
+            @click="handleSidebarAddTask"
+            class="group w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-orange-500 hover:bg-orange-50 mb-1"
+          >
+            <span class="flex items-center justify-center w-5 h-5 rounded-full bg-orange-500 text-white group-hover:bg-orange-600 transition-colors">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+            </span>
+            <span>{{ $t('task.task.addTask') }}</span>
+          </button>
           <!-- Search button -->
           <button
             @click="showSearchPalette = true"
@@ -256,6 +268,18 @@
 
       <!-- Mobile: View selector dropdown -->
       <div class="md:hidden">
+        <!-- Mobile: Add task button -->
+        <button
+          @click="handleSidebarAddTask"
+          class="group w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-orange-500 hover:bg-orange-50 mb-2"
+        >
+          <span class="flex items-center justify-center w-5 h-5 rounded-full bg-orange-500 text-white group-hover:bg-orange-600 transition-colors">
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+          </span>
+          <span>{{ $t('task.task.addTask') }}</span>
+        </button>
         <select
           v-model="mobileView"
           @change="handleMobileViewChange"
@@ -540,7 +564,7 @@
           </div>
 
           <!-- Flat view for inbox/today/all/subquest/destination or quest/trip without children -->
-          <div v-else>
+          <div v-else ref="mainTaskListEl">
             <div class="bg-white rounded-xl shadow-soft">
               <TaskList
                 :tasks="filteredTasks"
@@ -552,6 +576,7 @@
                 :sub-quest-id="currentView === 'subquest' ? selectedSubQuestId : ''"
                 :trip-id="currentView === 'trip' || currentView === 'destination' || (currentView === 'subquest' && selectedTripId && !selectedQuestId) ? selectedTripId : ''"
                 :destination-id="currentView === 'destination' ? selectedDestinationId : ''"
+                :expand-trigger="sidebarAddTaskTrigger"
                 @toggle="handleToggle"
                 @edit="openEditModal"
                 @delete="handleDelete"
@@ -685,6 +710,10 @@ const showGroupByDropdown = ref(false)
 // Search palette
 const showSearchPalette = ref(false)
 
+// Sidebar "Add task" → scroll to main TaskList and expand its QuickAdd
+const mainTaskListEl = ref<HTMLElement | null>(null)
+const sidebarAddTaskTrigger = ref(0)
+
 // Sync from Firestore when auth resolves
 watch(authUser, (u) => {
   if (u?.taskGroupBy) {
@@ -751,6 +780,22 @@ const mobileView = ref(
   : initialState.view === 'destination' ? `destination:${initialState.tripId}:${initialState.destinationId}`
   : initialState.view as string
 )
+
+function handleSidebarAddTask() {
+  // Switch to inbox if in a mission view
+  const missionViews: ViewType[] = ['quest', 'trip', 'subquest', 'destination']
+  if (missionViews.includes(currentView.value)) {
+    currentView.value = 'inbox'
+    selectedQuestId.value = ''
+    selectedTripId.value = ''
+    selectedSubQuestId.value = ''
+    selectedDestinationId.value = ''
+  }
+  nextTick(() => {
+    mainTaskListEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    sidebarAddTaskTrigger.value++
+  })
+}
 
 // Sync view state to URL query params
 const isUpdatingUrl = ref(false)

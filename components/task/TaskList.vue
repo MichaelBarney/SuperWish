@@ -31,6 +31,7 @@
 
     <!-- Quick add -->
     <TaskQuickAdd
+      ref="quickAddRef"
       :quest-id="questId"
       :sub-quest-id="subQuestId"
       :trip-id="tripId"
@@ -105,6 +106,7 @@ interface Props {
   questNames?: Record<string, string>
   questIcons?: Record<string, string>
   tripNames?: Record<string, string>
+  expandTrigger?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -130,8 +132,15 @@ const emit = defineEmits<{
 
 const { getWishById } = useAllWishes()
 
+const quickAddRef = ref<{ expand: () => void } | null>(null)
 const showCompleted = ref(false)
 const editingTaskId = ref<string | null>(null)
+
+watch(() => props.expandTrigger, (val) => {
+  if (val && val > 0) {
+    quickAddRef.value?.expand()
+  }
+})
 
 function startEdit(id: string) {
   editingTaskId.value = id

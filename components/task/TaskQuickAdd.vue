@@ -1,19 +1,5 @@
 <template>
   <div>
-    <!-- Collapsed state (hidden in edit mode) -->
-    <button
-      v-if="!expanded && !editTask"
-      @click="expand"
-      class="group w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors"
-    >
-      <span class="flex items-center justify-center w-5 h-5 rounded-full text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-colors">
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-        </svg>
-      </span>
-      <span class="text-gray-400 group-hover:text-orange-500 transition-colors">{{ $t('task.task.addTask') }}</span>
-    </button>
-
     <!-- Expanded state -->
     <div v-if="expanded || editTask" class="relative px-3 pb-3 pt-3">
       <div class="border border-gray-300 rounded-xl shadow-sm">
@@ -385,7 +371,7 @@ function onInput() {
   const el = inputRef.value
   if (!el) return
   _suppressRender = true
-  title.value = el.textContent || ''
+  title.value = (el.textContent || '').replace(/\u00A0/g, ' ')
   _suppressRender = false
   // Invalidate URL fetch if the URL region was edited/removed
   if (urlFetchState.value) {
@@ -906,6 +892,8 @@ function handleKeydown(e: KeyboardEvent) {
     collapse()
   }
 }
+
+defineExpose({ expand })
 
 function submit() {
   if (!title.value.trim()) return
