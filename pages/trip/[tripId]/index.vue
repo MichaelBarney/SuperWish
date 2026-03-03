@@ -76,6 +76,16 @@
           </div>
 
           <div class="flex items-center gap-2">
+            <UiButton variant="ghost" :disabled="pdfExporting" @click="handleExportPdf">
+              <svg v-if="!pdfExporting" class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <svg v-else class="w-4 h-4 mr-1.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {{ pdfExporting ? $t('travel.pdf.exporting') : $t('travel.pdf.exportPdf') }}
+            </UiButton>
             <UiButton variant="ghost" @click="showEditModal = true">
               <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -539,6 +549,9 @@ const {
   getAccommodationsByDestinationId,
 } = useAccommodations(tripId)
 
+// PDF Export
+const { exporting: pdfExporting, error: pdfError, exportTripPdf } = useTripPdfExport()
+
 // Tasks
 const { tasks: allTasks, getDirectTripTasks, getTasksByDestinationId, getTasksBySubQuestId, createTask, updateTask, updateTaskUrl, toggleTaskComplete, deleteTask: deleteTaskById, updateTaskTimeHorizon, updateTaskEstimatedTime, updateTaskDueDate, updateTaskBlockedBy, updateTaskRecurrence } = useTasks()
 const { resolveWishId } = useResolveWishCreation()
@@ -759,6 +772,19 @@ const isDestinationConfirmed = (destId: string, index: number): boolean => {
   const incoming = getTransportationBetween(prevId, destId)
   const outgoing = getTransportationBetween(destId, nextId)
   return incoming?.bookingStatus === 'confirmed' && outgoing?.bookingStatus === 'confirmed'
+}
+
+// PDF Export handler
+async function handleExportPdf() {
+  if (!trip.value) return
+  await exportTripPdf(
+    trip.value,
+    destinations.value,
+    transportations.value,
+    accommodations.value,
+    getDestinationArrivalDate,
+    getDestinationDepartureDate,
+  )
 }
 
 // Handlers

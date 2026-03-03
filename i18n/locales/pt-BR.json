@@ -569,6 +569,30 @@
       "thunderstorm": "Tempestade",
       "unavailable": "Dados meteorológicos indisponíveis",
       "noDates": "Defina datas para ver o clima"
+    },
+    "pdf": {
+      "exportPdf": "Exportar PDF",
+      "exporting": "Exportando...",
+      "exportError": "Falha ao exportar PDF. Tente novamente.",
+      "itinerary": "Itinerario",
+      "day": "Dia",
+      "time": "Hora",
+      "type": "Tipo",
+      "name": "Nome",
+      "details": "Detalhes",
+      "unscheduled": "Sem data",
+      "arrival": "Chegada",
+      "departure": "Partida",
+      "nights": "{count} noite | {count} noites",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "budget": "Orcamento",
+      "origin": "Origem",
+      "cost": "Custo",
+      "bookingRef": "Ref",
+      "seat": "Assento",
+      "noItems": "Nenhum item agendado",
+      "emptyDay": "Nada agendado"
     }
   },
   "quest": {

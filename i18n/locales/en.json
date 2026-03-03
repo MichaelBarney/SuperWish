@@ -569,6 +569,30 @@
       "thunderstorm": "Thunderstorm",
       "unavailable": "Weather data unavailable",
       "noDates": "Set dates to see weather"
+    },
+    "pdf": {
+      "exportPdf": "Export PDF",
+      "exporting": "Exporting...",
+      "exportError": "Failed to export PDF. Please try again.",
+      "itinerary": "Itinerary",
+      "day": "Day",
+      "time": "Time",
+      "type": "Type",
+      "name": "Name",
+      "details": "Details",
+      "unscheduled": "Unscheduled",
+      "arrival": "Arrival",
+      "departure": "Departure",
+      "nights": "{count} night | {count} nights",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "budget": "Budget",
+      "origin": "Origin",
+      "cost": "Cost",
+      "bookingRef": "Ref",
+      "seat": "Seat",
+      "noItems": "No items scheduled",
+      "emptyDay": "Nothing scheduled"
     }
   },
   "quest": {

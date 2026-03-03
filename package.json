@@ -18,6 +18,8 @@
     "browser-image-compression": "^2.0.2",
     "chrono-node": "^2.9.0",
     "firebase": "^11.0.0",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.7",
     "nuxt": "^3.14.0",
     "vue": "^3.5.0",
     "vue-router": "^4.4.0"

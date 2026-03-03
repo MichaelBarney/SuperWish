@@ -57,6 +57,16 @@ SuperTrip is the travel planning module of SuperX. It helps users plan trips wit
 - Includes: transportation, check-ins/outs, experiences, arrivals/departures
 - Chronological ordering
 
+### PDF Itinerary Export
+- Export a printable day-by-day itinerary as an A4 PDF
+- Includes trip header (name, dates, budget, origin), per-destination sections, and day-by-day tables
+- Each table shows time, type, name, and full details for experiences, accommodations, and transportations
+- Mirrors the `DayTimeline.vue` grouping algorithm (date buckets, sort by time, unscheduled section)
+- Between-destination transportation segments shown between sections
+- Experiences fetched on-demand via parallel one-shot Firestore `getDocs` queries
+- jsPDF + jspdf-autotable are dynamically imported to avoid bloating the initial bundle
+- Fully localized (EN / PT-BR) via `travel.pdf.*` i18n keys
+
 ## Color Scheme
 
 - **Accent Color**: Purple (#a855f7 - purple-500)
@@ -110,6 +120,13 @@ SuperTrip is the travel planning module of SuperX. It helps users plan trips wit
 | useCityAutocomplete | `composables/useCityAutocomplete.ts` | City autocomplete logic |
 | useCityImage | `composables/useCityImage.ts` | City image fetching (Unsplash) |
 | useCurrencyConversion | `composables/useCurrencyConversion.ts` | Currency conversion |
+| useTripPdfExport | `composables/useTripPdfExport.ts` | PDF itinerary export (fetches experiences, builds PDF) |
+
+## Utilities
+
+| Utility | Path | Description |
+|---------|------|-------------|
+| tripPdfBuilder | `utils/tripPdfBuilder.ts` | Pure function that builds the PDF document from resolved trip data |
 
 ## Pages
 
